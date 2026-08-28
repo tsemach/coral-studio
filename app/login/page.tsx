@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { LoginForm } from './login-form'
 
 export const metadata: Metadata = {
   title: 'Log in — Glumački Studio',
@@ -35,46 +36,7 @@ export default function LoginPage() {
             Log in to access your classes and studio updates.
           </p>
 
-          <form className="mt-8 space-y-5">
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                className="w-full rounded-sm border border-ink-foreground/20 bg-ink-foreground/[0.04] px-4 py-3 text-ink-foreground placeholder:text-ink-foreground/35 focus:border-accent focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="w-full rounded-sm border border-ink-foreground/20 bg-ink-foreground/[0.04] px-4 py-3 text-ink-foreground placeholder:text-ink-foreground/35 focus:border-accent focus:outline-none"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full rounded-sm bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
-            >
-              Log in
-            </button>
-          </form>
+          <LoginForm />
 
           <p className="mt-6 text-center text-sm text-ink-foreground/55">
             New to the studio?{' '}
