@@ -42,4 +42,17 @@ export class ResendEmailProvider implements EmailProvider {
       throw new Error(`Failed to send admin notification email: ${error.message}`)
     }
   }
+
+  async sendApprovedEmail(email: string, loginUrl: string): Promise<void> {
+    const { error } = await this.client.emails.send({
+      from: FROM_ADDRESS,
+      to: email,
+      subject: 'Your Glumački Studio account is approved',
+      html: `<p>An admin approved your registration. You can now log in:</p><p><a href="${loginUrl}">${loginUrl}</a></p>`,
+    })
+
+    if (error) {
+      throw new Error(`Failed to send approval email: ${error.message}`)
+    }
+  }
 }

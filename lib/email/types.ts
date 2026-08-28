@@ -7,4 +7,7 @@ export interface EmailProvider {
   // (COR-5 item 5: confirming the email routes the request to admins for
   // final approval, it doesn't register the user yet).
   sendPendingApprovalNotification(adminEmail: string, registrantEmail: string): Promise<void>
+  // Sent to the registrant once an admin approves them -- this is the
+  // moment they can actually log in.
+  sendApprovedEmail(email: string, loginUrl: string): Promise<void>
 }

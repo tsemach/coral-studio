@@ -11,4 +11,8 @@ export class MockEmailProvider implements EmailProvider {
   async sendPendingApprovalNotification(adminEmail: string, registrantEmail: string): Promise<void> {
     console.log(`[MockEmailProvider] ${registrantEmail} is awaiting approval -- notifying admin ${adminEmail}`)
   }
+
+  async sendApprovedEmail(email: string, loginUrl: string): Promise<void> {
+    console.log(`[MockEmailProvider] ${email} approved -- can now log in at ${loginUrl}`)
+  }
 }
