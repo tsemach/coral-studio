@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+
+  --color-background: #faf7f5;
+  --color-foreground: #1a1512;
+  --color-muted: #8a7f78;
+  --color-primary: #ff6f5e;
+  --color-primary-foreground: #ffffff;
+  --color-border: #e9e0da;
+}
+
+:root {
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
