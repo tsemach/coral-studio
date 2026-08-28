@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LoginForm } from './login-form'
+import { RegisterForm } from './register-form'
 
 export const metadata: Metadata = {
-  title: 'Log in — Glumački Studio',
-  description: 'Log in to your Glumački Studio account.',
+  title: 'Register — Glumački Studio',
+  description: 'Create an account at Glumački Studio.',
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main className="flex min-h-screen flex-col bg-ink text-ink-foreground">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 md:px-8">
@@ -30,18 +30,19 @@ export default function LoginPage() {
       <div className="flex flex-1 items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm">
           <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight">
-            Welcome back
+            Create an account
           </h1>
           <p className="mt-2 text-sm text-ink-foreground/60">
-            Log in to access your classes and studio updates.
+            Register to access your classes and studio updates. New accounts need admin approval
+            before you can log in.
           </p>
 
-          <LoginForm />
+          <RegisterForm />
 
           <p className="mt-6 text-center text-sm text-ink-foreground/55">
-            New to the studio?{' '}
-            <Link href="/register" className="text-accent hover:underline">
-              Create an account
+            Already have an account?{' '}
+            <Link href="/login" className="text-accent hover:underline">
+              Log in
             </Link>
           </p>
         </div>
