@@ -1,15 +1,24 @@
 @import 'tailwindcss';
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
 
-  --color-background: #faf7f5;
-  --color-foreground: #1a1512;
-  --color-muted: #8a7f78;
-  --color-primary: #ff6f5e;
-  --color-primary-foreground: #ffffff;
-  --color-border: #e9e0da;
+  --color-background: #f6f1e9;
+  --color-foreground: #201814;
+  --color-muted: #6f645c;
+  --color-card: #fbf8f2;
+  --color-border: #e2d8cb;
+
+  --color-primary: #8f2436;
+  --color-primary-foreground: #fbf3ec;
+  --color-accent: #c08a2d;
+  --color-accent-foreground: #201814;
+
+  --color-ink: #17110e;
+  --color-ink-foreground: #efe7db;
+
+  --radius: 0.25rem;
 }
 
 :root {
@@ -20,4 +29,13 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
+}
+
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+html {
+  scroll-behavior: smooth;
 }
