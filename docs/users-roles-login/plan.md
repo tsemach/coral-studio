@@ -113,8 +113,10 @@ This document. No app code.
     `status='pending_approval'` users with Approve/Reject actions.
 16. Server actions (or `app/api/admin/users/[id]/approve|reject/route.ts`) to flip
     `status`/`approvedAt`/`approvedById`, and email the user on approval.
-17. `middleware.ts`: first real route protection in this codebase — gates `/admin/*` to
-    authenticated admins only. Nothing else is gated (requirement 8).
+17. `proxy.ts` (Next.js 16 renamed `middleware.ts` → `proxy.ts`; the old name still works but is
+    deprecated): first real route protection in this codebase — gates `/admin/*` to authenticated
+    users at the edge (it can't check role there, no DB access), with the actual role check done
+    in the page/actions above via a live DB-backed session. Nothing else is gated (requirement 8).
 
 ### [PR-4 — COR-11](https://linear.app/coral-studio/issue/COR-11): Google & Facebook sign-in
 18. `auth.config.ts`: add `Google`/`Facebook` providers, reading `AUTH_GOOGLE_ID`/`SECRET` and
