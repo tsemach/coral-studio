@@ -1,17 +1,28 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Fraunces } from 'next/font/google'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
-const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  axes: ['opsz'],
+})
 
 export const metadata: Metadata = {
-  title: 'Coral Studio — Coming Soon',
-  description: 'Coral Studio is launching soon. Something beautiful is on the way.',
+  title: 'Glumački Studio — Acting Training in Belgrade',
+  description:
+    'A professional, non-profit acting studio in Belgrade offering practical, technique-based training in English for actors at every level. Weekly classes with Coral Mizrachi.',
+  openGraph: {
+    title: 'Glumački Studio — Acting Training in Belgrade',
+    description:
+      'Serious, practical acting training in English. Weekly classes, special workshops, and a supportive community in Belgrade.',
+    type: 'website',
+  },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#faf7f5',
+  themeColor: '#17110e',
 }
 
 export default function RootLayout({
@@ -20,7 +31,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`bg-background ${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`bg-background ${geistSans.variable} ${fraunces.variable}`}
+    >
       <body className="font-sans antialiased">{children}</body>
     </html>
   )
