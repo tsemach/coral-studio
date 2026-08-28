@@ -7,6 +7,7 @@ const navLinks = [
   { label: 'About', href: '/#about' },
   { label: 'Workshop', href: '/#workshop' },
   { label: 'Communities', href: '/#community' },
+  { label: 'Contact', href: '/#contact' },
 ]
 
 export function SiteHeader() {

@@ -33,7 +33,7 @@ export function FinalCta() {
         </div>
       </section>
 
-      <footer className="bg-ink text-ink-foreground">
+      <footer id="contact" className="bg-ink text-ink-foreground scroll-mt-20">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-14 md:flex-row md:items-end md:justify-between md:px-8">
           <div>
             <p className="font-serif text-xl font-semibold">Glumački Studio</p>
