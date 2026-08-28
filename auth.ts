@@ -6,6 +6,7 @@ import { db } from './lib/database'
 import { users, accounts, sessions, verificationTokens } from './lib/database/schema'
 import authConfig from './auth.config'
 import { verifyCredentials } from './lib/verifyCredentials'
+import { notifyAdminsOfPendingApproval } from './lib/emailVerification'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -63,4 +64,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  events: {
+    // Fires exactly once, only when the adapter itself inserts a brand new
+    // user row -- i.e. only a first-time OAuth sign-in (the Credentials
+    // provider and the register API route never go through the adapter's
+    // createUser). The row was just inserted with the schema's default
+    // role/status (user/pending_email); move it straight to
+    // pending_approval since Google/Facebook already proved the email
+    // (COR-5 item 6 goes through the same admin-approval gate as item 5).
+    async createUser({ user }) {
+      if (!user.id || !user.email) return
+      await db.update(users).set({ status: 'pending_approval', emailVerified: new Date() }).where(eq(users.id, user.id))
+      await notifyAdminsOfPendingApproval(user.email)
+    },
+  },
 })
