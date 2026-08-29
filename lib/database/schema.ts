@@ -1,11 +1,5 @@
-import { pgTable, serial, text, timestamp, integer, primaryKey } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, integer, primaryKey } from 'drizzle-orm/pg-core'
 import type { AdapterAccountType } from 'next-auth/adapters'
-
-export const smokeTest = pgTable('smoke_test', {
-  id: serial('id').primaryKey(),
-  message: text('message').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-})
 
 // Login is only permitted once status === 'active'. A credentials sign-up
 // starts at pending_email; verifying the address moves it to
