@@ -79,3 +79,18 @@ export async function rejectUser(userId: string) {
 
   revalidatePath('/admin/settings')
 }
+
+// Self-delete is blocked below, which is also what keeps this safe from
+// ever reaching zero active admins: whoever runs this action is themselves
+// an active admin and stays one afterward, so at least one always remains
+// (COR-5's "at least one active admin must always exist" requirement).
+export async function deleteUser(userId: string) {
+  const admin = await requireAdmin()
+  if (userId === admin.id) {
+    throw new Error('You cannot delete your own account.')
+  }
+
+  await db.delete(users).where(eq(users.id, userId))
+
+  revalidatePath('/admin/settings')
+}

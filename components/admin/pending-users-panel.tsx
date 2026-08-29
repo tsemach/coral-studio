@@ -17,7 +17,7 @@ export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
       {pending.map((user) => (
         <li
           key={user.id}
-          className="flex items-center justify-between gap-4 rounded-sm border border-border bg-background px-5 py-4"
+          className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background px-5 py-4"
         >
           <div>
             <p className="font-medium">{user.name || user.email}</p>
@@ -28,7 +28,7 @@ export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
             <form action={approveUser.bind(null, user.id)}>
               <button
                 type="submit"
-                className="rounded-sm bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
               >
                 Approve
               </button>
@@ -36,7 +36,7 @@ export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
             <form action={rejectUser.bind(null, user.id)}>
               <button
                 type="submit"
-                className="rounded-sm border border-border px-4 py-2 text-sm font-semibold text-foreground/70 transition-colors hover:text-foreground"
+                className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground/70 transition-colors hover:text-foreground"
               >
                 Reject
               </button>
