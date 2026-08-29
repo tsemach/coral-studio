@@ -4,10 +4,14 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { OAuthButtons } from '@/components/oauth-buttons'
 
-export function LoginForm() {
+export function LoginForm({ oauthPending = false }: { oauthPending?: boolean }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(
+    oauthPending
+      ? "Your account was created and is waiting on admin approval. You'll be able to log in once it's approved."
+      : ''
+  )
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {

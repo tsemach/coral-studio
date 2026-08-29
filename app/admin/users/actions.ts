@@ -41,7 +41,32 @@ export async function approveUser(userId: string) {
   const origin = await currentOrigin()
   await getEmailProvider().sendApprovedEmail(target.email, `${origin}/login`)
 
-  revalidatePath('/admin/users')
+  revalidatePath('/admin/settings')
+}
+
+export async function approveAllPending() {
+  const admin = await requireAdmin()
+
+  const pending = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.status, 'pending_approval'))
+  if (pending.length === 0) return
+
+  await db
+    .update(users)
+    .set({ status: 'active', approvedAt: new Date(), approvedById: admin.id })
+    .where(eq(users.status, 'pending_approval'))
+
+  // The approval itself already committed above -- one bad email address in
+  // a batch (bounce, typo, provider rejection) must not throw away the
+  // others' notifications or surface as a failure for an action that mostly
+  // succeeded.
+  const origin = await currentOrigin()
+  const emailProvider = getEmailProvider()
+  await Promise.allSettled(pending.map((user) => emailProvider.sendApprovedEmail(user.email, `${origin}/login`)))
+
+  revalidatePath('/admin/settings')
 }
 
 export async function rejectUser(userId: string) {
@@ -52,5 +77,5 @@ export async function rejectUser(userId: string) {
     .set({ status: 'rejected', approvedAt: new Date(), approvedById: admin.id })
     .where(eq(users.id, userId))
 
-  revalidatePath('/admin/users')
+  revalidatePath('/admin/settings')
 }
