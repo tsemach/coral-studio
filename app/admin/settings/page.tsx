@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { asc, eq } from 'drizzle-orm'
 import type { Metadata } from 'next'
 import { auth } from '@/auth'
+import { db } from '@/lib/database'
+import { users } from '@/lib/database/schema'
 import { PendingUsersPanel } from '@/components/admin/pending-users-panel'
 import { RefreshButton } from '@/components/admin/refresh-button'
 import { approveAllPending } from '@/app/admin/users/actions'
@@ -16,6 +19,12 @@ export default async function AdminSettingsPage() {
   const session = await auth()
   if (!session?.user) redirect('/login')
   if ((session.user as { role?: string }).role !== 'admin') redirect('/')
+
+  const pending = await db
+    .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
+    .from(users)
+    .where(eq(users.status, 'pending_approval'))
+    .orderBy(asc(users.createdAt))
 
   return (
     <main className="flex min-h-screen w-full max-w-5xl flex-col bg-background px-5 py-10 text-foreground md:px-8">
@@ -64,7 +73,8 @@ export default async function AdminSettingsPage() {
               <form action={approveAllPending}>
                 <button
                   type="submit"
-                  className="rounded-sm bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
+                  disabled={pending.length === 0}
+                  className="rounded-sm bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 disabled:hover:translate-y-0"
                 >
                   Approve all
                 </button>
@@ -73,7 +83,7 @@ export default async function AdminSettingsPage() {
           </div>
 
           <div className="mt-6">
-            <PendingUsersPanel />
+            <PendingUsersPanel pending={pending} />
           </div>
         </section>
       </div>

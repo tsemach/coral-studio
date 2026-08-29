@@ -1,15 +1,13 @@
-import { asc, eq } from 'drizzle-orm'
-import { db } from '@/lib/database'
-import { users } from '@/lib/database/schema'
 import { approveUser, rejectUser } from '@/app/admin/users/actions'
 
-export async function PendingUsersPanel() {
-  const pending = await db
-    .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
-    .from(users)
-    .where(eq(users.status, 'pending_approval'))
-    .orderBy(asc(users.createdAt))
+type PendingUser = {
+  id: string
+  name: string | null
+  email: string
+  createdAt: Date
+}
 
+export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
   if (pending.length === 0) {
     return <p className="text-sm text-foreground/60">No registrations are waiting for approval.</p>
   }
