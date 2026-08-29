@@ -7,7 +7,14 @@ export const metadata: Metadata = {
   description: 'Log in to your Glumački Studio account.',
 }
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error } = await searchParams
+  const oauthPending = error === 'AccessDenied'
+
   return (
     <main className="flex min-h-screen flex-col bg-ink text-ink-foreground">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 md:px-8">
@@ -36,7 +43,7 @@ export default function LoginPage() {
             Log in to access your classes and studio updates.
           </p>
 
-          <LoginForm />
+          <LoginForm oauthPending={oauthPending} />
 
           <p className="mt-6 text-center text-sm text-ink-foreground/55">
             New to the studio?{' '}
