@@ -3,20 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3500",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:smoke": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/db-smoke-test.ts"
+    "db:smoke": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/db-smoke-test.ts",
+    "create-admin": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/create-admin.ts"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.11.3",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
     "next": "^16.0.0",
+    "next-auth": "5.0.0-beta.32",
     "pg": "^8.23.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "resend": "^6.25.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
