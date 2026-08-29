@@ -13,7 +13,7 @@ export function RefreshButton() {
       aria-label="Refresh pending users"
       disabled={isPending}
       onClick={() => startTransition(() => router.refresh())}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground disabled:opacity-50"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground disabled:opacity-50"
     >
       <svg
         viewBox="0 0 24 24"

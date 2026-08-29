@@ -23,7 +23,7 @@ export function RegisteredUsersPanel({
       {users.map((user) => (
         <li
           key={user.id}
-          className="flex items-center justify-between gap-4 rounded-sm border border-border bg-background px-5 py-4"
+          className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background px-5 py-4"
         >
           <div className="flex min-w-0 items-center gap-3">
             <div className="min-w-0">

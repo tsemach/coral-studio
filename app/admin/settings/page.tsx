@@ -5,10 +5,7 @@ import type { Metadata } from 'next'
 import { auth } from '@/auth'
 import { db } from '@/lib/database'
 import { users } from '@/lib/database/schema'
-import { PendingUsersPanel } from '@/components/admin/pending-users-panel'
-import { RegisteredUsersPanel } from '@/components/admin/registered-users-panel'
-import { RefreshButton } from '@/components/admin/refresh-button'
-import { approveAllPending } from '@/app/admin/users/actions'
+import { UsersView } from '@/components/admin/users-view'
 
 export const metadata: Metadata = {
   title: 'Settings — Glumački Studio',
@@ -40,7 +37,7 @@ export default async function AdminSettingsPage() {
         <Link
           href="/"
           aria-label="Back to site"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-border text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground"
         >
           ←
         </Link>
@@ -52,12 +49,17 @@ export default async function AdminSettingsPage() {
 
       <div className="mt-8 border-t border-border" />
 
-      <div className="mt-8 flex flex-1 flex-col gap-6 md:flex-row md:items-stretch">
-        <nav aria-label="Settings" className="w-full shrink-0 self-start rounded-sm border border-border bg-card p-2 md:w-56">
+      <p className="mt-8 text-sm text-foreground/60">
+        Signed in as <span className="font-medium text-foreground">{session.user.email}</span>, role{' '}
+        <span className="font-medium text-foreground">Admin</span>
+      </p>
+
+      <div className="mt-6 flex flex-1 flex-col gap-6 md:flex-row md:items-stretch">
+        <nav aria-label="Settings" className="w-full shrink-0 self-start rounded-xl border border-border bg-card p-2 md:w-56">
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.label}>
-                <span className="flex items-center gap-2 rounded-sm border-l-2 border-primary bg-background px-3 py-2.5 text-sm font-semibold text-foreground">
+                <span className="flex items-center gap-2 rounded-xl border-l-2 border-primary bg-background px-3 py-2.5 text-sm font-semibold text-foreground">
                   {item.label}
                 </span>
               </li>
@@ -67,46 +69,7 @@ export default async function AdminSettingsPage() {
 
         <div className="hidden w-px self-stretch bg-border md:block" />
 
-        <div className="min-w-0 flex-1 self-start space-y-6">
-          <p className="text-sm text-foreground/60">
-            Signed in as <span className="font-medium text-foreground">{session.user.email}</span>, role{' '}
-            <span className="font-medium text-foreground">Admin</span>
-          </p>
-
-          <section className="rounded-sm border border-border bg-card p-6">
-            <div className="flex items-start justify-between gap-4">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
-                Pending approval ({pending.length})
-              </p>
-              <div className="flex shrink-0 items-center gap-2">
-                <RefreshButton />
-                <form action={approveAllPending}>
-                  <button
-                    type="submit"
-                    disabled={pending.length === 0}
-                    className="rounded-sm bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 disabled:hover:translate-y-0"
-                  >
-                    Approve all
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <PendingUsersPanel pending={pending} />
-            </div>
-          </section>
-
-          <section className="rounded-sm border border-border bg-card p-6">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
-              Registered users ({registered.length})
-            </p>
-
-            <div className="mt-6">
-              <RegisteredUsersPanel users={registered} currentUserId={session.user.id as string} />
-            </div>
-          </section>
-        </div>
+        <UsersView pending={pending} registered={registered} currentUserId={session.user.id as string} />
       </div>
     </main>
   )
