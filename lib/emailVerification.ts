@@ -52,7 +52,11 @@ export async function consumeEmailVerification(
   return { ok: true }
 }
 
-async function notifyAdminsOfPendingApproval(registrantEmail: string): Promise<void> {
+// Also used by auth.ts's `createUser` event: an OAuth sign-in creates the
+// user row via the adapter straight into pending_approval (it skips
+// pending_email -- the provider already proved the email), so the same
+// admin-notification step applies there too.
+export async function notifyAdminsOfPendingApproval(registrantEmail: string): Promise<void> {
   const admins = await db
     .select({ email: users.email })
     .from(users)

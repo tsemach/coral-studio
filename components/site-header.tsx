@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { UserMenu } from '@/components/user-menu'
 
 const navLinks = [
   { label: 'About', href: '/#about' },
@@ -12,9 +14,11 @@ const navLinks = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
+  const { status } = useSession()
+  const isLoggedIn = status === 'authenticated'
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md relative">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 md:h-20 md:px-8">
         <Link href="/" className="group flex flex-col leading-none">
           <span className="font-serif text-lg font-semibold tracking-tight text-foreground md:text-xl">
@@ -38,12 +42,20 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="hidden rounded-sm border border-foreground/25 px-5 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/50 hover:bg-foreground hover:text-background md:inline-block"
-          >
-            Log in
-          </Link>
+          {isLoggedIn ? (
+            <div className="md:absolute md:right-8 md:top-1/2 md:-translate-y-1/2">
+              <UserMenu />
+            </div>
+          ) : (
+            status !== 'loading' && (
+              <Link
+                href="/login"
+                className="hidden rounded-sm border border-foreground/25 px-5 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/50 hover:bg-foreground hover:text-background md:inline-block md:absolute md:right-[84px] md:top-1/2 md:-translate-y-1/2"
+              >
+                Log in
+              </Link>
+            )
+          )}
 
           <button
             type="button"
@@ -79,15 +91,17 @@ export function SiteHeader() {
                 </Link>
               </li>
             ))}
-            <li>
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="mt-1 block rounded-sm bg-foreground px-2 py-3 text-center text-base font-medium text-background"
-              >
-                Log in
-              </Link>
-            </li>
+            {!isLoggedIn && status !== 'loading' && (
+              <li>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="mt-1 block rounded-sm bg-foreground px-2 py-3 text-center text-base font-medium text-background"
+                >
+                  Log in
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
       )}
