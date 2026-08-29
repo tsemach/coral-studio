@@ -1,0 +1,32 @@
+name: "Deploy"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+
+jobs:
+  deploy:
+    name: "Deploy to Vercel"
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: 'master'
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: 'team_tzIAz6zI0k4Yq5f9E19jBi5R'
+          vercel-project-id: 'prj_tlXDcmfzl1HRQhn64GDPbwhLXgs0'
+          vercel-args: ${{ inputs.environment == 'production' && '--prod' || '' }}
