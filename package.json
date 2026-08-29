@@ -9,7 +9,6 @@
     "lint": "eslint .",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:smoke": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/db-smoke-test.ts",
     "create-admin": "node --env-file=.env node_modules/tsx/dist/cli.mjs scripts/create-admin.ts"
   },
   "dependencies": {
