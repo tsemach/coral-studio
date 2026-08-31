@@ -1,6 +1,6 @@
 export function WorkshopSection() {
   return (
-    <section id="workshop" className="scroll-mt-20 border-b border-border">
+    <section id="workshops" className="scroll-mt-20 border-b border-border">
       <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
         <div className="grid items-center gap-12 md:grid-cols-12 md:gap-16">
           <div className="md:col-span-7">

@@ -1,6 +1,6 @@
 'use server'
 
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
@@ -125,4 +125,82 @@ export async function setWorkshopScript(workshopId: string, formData: FormData) 
     .where(eq(workshops.id, workshopId))
 
   revalidatePath(`/workshops/${workshopId}`)
+}
+
+export async function renameWorkshop(workshopId: string, formData: FormData) {
+  await requireMember(workshopId)
+
+  const title = String(formData.get('title') ?? '').trim()
+  if (!title) throw new Error('Title is required')
+
+  await db.update(workshops).set({ title }).where(eq(workshops.id, workshopId))
+
+  revalidatePath('/workshops')
+  revalidatePath(`/workshops/${workshopId}`)
+}
+
+// Copies title + script into a fresh workshop with only the caller as a
+// member -- duplicating does not carry the source's group over.
+export async function duplicateWorkshop(workshopId: string) {
+  const member = await requireMember(workshopId)
+
+  const [source] = await db
+    .select({ title: workshops.title, scriptSlug: workshops.scriptSlug })
+    .from(workshops)
+    .where(eq(workshops.id, workshopId))
+    .limit(1)
+  if (!source) throw new Error('Workshop not found')
+
+  const [copy] = await db
+    .insert(workshops)
+    .values({ title: `${source.title} (copy)`, scriptSlug: source.scriptSlug, createdById: member.id })
+    .returning({ id: workshops.id })
+
+  await db.insert(workshopMembers).values({ workshopId: copy.id, userId: member.id, type: 'actor' })
+
+  revalidatePath('/workshops')
+  redirect(`/workshops/${copy.id}`)
+}
+
+async function memberCountOf(workshopId: string): Promise<number> {
+  const [row] = await db
+    .select({ memberCount: count() })
+    .from(workshopMembers)
+    .where(eq(workshopMembers.workshopId, workshopId))
+  return row?.memberCount ?? 0
+}
+
+// Design decision (docs/workshops/design.md): leaving as the last member
+// deletes the workshop rather than leaving an orphaned, member-less row --
+// attribute 8 already implies a workshop shouldn't be able to sit at zero
+// members.
+export async function leaveWorkshop(workshopId: string) {
+  const member = await requireMember(workshopId)
+
+  if ((await memberCountOf(workshopId)) <= 1) {
+    await db.delete(workshops).where(eq(workshops.id, workshopId))
+  } else {
+    await db
+      .delete(workshopMembers)
+      .where(and(eq(workshopMembers.workshopId, workshopId), eq(workshopMembers.userId, member.id)))
+  }
+
+  revalidatePath('/workshops')
+  redirect('/workshops')
+}
+
+// Attribute 8: only when the caller is the last member. The card menu only
+// ever shows Delete in that state (Leave otherwise), but this re-asserts it
+// server-side regardless of what the UI sent.
+export async function deleteWorkshop(workshopId: string) {
+  await requireMember(workshopId)
+
+  if ((await memberCountOf(workshopId)) > 1) {
+    throw new Error('Leave the workshop instead -- delete only works once you are the last member')
+  }
+
+  await db.delete(workshops).where(eq(workshops.id, workshopId))
+
+  revalidatePath('/workshops')
+  redirect('/workshops')
 }
