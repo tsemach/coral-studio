@@ -31,12 +31,13 @@ divider (list nav on the left, content on the right). It reuses that page's visu
 rather than introducing a new one.
 
 ### Header
-Three sections in one bar: **Back** button on the left (arrow + label, returns to the previous
-page, mirrors the `←` link on `/admin/settings`); the account avatar (`UserMenu`) on the right;
-and, centered between them, the selected workshop's two primary actions — **Schedule Rehearsal**
-then **+ Add user** — visible only when a workshop is selected. These are the same actions
-available per-card from the sidebar's overflow menu (below); the header versions always act on
-whichever workshop is currently open.
+Just two things: **Back** button on the left (arrow + label, returns to the previous page,
+mirrors the `←` link on `/admin/settings`), and the account avatar (`UserMenu`) on the right. The
+selected workshop's two primary actions — **Schedule Rehearsal** then **+ Add user** — used to be
+centered here; they now live on the same line as the workshop title instead (see Main content
+area below), right-aligned, visible only when a workshop is selected. These are the same actions
+available per-card from the sidebar's overflow menu; wherever they appear, they always act on
+whichever workshop they're attached to.
 
 ### Left sidebar — workshop list
 - A **search field** and the **+ New workshop** action share a row pinned above the list. The
@@ -67,26 +68,28 @@ whichever workshop is currently open.
   right just shows nothing is selected.
 
 ### Main content area
-Two panels, side by side on desktop and stacked on mobile (same responsive collapse as
-`UsersView`). A ↔ button on the script panel's header row, right side, toggles between this
-split view and the script panel alone filling the row — the details panel isn't just narrowed,
-it stops rendering entirely while expanded.
+The workshop title heads this area, with **Schedule Rehearsal** then **+ Add user**
+right-aligned on the same line (moved here from the header — see above). Below that, two panels
+side by side on desktop and stacked on mobile (same responsive collapse as `UsersView`). A ↔
+button on the script panel's header row, right side, toggles between this split view and the
+script panel alone filling the row — the details panel isn't just narrowed, it stops rendering
+entirely while expanded.
 
-**Workshop details panel** (left/center, wider) shows, for the selected workshop:
+**Script panel** (left, wider — about 2/3 of the row by default) is always expanded — no collapse
+toggle (an earlier version had one; removed once it turned out the script is exactly the thing
+you want visible while rehearsing, not something worth an extra click to reveal). Its width is
+user-resizable via a drag handle on its right edge (the shared edge with the details panel),
+hidden until hovered, same mechanism as the sidebar's own resize handle on its right edge —
+both grow their panel by dragging toward the neighbor they're pushing into.
+
+**Workshop details panel** (right, narrower) shows, for the selected workshop:
 - The group: each member's name, their type (`viewer` / `actor`), and their part if set. Members
-  can be removed here; any group member can trigger + Add user (attribute 6) from the header or
+  can be removed here; any group member can trigger + Add user (attribute 6) from the title row or
   the sidebar menu.
 - The scheduled rehearsal date (attribute 3), shown read-only here — set via the Schedule
-  Rehearsal action (header or sidebar menu), not edited inline in this panel.
+  Rehearsal action (title row or sidebar menu), not edited inline in this panel.
 - When the workshop is new/empty, this panel opens directly in an editable state so the creator
   can set the group and schedule before the workshop has a script attached.
-
-**Script panel** (right, narrower) is always expanded — no collapse toggle (an earlier version
-had one; removed once it turned out the script is exactly the thing you want visible while
-rehearsing, not something worth an extra click to reveal). Its width is user-resizable via a
-drag handle on its left edge, hidden until hovered, mirroring the sidebar's own resize handle
-(the sidebar's is on its right edge, since it's a "grow the panel toward its neighbor" gesture
-either way).
 - Also lets a member attach one of the available pre-made scripts when none is set yet (a
   `<select>` populated from `lib/workshops/scripts.ts`'s `listAvailableScripts()`) — the sketch
   didn't show this step, but without it a workshop could never get a script in the first place.

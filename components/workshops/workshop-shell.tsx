@@ -39,8 +39,8 @@ export function WorkshopShell({
     // min-height:auto refuses to shrink below its content size, which
     // silently defeats overflow at whichever level omits it).
     <div className="flex h-screen flex-col overflow-hidden bg-ink text-ink-foreground">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-ink-foreground/16 px-8 py-[18px]">
-        <div className="flex items-center gap-4 justify-self-start">
+      <div className="flex items-center justify-between border-b border-ink-foreground/16 px-8 py-[18px]">
+        <div className="flex items-center gap-4">
           <Link
             href="/"
             aria-label="Back to site"
@@ -54,18 +54,7 @@ export function WorkshopShell({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 justify-self-center">
-          {selected && (
-            <>
-              <ScheduleRehearsalDialog workshopId={selected.id} rehearsalAt={selected.rehearsalAt} />
-              <AddMemberDialog workshopId={selected.id} availableUsers={addableForSelected} />
-            </>
-          )}
-        </div>
-
-        <div className="justify-self-end">
-          <UserMenu />
-        </div>
+        <UserMenu />
       </div>
 
       <div className="flex min-h-0 flex-1">
@@ -79,7 +68,13 @@ export function WorkshopShell({
         <div className="flex min-h-0 flex-1 flex-col px-8 py-6">
           {selected ? (
             <>
-              <h1 className="shrink-0 text-[27px] font-semibold tracking-tight">{selected.title}</h1>
+              <div className="flex shrink-0 items-center justify-between gap-4">
+                <h1 className="text-[27px] font-semibold tracking-tight">{selected.title}</h1>
+                <div className="flex items-center gap-3">
+                  <ScheduleRehearsalDialog workshopId={selected.id} rehearsalAt={selected.rehearsalAt} />
+                  <AddMemberDialog workshopId={selected.id} availableUsers={addableForSelected} />
+                </div>
+              </div>
 
               <WorkshopPanels workshop={selected} script={script} availableScripts={availableScripts} />
             </>
