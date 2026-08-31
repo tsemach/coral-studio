@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/database'
 import { users, workshopMembers, workshops } from '@/lib/database/schema'
 
@@ -8,6 +8,7 @@ export type WorkshopListItem = {
   scriptSlug: string | null
   rehearsalAt: Date | null
   memberCount: number
+  memberUserIds: string[]
 }
 
 export type WorkshopMember = {
@@ -30,16 +31,25 @@ export type WorkshopDetail = {
 
 export type AddableUser = { id: string; name: string | null; email: string }
 
-async function memberCounts(workshopIds: string[]): Promise<Map<string, number>> {
+// One query feeding both memberCount and the AddMemberDialog/WorkshopFormDialog
+// pickers' exclusion list (WorkshopCardMenu filters activeUsers by these ids
+// before handing them down) -- memberCount is just .length, no separate
+// count() aggregate needed.
+async function memberUserIdsByWorkshop(workshopIds: string[]): Promise<Map<string, string[]>> {
   if (workshopIds.length === 0) return new Map()
 
   const rows = await db
-    .select({ workshopId: workshopMembers.workshopId, memberCount: count() })
+    .select({ workshopId: workshopMembers.workshopId, userId: workshopMembers.userId })
     .from(workshopMembers)
     .where(inArray(workshopMembers.workshopId, workshopIds))
-    .groupBy(workshopMembers.workshopId)
 
-  return new Map(rows.map((row) => [row.workshopId, row.memberCount]))
+  const map = new Map<string, string[]>()
+  for (const row of rows) {
+    const existing = map.get(row.workshopId)
+    if (existing) existing.push(row.userId)
+    else map.set(row.workshopId, [row.userId])
+  }
+  return map
 }
 
 // Attribute 9: admins see every workshop, everyone else only the ones they belong to.
@@ -56,8 +66,11 @@ export async function listWorkshopsForUser(userId: string, isAdmin: boolean): Pr
         .where(eq(workshopMembers.userId, userId))
         .orderBy(desc(workshops.createdAt))
 
-  const counts = await memberCounts(rows.map((row) => row.id))
-  return rows.map((row) => ({ ...row, memberCount: counts.get(row.id) ?? 0 }))
+  const memberIdsByWorkshop = await memberUserIdsByWorkshop(rows.map((row) => row.id))
+  return rows.map((row) => {
+    const memberUserIds = memberIdsByWorkshop.get(row.id) ?? []
+    return { ...row, memberUserIds, memberCount: memberUserIds.length }
+  })
 }
 
 export async function getWorkshopDetail(workshopId: string): Promise<WorkshopDetail | null> {

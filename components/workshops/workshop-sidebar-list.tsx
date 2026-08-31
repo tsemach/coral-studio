@@ -93,6 +93,7 @@ export function WorkshopSidebarList({
               title={workshop.title}
               scriptSlug={workshop.scriptSlug}
               memberCount={workshop.memberCount}
+              memberUserIds={workshop.memberUserIds}
               rehearsalAt={workshop.rehearsalAt}
               selected={workshop.id === selectedId}
               activeUsers={activeUsers}

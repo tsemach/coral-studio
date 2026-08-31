@@ -24,11 +24,9 @@ export function WorkshopShell({
   activeUsers: AddableUser[]
 }) {
   // Exclude the selected workshop's current members from its own picker --
-  // cheap since selected.members is already loaded. Cards elsewhere in the
-  // sidebar (their own kebab-menu Add User) don't have their membership
-  // loaded, so those show the unfiltered list; addMember() is idempotent
-  // either way (onConflictDoNothing), so picking an existing member there
-  // is a harmless no-op, not a bug.
+  // cheap since selected.members is already loaded. Every other card in the
+  // sidebar does the same thing with its own memberUserIds, in
+  // workshop-card-menu.tsx.
   const addableForSelected = selected
     ? activeUsers.filter((user) => !selected.members.some((member) => member.userId === user.id))
     : []

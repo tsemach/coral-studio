@@ -15,6 +15,7 @@ export function WorkshopCardMenu({
   title,
   scriptSlug,
   memberCount,
+  memberUserIds,
   rehearsalAt,
   activeUsers,
   availableScripts,
@@ -23,11 +24,17 @@ export function WorkshopCardMenu({
   title: string
   scriptSlug: string | null
   memberCount: number
+  memberUserIds: string[]
   rehearsalAt: Date | null
   activeUsers: AddableUser[]
   availableScripts: ScriptSummary[]
 }) {
   const [open, setOpen] = useState(false)
+  // Neither Add user nor Edit's "add people" list should offer someone
+  // who's already in this workshop's group -- picking them would just be a
+  // harmless no-op server-side (addMember/insertValidatedMembers both
+  // onConflictDoNothing), but showing them at all is confusing.
+  const addableUsers = activeUsers.filter((user) => !memberUserIds.includes(user.id))
   const containerRef = useRef<HTMLDivElement>(null)
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
   const editRef = useRef<DialogHandle>(null)
@@ -138,11 +145,11 @@ export function WorkshopCardMenu({
         workshopId={workshopId}
         initialTitle={title}
         initialScriptSlug={scriptSlug}
-        availableUsers={activeUsers}
+        availableUsers={addableUsers}
         availableScripts={availableScripts}
         hideTrigger
       />
-      <AddMemberDialog ref={addMemberRef} workshopId={workshopId} availableUsers={activeUsers} hideTrigger />
+      <AddMemberDialog ref={addMemberRef} workshopId={workshopId} availableUsers={addableUsers} hideTrigger />
       <ScheduleRehearsalDialog ref={scheduleRef} workshopId={workshopId} rehearsalAt={rehearsalAt} hideTrigger />
 
       {/* No padding/box styling directly on <dialog> -- see

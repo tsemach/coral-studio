@@ -13,6 +13,7 @@ export function WorkshopCard({
   title,
   scriptSlug,
   memberCount,
+  memberUserIds,
   rehearsalAt,
   selected,
   activeUsers,
@@ -22,6 +23,7 @@ export function WorkshopCard({
   title: string
   scriptSlug: string | null
   memberCount: number
+  memberUserIds: string[]
   rehearsalAt: Date | null
   selected: boolean
   activeUsers: AddableUser[]
@@ -53,6 +55,7 @@ export function WorkshopCard({
           title={title}
           scriptSlug={scriptSlug}
           memberCount={memberCount}
+          memberUserIds={memberUserIds}
           rehearsalAt={rehearsalAt}
           activeUsers={activeUsers}
           availableScripts={availableScripts}
