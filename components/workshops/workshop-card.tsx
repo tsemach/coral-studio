@@ -40,7 +40,7 @@ export function WorkshopCard({
         </p>
       </Link>
       <div className="absolute right-3 top-3.5">
-        <WorkshopCardMenu workshopId={id} title={title} memberCount={memberCount} />
+        <WorkshopCardMenu workshopId={id} title={title} memberCount={memberCount} rehearsalAt={rehearsalAt} />
       </div>
     </div>
   )

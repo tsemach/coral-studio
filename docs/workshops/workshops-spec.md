@@ -31,9 +31,12 @@ divider (list nav on the left, content on the right). It reuses that page's visu
 rather than introducing a new one.
 
 ### Header
-- **Back** button, top-left: arrow + label, returns to the previous page (mirrors the `←` link
-  on `/admin/settings`).
-- Account avatar, top-right: the existing `UserMenu` circle-initial component.
+Three sections in one bar: **Back** button on the left (arrow + label, returns to the previous
+page, mirrors the `←` link on `/admin/settings`); the account avatar (`UserMenu`) on the right;
+and, centered between them, the selected workshop's two primary actions — **Schedule Rehearsal**
+then **+ Add user** — visible only when a workshop is selected. These are the same actions
+available per-card from the sidebar's overflow menu (below); the header versions always act on
+whichever workshop is currently open.
 
 ### Left sidebar — workshop list
 - A **search field** and the **+ New workshop** action share a row pinned above the list. The
@@ -44,19 +47,24 @@ rather than introducing a new one.
 - Below it, one card per workshop the current user belongs to, most recently active first. Each
   card shows the workshop's title (from its script) and a **⋮ overflow menu** on the right edge.
 - The overflow menu opens a small dropdown anchored to the card with per-workshop actions:
-  Rename, Duplicate, Leave workshop, and Delete (Delete only shown to the workshop's creator).
+  **+ Add user**, **Schedule Rehearsal**, then either **Leave workshop** (when other members
+  remain) or **Delete** (attribute 8 — only once the caller is the last member left).
 - The selected workshop's card is highlighted (`border-primary`), matching the active-tab style
   used on `/admin/settings`'s Users nav.
+- With no workshops at all, the page still renders this same shell — header, empty sidebar list,
+  the + New workshop action — rather than a separate empty-state page; the content area to the
+  right just shows nothing is selected.
 
 ### Main content area
 Two panels, side by side on desktop and stacked on mobile (same responsive collapse as
-`UsersView`). A single **+ Add user** button sits above both panels, right-aligned, and adds a
-person (attribute 2) to the selected workshop's group.
+`UsersView`).
 
 **Workshop details panel** (left/center, wider) shows, for the selected workshop:
 - The group: each member's name, their type (`viewer` / `actor`), and their part if set. Members
-  can be removed here; any group member can trigger + Add user (attribute 6).
-- The scheduled rehearsal date (attribute 3), editable inline.
+  can be removed here; any group member can trigger + Add user (attribute 6) from the header or
+  the sidebar menu.
+- The scheduled rehearsal date (attribute 3), shown read-only here — set via the Schedule
+  Rehearsal action (header or sidebar menu), not edited inline in this panel.
 - When the workshop is new/empty, this panel opens directly in an editable state so the creator
   can set the group and schedule before the workshop has a script attached.
 

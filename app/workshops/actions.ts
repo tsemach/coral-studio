@@ -127,41 +127,6 @@ export async function setWorkshopScript(workshopId: string, formData: FormData) 
   revalidatePath(`/workshops/${workshopId}`)
 }
 
-export async function renameWorkshop(workshopId: string, formData: FormData) {
-  await requireMember(workshopId)
-
-  const title = String(formData.get('title') ?? '').trim()
-  if (!title) throw new Error('Title is required')
-
-  await db.update(workshops).set({ title }).where(eq(workshops.id, workshopId))
-
-  revalidatePath('/workshops')
-  revalidatePath(`/workshops/${workshopId}`)
-}
-
-// Copies title + script into a fresh workshop with only the caller as a
-// member -- duplicating does not carry the source's group over.
-export async function duplicateWorkshop(workshopId: string) {
-  const member = await requireMember(workshopId)
-
-  const [source] = await db
-    .select({ title: workshops.title, scriptSlug: workshops.scriptSlug })
-    .from(workshops)
-    .where(eq(workshops.id, workshopId))
-    .limit(1)
-  if (!source) throw new Error('Workshop not found')
-
-  const [copy] = await db
-    .insert(workshops)
-    .values({ title: `${source.title} (copy)`, scriptSlug: source.scriptSlug, createdById: member.id })
-    .returning({ id: workshops.id })
-
-  await db.insert(workshopMembers).values({ workshopId: copy.id, userId: member.id, type: 'actor' })
-
-  revalidatePath('/workshops')
-  redirect(`/workshops/${copy.id}`)
-}
-
 async function memberCountOf(workshopId: string): Promise<number> {
   const [row] = await db
     .select({ memberCount: count() })
