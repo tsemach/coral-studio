@@ -114,31 +114,36 @@ export function WorkshopCardMenu({
       <AddMemberDialog ref={addMemberRef} workshopId={workshopId} hideTrigger />
       <ScheduleRehearsalDialog ref={scheduleRef} workshopId={workshopId} rehearsalAt={rehearsalAt} hideTrigger />
 
+      {/* No padding/box styling directly on <dialog> -- see
+          schedule-rehearsal-dialog.tsx for why a click in that padding
+          would otherwise be mistaken for a backdrop click and close it. */}
       <dialog
         ref={deleteDialogRef}
         onClick={(e) => {
           if (e.target === deleteDialogRef.current) deleteDialogRef.current?.close()
         }}
-        className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground backdrop:bg-black/50"
+        className="max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
-        <p className="text-lg font-semibold">Delete workshop?</p>
-        <p className="mt-2 text-sm text-ink-foreground/60">
-          Delete <span className="font-medium text-ink-foreground">{title}</span>? This permanently removes it and
-          cannot be undone.
-        </p>
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => deleteDialogRef.current?.close()}
-            className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
-          >
-            Cancel
-          </button>
-          <form action={deleteWorkshop.bind(null, workshopId)}>
-            <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-              Delete
+        <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
+          <p className="text-lg font-semibold">Delete workshop?</p>
+          <p className="mt-2 text-sm text-ink-foreground/60">
+            Delete <span className="font-medium text-ink-foreground">{title}</span>? This permanently removes it and
+            cannot be undone.
+          </p>
+          <div className="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => deleteDialogRef.current?.close()}
+              className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
+            >
+              Cancel
             </button>
-          </form>
+            <form action={deleteWorkshop.bind(null, workshopId)}>
+              <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+                Delete
+              </button>
+            </form>
+          </div>
         </div>
       </dialog>
     </div>

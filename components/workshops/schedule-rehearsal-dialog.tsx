@@ -35,43 +35,51 @@ export const ScheduleRehearsalDialog = forwardRef<
         </button>
       )}
 
+      {/* The <dialog> element itself has no padding/box styling -- if it
+          did, a click landing in that padding (e.g. dismissing the native
+          datetime-local picker) would register as e.target === the dialog
+          itself, the same test used to detect a true backdrop click, and
+          close the dialog before Save is reachable. The visual card lives
+          on an inner div instead, so only an actual backdrop click closes it. */}
       <dialog
         ref={dialogRef}
         onClick={(e) => {
           if (e.target === dialogRef.current) dialogRef.current?.close()
         }}
-        className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground backdrop:bg-black/50"
+        className="max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
-        <p className="text-lg font-semibold">Schedule rehearsal</p>
-        <p className="mt-1 text-sm text-ink-foreground/60">Set when this workshop&apos;s group next meets.</p>
+        <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
+          <p className="text-lg font-semibold">Schedule rehearsal</p>
+          <p className="mt-1 text-sm text-ink-foreground/60">Set when this workshop&apos;s group next meets.</p>
 
-        <form
-          action={async (formData) => {
-            await setRehearsalDate(workshopId, formData)
-            dialogRef.current?.close()
-          }}
-          className="mt-5 flex flex-col gap-3"
-        >
-          <input
-            type="datetime-local"
-            name="rehearsalAt"
-            defaultValue={formatRehearsalInputValue(rehearsalAt)}
-            className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground [color-scheme:dark] focus:outline-none"
-          />
+          <form
+            action={async (formData) => {
+              await setRehearsalDate(workshopId, formData)
+              dialogRef.current?.close()
+            }}
+            className="mt-5 flex flex-col gap-3"
+          >
+            <input
+              type="datetime-local"
+              name="rehearsalAt"
+              defaultValue={formatRehearsalInputValue(rehearsalAt)}
+              className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground [color-scheme:dark] focus:outline-none"
+            />
 
-          <div className="mt-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => dialogRef.current?.close()}
-              className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
-            >
-              Cancel
-            </button>
-            <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-              Save
-            </button>
-          </div>
-        </form>
+            <div className="mt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => dialogRef.current?.close()}
+                className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
       </dialog>
     </>
   )
