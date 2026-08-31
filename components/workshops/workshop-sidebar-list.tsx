@@ -1,20 +1,29 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { createWorkshop } from '@/app/workshops/actions'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { CreateWorkshopDialog } from '@/components/workshops/create-workshop-dialog'
 import { WorkshopCard } from '@/components/workshops/workshop-card'
 import type { AddableUser, WorkshopListItem } from '@/lib/workshops/queries'
+import type { ScriptSummary } from '@/lib/workshops/scripts'
+
+const DEFAULT_WIDTH = 320
+const MIN_WIDTH = 260
+const MAX_WIDTH = 480
 
 export function WorkshopSidebarList({
   workshops,
   selectedId,
   activeUsers,
+  availableScripts,
 }: {
   workshops: WorkshopListItem[]
   selectedId: string | null
   activeUsers: AddableUser[]
+  availableScripts: ScriptSummary[]
 }) {
   const [query, setQuery] = useState('')
+  const [width, setWidth] = useState(DEFAULT_WIDTH)
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -22,8 +31,30 @@ export function WorkshopSidebarList({
     return workshops.filter((workshop) => workshop.title.toLowerCase().includes(q))
   }, [workshops, query])
 
+  // Pointer capture (not window mousemove/mouseup listeners) keeps receiving
+  // move/up events for this pointer even once the cursor leaves the handle's
+  // small hit area mid-drag -- no manual add/removeEventListener cleanup.
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      dragRef.current = { startX: e.clientX, startWidth: width }
+      e.currentTarget.setPointerCapture(e.pointerId)
+    },
+    [width]
+  )
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return
+    const next = dragRef.current.startWidth + (e.clientX - dragRef.current.startX)
+    setWidth(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, next)))
+  }, [])
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    dragRef.current = null
+    e.currentTarget.releasePointerCapture(e.pointerId)
+  }, [])
+
   return (
-    <div className="flex w-80 shrink-0 flex-col gap-4 border-r border-ink-foreground/16 p-6">
+    <div className="relative flex shrink-0 flex-col gap-4 p-6" style={{ width }}>
       <div className="flex items-center gap-2.5">
         <div className="relative flex-1">
           <svg
@@ -48,19 +79,7 @@ export function WorkshopSidebarList({
             className="h-[38px] w-full rounded-[10px] border border-ink-foreground/16 bg-ink pl-[34px] pr-3 text-[13.5px] text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
           />
         </div>
-        <form action={createWorkshop}>
-          <button
-            type="submit"
-            aria-label="New workshop"
-            title="New workshop"
-            className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground transition-transform hover:-translate-y-0.5"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </button>
-        </form>
+        <CreateWorkshopDialog availableUsers={activeUsers} availableScripts={availableScripts} />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -79,6 +98,25 @@ export function WorkshopSidebarList({
             />
           ))
         )}
+      </div>
+
+      {/* A generous 20px hit target straddling the actual boundary, not just
+          a 1px line -- the visible track (thin line) and the grip mark are
+          both purely decorative children so the drag math above only has to
+          reason about this one element's pointer events. */}
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize workshop list"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="group absolute top-0 -right-2.5 flex h-full w-5 cursor-col-resize touch-none items-center justify-center"
+      >
+        <div className="h-full w-px bg-ink-foreground/16 transition-colors group-hover:bg-ink-foreground/35" />
+        {/* Hidden until the line is actually hovered -- it's a drag
+            affordance the pointer reveals, not a permanent fixture. */}
+        <div className="pointer-events-none absolute h-10 w-1.5 rounded-full bg-ink-foreground/70 opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
     </div>
   )

@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { auth } from '@/auth'
-import { listWorkshopsForUser } from '@/lib/workshops/queries'
+import { listActiveUsers, listWorkshopsForUser } from '@/lib/workshops/queries'
+import { listAvailableScripts } from '@/lib/workshops/scripts'
 import { WorkshopShell } from '@/components/workshops/workshop-shell'
 
 export const metadata: Metadata = {
@@ -20,8 +21,13 @@ export default async function WorkshopsIndexPage() {
   }
 
   // No workshops yet -- the shell itself (header, sidebar with its
-  // "+ New workshop" button) renders as normal, just with an empty list and
-  // no workshop selected, rather than a separate empty-state page. Nothing
-  // in the sidebar to add a member to yet either, so skip the query.
-  return <WorkshopShell workshops={list} selected={null} script={null} availableScripts={[]} activeUsers={[]} />
+  // "New workshop" dialog) renders as normal, just with an empty list and
+  // no workshop selected, rather than a separate empty-state page. Still
+  // need real script/user data here: the New workshop dialog lets a member
+  // attach a script and add people right at creation.
+  const [availableScripts, activeUsers] = await Promise.all([listAvailableScripts(), listActiveUsers()])
+
+  return (
+    <WorkshopShell workshops={list} selected={null} script={null} availableScripts={availableScripts} activeUsers={activeUsers} />
+  )
 }

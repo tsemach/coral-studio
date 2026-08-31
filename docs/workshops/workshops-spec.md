@@ -42,8 +42,15 @@ whichever workshop is currently open.
 - A **search field** and the **+ New workshop** action share a row pinned above the list. The
   search field filters the list below by workshop title as the user types (client-side over the
   workshops already visible to them — attribute 9's admin/member scoping applies before search,
-  not after). + New workshop creates an empty workshop (attribute 4) and selects it, opening it
-  in the details panel to the right in an editable state.
+  not after). The sidebar's whole width is user-resizable: a drag handle sits on its right edge,
+  hidden until hovered (a thin line plus a small pill grip once hovered), draggable left/right.
+- **+ New workshop** opens a modal rather than creating a workshop immediately: title (optional —
+  attribute 4's "create empty" still holds, this just gives it a name up front instead of only
+  via later action), script (optional, picked from the same available-scripts list the script
+  panel uses), and people to add (optional — pick as many as needed before creating; each gets a
+  type/part like the details panel's members do). Only on submit does the workshop, its script,
+  and its group get created together; the creator is still always added automatically
+  (attribute 5), on top of anyone picked in the modal.
 - Below it, one card per workshop the current user belongs to, most recently active first. Each
   card shows the workshop's title (from its script) and a **⋮ overflow menu** on the right edge.
 - The overflow menu opens a small dropdown anchored to the card with per-workshop actions:

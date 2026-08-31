@@ -65,7 +65,12 @@ export function WorkshopShell({
       </div>
 
       <div className="flex flex-1">
-        <WorkshopSidebarList workshops={workshops} selectedId={selected?.id ?? null} activeUsers={activeUsers} />
+        <WorkshopSidebarList
+          workshops={workshops}
+          selectedId={selected?.id ?? null}
+          activeUsers={activeUsers}
+          availableScripts={availableScripts}
+        />
 
         <div className="flex flex-1 flex-col px-8 py-6">
           {selected ? (

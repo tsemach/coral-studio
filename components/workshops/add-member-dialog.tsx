@@ -2,6 +2,7 @@
 
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { addMember } from '@/app/workshops/actions'
+import { UserPicker } from '@/components/workshops/user-picker'
 import type { AddableUser } from '@/lib/workshops/queries'
 
 export type DialogHandle = { open: () => void }
@@ -18,9 +19,11 @@ export const AddMemberDialog = forwardRef<
 >(function AddMemberDialog({ workshopId, availableUsers, hideTrigger }, ref) {
     const dialogRef = useRef<HTMLDialogElement>(null)
     const [error, setError] = useState<string | null>(null)
+    const [email, setEmail] = useState('')
 
     function open() {
       setError(null)
+      setEmail('')
       dialogRef.current?.showModal()
     }
 
@@ -62,35 +65,14 @@ export const AddMemberDialog = forwardRef<
         >
           <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
             <p className="text-lg font-semibold">Add a member</p>
-            <p className="mt-1 text-sm text-ink-foreground/60">Pick an existing, active user to add to the group.</p>
+            <p className="mt-1 text-sm text-ink-foreground/60">
+              Type a name or email, or pick from the list, to add an existing active user.
+            </p>
 
             <form action={handleSubmit} className="mt-5 flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-sm">
                 User
-                {availableUsers.length === 0 ? (
-                  <select
-                    disabled
-                    className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground/45"
-                  >
-                    <option>No other active users available</option>
-                  </select>
-                ) : (
-                  <select
-                    name="email"
-                    required
-                    defaultValue=""
-                    className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
-                  >
-                    <option value="" disabled>
-                      Choose a user
-                    </option>
-                    {availableUsers.map((user) => (
-                      <option key={user.id} value={user.email}>
-                        {user.name ? `${user.name} — ${user.email}` : user.email}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                <UserPicker availableUsers={availableUsers} name="email" value={email} onChange={setEmail} required />
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
