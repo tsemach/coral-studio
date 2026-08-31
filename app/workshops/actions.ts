@@ -7,6 +7,7 @@ import { auth } from '@/auth'
 import { db } from '@/lib/database'
 import { users, workshopMembers, workshops } from '@/lib/database/schema'
 import { isWorkshopMember } from '@/lib/workshops/queries'
+import { listAvailableScripts } from '@/lib/workshops/scripts'
 import { isValidEmail } from '@/lib/validation'
 
 // Render-time gating on the page is not a security boundary -- a Server
@@ -101,6 +102,27 @@ export async function setRehearsalDate(workshopId: string, formData: FormData) {
   const rehearsalAt = raw ? new Date(raw) : null
 
   await db.update(workshops).set({ rehearsalAt }).where(eq(workshops.id, workshopId))
+
+  revalidatePath(`/workshops/${workshopId}`)
+}
+
+// Script *editing* is out of scope for COR-12 (workshops-spec.md) -- this
+// only attaches one of the pre-made scripts under workshops/scripts/.
+export async function setWorkshopScript(workshopId: string, formData: FormData) {
+  await requireMember(workshopId)
+
+  const scriptSlug = String(formData.get('scriptSlug') ?? '').trim()
+  if (scriptSlug) {
+    const available = await listAvailableScripts()
+    if (!available.some((script) => script.slug === scriptSlug)) {
+      throw new Error('Unknown script')
+    }
+  }
+
+  await db
+    .update(workshops)
+    .set({ scriptSlug: scriptSlug || null })
+    .where(eq(workshops.id, workshopId))
 
   revalidatePath(`/workshops/${workshopId}`)
 }

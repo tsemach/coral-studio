@@ -1,18 +1,25 @@
 import Link from 'next/link'
 import { UserMenu } from '@/components/user-menu'
 import { AddMemberDialog } from '@/components/workshops/add-member-dialog'
+import { ScriptPanel } from '@/components/workshops/script-panel'
 import { WorkshopDetailsPanel } from '@/components/workshops/workshop-details-panel'
 import { WorkshopSidebarList } from '@/components/workshops/workshop-sidebar-list'
 import type { WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
+import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
-// Server Component -- only the search filter (workshop-sidebar-list.tsx) needs
-// to be a Client Component; everything else here renders on the server.
+// Server Component -- only the search filter (workshop-sidebar-list.tsx) and
+// the script panel's open/closed state need to be Client Components;
+// everything else here renders on the server.
 export function WorkshopShell({
   workshops,
   selected,
+  script,
+  availableScripts,
 }: {
   workshops: WorkshopListItem[]
   selected: WorkshopDetail
+  script: Script | null
+  availableScripts: ScriptSummary[]
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-ink text-ink-foreground">
@@ -49,6 +56,7 @@ export function WorkshopShell({
 
           <div className="mt-5 flex flex-1 gap-5">
             <WorkshopDetailsPanel workshop={selected} />
+            <ScriptPanel workshopId={selected.id} script={script} availableScripts={availableScripts} />
           </div>
         </div>
       </div>

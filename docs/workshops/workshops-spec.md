@@ -61,8 +61,11 @@ person (attribute 2) to the selected workshop's group.
   can set the group and schedule before the workshop has a script attached.
 
 **Script panel** (right, narrower) is collapsible:
-- Closed by default; opened either by a button in its header or by an arrow on its left edge
-  (the edge shared with the details panel).
+- Closed by default; its header is the toggle (implementation simplification from the original
+  sketch, which also showed a redundant left-edge arrow — one clear affordance is enough).
+- Also lets a member attach one of the available pre-made scripts when none is set yet (a
+  `<select>` populated from `lib/workshops/scripts.ts`'s `listAvailableScripts()`) — the sketch
+  didn't show this step, but without it a workshop could never get a script in the first place.
 - When open, it loads the workshop's script JSON (attribute 1, see
   [AWAKWNING-LEONARD-AND-SAYER.json](../../workshops/scripts/AWAKWNING-LEONARD-AND-SAYER.json) for
   the shape) and renders its `script_flow` entries top to bottom:
