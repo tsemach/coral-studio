@@ -25,6 +25,17 @@ Specific patterns being copied rather than reinvented:
 - **Click-outside dropdown**: `components/user-menu.tsx`'s `useRef` + `mousedown` listener is the
   model for the workshop card's `⋮` overflow menu.
 
+## Visual theme
+
+`/workshops` is dark and set in a standard system sans-serif — both deliberate exceptions scoped
+to this page only, not a site-wide change. Dark surfaces reuse `app/globals.css`'s existing
+`ink`/`ink-foreground` tokens (already used for the hero/login surfaces) as the page
+background/text, plus one new token added alongside them, `--color-ink-card: #241d18` — the
+elevated surface for sidebar cards, the details panel, dropdown menus, and the script panel, the
+same role `card`/`border` play against `background` in the light theme. Headings on this page
+skip the site's usual `font-serif` (Fraunces) and stay on the default sans stack. Every other page
+keeps the light theme and Fraunces headings untouched.
+
 ## Data model
 
 Two new tables in `lib/database/schema.ts`, following the existing `users` table's conventions
@@ -149,8 +160,8 @@ async function getWorkshopDetail(workshopId: string) {
 
 | File | Responsibility |
 |---|---|
-| `workshop-shell.tsx` (`'use client'`) | Owns search-query and script-panel-open state; lays out sidebar + toolbar + the two panels. Mirrors `users-view.tsx`'s role as the stateful container. |
-| `workshop-sidebar-list.tsx` | Search input + New-workshop button row, then the filtered `WorkshopCard` list. |
+| `workshop-shell.tsx` | Server Component; lays out the header, sidebar, and content panels. The 'use client' boundary stays as deep as possible — pushed down into `workshop-sidebar-list.tsx` (search state) and, from PR-4, `script-panel.tsx` (open/closed state) individually, rather than one client wrapper owning both. |
+| `workshop-sidebar-list.tsx` (`'use client'`) | Search input + New-workshop button row, then the filtered `WorkshopCard` list. |
 | `workshop-card.tsx` (`'use client'`) | One sidebar card; owns its own `⋮` menu open/closed state (click-outside via `user-menu.tsx`'s pattern). |
 | `workshop-card-menu.tsx` | Rename / Duplicate / Leave / Delete dropdown content. Delete is disabled (shows only Leave) whenever `memberCount > 1`, so the UI can't attempt an action attribute 8 would reject server-side. |
 | `workshop-details-panel.tsx` | Group list (member rows + remove) and the rehearsal-date row. |
