@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, primaryKey } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, integer, primaryKey, uniqueIndex } from 'drizzle-orm/pg-core'
 import type { AdapterAccountType } from 'next-auth/adapters'
 
 // Login is only permitted once status === 'active'. A credentials sign-up
@@ -74,6 +74,48 @@ export const verificationTokens = pgTable(
   (vt) => [
     {
       parentKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+    },
+  ]
+)
+
+// COR-12. Created empty and filled in later (title/script/rehearsal date can
+// all be set after creation) -- see docs/workshops/design.md.
+export const workshops = pgTable('workshops', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  title: text('title').default('Untitled workshop').notNull(),
+  // Filename stem under workshops/scripts/ (see lib/workshops/scripts.ts). Null
+  // until a script is attached -- script editing is out of scope for COR-12.
+  scriptSlug: text('script_slug'),
+  rehearsalAt: timestamp('rehearsal_at', { mode: 'date' }),
+  createdById: text('created_by_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
+// The workshop creator is inserted here too (docs/workshops/workshops-spec.md
+// attribute 5), so membership -- not creatorship -- is what actions gate on.
+export const workshopMembers = pgTable(
+  'workshop_members',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text('workshop_id')
+      .notNull()
+      .references(() => workshops.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: text('type', { enum: ['viewer', 'actor'] }).default('actor').notNull(),
+    part: text('part'), // Optional -- attribute 2c.
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => [
+    {
+      membershipKey: uniqueIndex('workshop_members_workshop_user_idx').on(table.workshopId, table.userId),
     },
   ]
 )

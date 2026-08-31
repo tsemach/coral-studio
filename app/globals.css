@@ -17,6 +17,7 @@
 
   --color-ink: #17110e;
   --color-ink-foreground: #efe7db;
+  --color-ink-card: #241d18; /* elevated surface on an ink background, e.g. /workshops */
 
   --radius: 0.25rem;
 }
