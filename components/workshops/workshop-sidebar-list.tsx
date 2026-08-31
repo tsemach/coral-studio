@@ -54,8 +54,8 @@ export function WorkshopSidebarList({
   }, [])
 
   return (
-    <div className="relative flex shrink-0 flex-col gap-4 p-6" style={{ width }}>
-      <div className="flex items-center gap-2.5">
+    <div className="relative flex h-full min-h-0 shrink-0 flex-col gap-4 p-6" style={{ width }}>
+      <div className="flex shrink-0 items-center gap-2.5">
         <div className="relative flex-1">
           <svg
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-foreground/45"
@@ -82,7 +82,7 @@ export function WorkshopSidebarList({
         <WorkshopFormDialog mode="create" availableUsers={activeUsers} availableScripts={availableScripts} />
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {filtered.length === 0 ? (
           <p className="px-1 text-sm text-ink-foreground/55">No workshops match &ldquo;{query}&rdquo;.</p>
         ) : (

@@ -7,7 +7,7 @@ import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
 const DEFAULT_WIDTH = 380
 const MIN_WIDTH = 280
-const MAX_WIDTH = 640
+const MAX_WIDTH = 1100
 
 export function ScriptPanel({
   workshopId,
@@ -46,7 +46,7 @@ export function ScriptPanel({
 
   return (
     <div
-      className="relative flex shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink"
+      className="relative flex min-h-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink"
       style={{ width }}
     >
       {/* Same generous 20px hit target + hover-revealed grip as the
@@ -64,18 +64,22 @@ export function ScriptPanel({
         <div className="pointer-events-none absolute h-10 w-1.5 rounded-full bg-ink-foreground/70 opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
 
-      <div className="px-5 py-4">
+      <div className="shrink-0 px-5 py-4">
         <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Script</p>
         <p className="mt-0.5 text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
       </div>
 
-      {/* overscroll-contain stops wheel scrolling from chaining to the page
-          once this reaches its own top/bottom -- the page never moves.
-          The three scrollbar rules hide the scrollbar (per-browser: no
-          shorthand covers Firefox, WebKit, and old Edge/IE at once) while
-          the element stays scrollable -- wheel/trackpad/keyboard scrolling
-          still works, just without a visible track. */}
-      <div className="flex-1 overflow-y-auto overscroll-contain border-t border-ink-foreground/14 px-5 py-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* min-h-0 is the piece that was actually missing: a flex item's
+          default min-height:auto refuses to shrink below its content's
+          size, which silently defeats overflow-y-auto -- the panel just
+          grew to fit the script instead of scrolling. overscroll-contain
+          stops wheel scrolling from chaining to the page once this reaches
+          its own top/bottom -- the page never moves. The three scrollbar
+          rules hide the scrollbar (per-browser: no shorthand covers
+          Firefox, WebKit, and old Edge/IE at once) while the element stays
+          scrollable -- wheel/trackpad/keyboard scrolling still works, just
+          without a visible track. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-ink-foreground/14 px-5 py-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {script ? (
           <ScriptFlow script={script} />
         ) : availableScripts.length === 0 ? (

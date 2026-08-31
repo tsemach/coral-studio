@@ -34,7 +34,14 @@ export function WorkshopShell({
     ? activeUsers.filter((user) => !selected.members.some((member) => member.userId === user.id))
     : []
   return (
-    <div className="flex min-h-screen flex-col bg-ink text-ink-foreground">
+    // h-screen + overflow-hidden (not min-h-screen) is load-bearing: without
+    // an actual height ceiling here, flex-1 below never becomes a bounded
+    // box -- the page just grows to fit content instead, and overflow-y-auto
+    // further down has nothing to overflow against. min-h-0 has to ride
+    // along at every flex-1 level in the chain too (a flex item's default
+    // min-height:auto refuses to shrink below its content size, which
+    // silently defeats overflow at whichever level omits it).
+    <div className="flex h-screen flex-col overflow-hidden bg-ink text-ink-foreground">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-ink-foreground/16 px-8 py-[18px]">
         <div className="flex items-center gap-4 justify-self-start">
           <Link
@@ -64,7 +71,7 @@ export function WorkshopShell({
         </div>
       </div>
 
-      <div className="flex flex-1">
+      <div className="flex min-h-0 flex-1">
         <WorkshopSidebarList
           workshops={workshops}
           selectedId={selected?.id ?? null}
@@ -72,12 +79,12 @@ export function WorkshopShell({
           availableScripts={availableScripts}
         />
 
-        <div className="flex flex-1 flex-col px-8 py-6">
+        <div className="flex min-h-0 flex-1 flex-col px-8 py-6">
           {selected ? (
             <>
-              <h1 className="text-[27px] font-semibold tracking-tight">{selected.title}</h1>
+              <h1 className="shrink-0 text-[27px] font-semibold tracking-tight">{selected.title}</h1>
 
-              <div className="mt-5 flex flex-1 gap-5">
+              <div className="mt-5 flex min-h-0 flex-1 gap-5">
                 <WorkshopDetailsPanel workshop={selected} />
                 <ScriptPanel workshopId={selected.id} script={script} availableScripts={availableScripts} />
               </div>

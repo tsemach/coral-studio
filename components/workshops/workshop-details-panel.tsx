@@ -7,8 +7,14 @@ function formatRehearsalDisplay(date: Date | null) {
 }
 
 export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail }) {
+  // min-w matches script-panel.tsx's own MIN_WIDTH -- without it, flexbox
+  // would let this shrink to nothing as the script panel is dragged wider
+  // (its default min-width:auto has no floor of its own). overflow-y-auto
+  // gives it its own internal scroll now that the row above it is
+  // height-bounded (workshop-shell.tsx) -- without it, a long group list
+  // would just get clipped instead of scrolling.
   return (
-    <div className="flex-1 rounded-2xl border border-ink-foreground/16 bg-ink-card p-6">
+    <div className="min-h-0 min-w-[280px] flex-1 overflow-y-auto rounded-2xl border border-ink-foreground/16 bg-ink-card p-6">
       <div>
         <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Group</p>
         {workshop.members.length === 0 ? (
