@@ -21,6 +21,7 @@ export default async function WorkshopsIndexPage() {
 
   // No workshops yet -- the shell itself (header, sidebar with its
   // "+ New workshop" button) renders as normal, just with an empty list and
-  // no workshop selected, rather than a separate empty-state page.
-  return <WorkshopShell workshops={list} selected={null} script={null} availableScripts={[]} />
+  // no workshop selected, rather than a separate empty-state page. Nothing
+  // in the sidebar to add a member to yet either, so skip the query.
+  return <WorkshopShell workshops={list} selected={null} script={null} availableScripts={[]} activeUsers={[]} />
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { deleteWorkshop, leaveWorkshop } from '@/app/workshops/actions'
 import { AddMemberDialog, type DialogHandle } from '@/components/workshops/add-member-dialog'
 import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
+import type { AddableUser } from '@/lib/workshops/queries'
 
 const menuItemClass = 'block w-full px-4 py-2 text-left text-[13.5px] text-ink-foreground/80 hover:bg-ink'
 
@@ -12,11 +13,13 @@ export function WorkshopCardMenu({
   title,
   memberCount,
   rehearsalAt,
+  activeUsers,
 }: {
   workshopId: string
   title: string
   memberCount: number
   rehearsalAt: Date | null
+  activeUsers: AddableUser[]
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -111,18 +114,20 @@ export function WorkshopCardMenu({
           opened via showModal() force-closes the instant it (or an
           ancestor) stops being rendered, which the dropdown does the
           moment a menu item click also closes it. */}
-      <AddMemberDialog ref={addMemberRef} workshopId={workshopId} hideTrigger />
+      <AddMemberDialog ref={addMemberRef} workshopId={workshopId} availableUsers={activeUsers} hideTrigger />
       <ScheduleRehearsalDialog ref={scheduleRef} workshopId={workshopId} rehearsalAt={rehearsalAt} hideTrigger />
 
       {/* No padding/box styling directly on <dialog> -- see
           schedule-rehearsal-dialog.tsx for why a click in that padding
-          would otherwise be mistaken for a backdrop click and close it. */}
+          would otherwise be mistaken for a backdrop click and close it.
+          m-auto restores the centering Tailwind's preflight margin reset
+          otherwise breaks (see schedule-rehearsal-dialog.tsx). */}
       <dialog
         ref={deleteDialogRef}
         onClick={(e) => {
           if (e.target === deleteDialogRef.current) deleteDialogRef.current?.close()
         }}
-        className="max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
+        className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
           <p className="text-lg font-semibold">Delete workshop?</p>

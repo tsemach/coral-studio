@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { WorkshopCardMenu } from '@/components/workshops/workshop-card-menu'
+import type { AddableUser } from '@/lib/workshops/queries'
 
 function formatCardDate(date: Date | null) {
   if (!date) return null
@@ -12,12 +13,14 @@ export function WorkshopCard({
   memberCount,
   rehearsalAt,
   selected,
+  activeUsers,
 }: {
   id: string
   title: string
   memberCount: number
   rehearsalAt: Date | null
   selected: boolean
+  activeUsers: AddableUser[]
 }) {
   const date = formatCardDate(rehearsalAt)
 
@@ -40,7 +43,13 @@ export function WorkshopCard({
         </p>
       </Link>
       <div className="absolute right-3 top-3.5">
-        <WorkshopCardMenu workshopId={id} title={title} memberCount={memberCount} rehearsalAt={rehearsalAt} />
+        <WorkshopCardMenu
+          workshopId={id}
+          title={title}
+          memberCount={memberCount}
+          rehearsalAt={rehearsalAt}
+          activeUsers={activeUsers}
+        />
       </div>
     </div>
   )

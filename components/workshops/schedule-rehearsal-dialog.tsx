@@ -40,13 +40,17 @@ export const ScheduleRehearsalDialog = forwardRef<
           datetime-local picker) would register as e.target === the dialog
           itself, the same test used to detect a true backdrop click, and
           close the dialog before Save is reachable. The visual card lives
-          on an inner div instead, so only an actual backdrop click closes it. */}
+          on an inner div instead, so only an actual backdrop click closes it.
+          m-auto: Tailwind's preflight resets margin to 0 globally, which
+          knocks out the browser default `margin: auto` a modal <dialog>
+          relies on for centering -- without this it renders pinned to the
+          top-left of the viewport instead of centered. */}
       <dialog
         ref={dialogRef}
         onClick={(e) => {
           if (e.target === dialogRef.current) dialogRef.current?.close()
         }}
-        className="max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
+        className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
           <p className="text-lg font-semibold">Schedule rehearsal</p>

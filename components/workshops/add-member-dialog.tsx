@@ -2,6 +2,7 @@
 
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { addMember } from '@/app/workshops/actions'
+import type { AddableUser } from '@/lib/workshops/queries'
 
 export type DialogHandle = { open: () => void }
 
@@ -11,8 +12,10 @@ export type DialogHandle = { open: () => void }
 // conditional render -- a <dialog> opened via showModal() force-closes the
 // instant it (or an ancestor) stops being rendered, which the dropdown does
 // the moment it's clicked closed.
-export const AddMemberDialog = forwardRef<DialogHandle, { workshopId: string; hideTrigger?: boolean }>(
-  function AddMemberDialog({ workshopId, hideTrigger }, ref) {
+export const AddMemberDialog = forwardRef<
+  DialogHandle,
+  { workshopId: string; availableUsers: AddableUser[]; hideTrigger?: boolean }
+>(function AddMemberDialog({ workshopId, availableUsers, hideTrigger }, ref) {
     const dialogRef = useRef<HTMLDialogElement>(null)
     const [error, setError] = useState<string | null>(null)
 
@@ -47,29 +50,47 @@ export const AddMemberDialog = forwardRef<DialogHandle, { workshopId: string; hi
 
         {/* No padding/box styling directly on <dialog> -- see
             schedule-rehearsal-dialog.tsx for why a click in that padding
-            would otherwise be mistaken for a backdrop click and close it. */}
+            would otherwise be mistaken for a backdrop click and close it.
+            m-auto restores the centering Tailwind's preflight margin reset
+            otherwise breaks (see schedule-rehearsal-dialog.tsx). */}
         <dialog
           ref={dialogRef}
           onClick={(e) => {
             if (e.target === dialogRef.current) dialogRef.current?.close()
           }}
-          className="max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
+          className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
         >
           <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
             <p className="text-lg font-semibold">Add a member</p>
-            <p className="mt-1 text-sm text-ink-foreground/60">
-              Add an existing, active user by email. They&apos;ll appear in the group immediately.
-            </p>
+            <p className="mt-1 text-sm text-ink-foreground/60">Pick an existing, active user to add to the group.</p>
 
             <form action={handleSubmit} className="mt-5 flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-sm">
-                Email
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
-                />
+                User
+                {availableUsers.length === 0 ? (
+                  <select
+                    disabled
+                    className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground/45"
+                  >
+                    <option>No other active users available</option>
+                  </select>
+                ) : (
+                  <select
+                    name="email"
+                    required
+                    defaultValue=""
+                    className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
+                  >
+                    <option value="" disabled>
+                      Choose a user
+                    </option>
+                    {availableUsers.map((user) => (
+                      <option key={user.id} value={user.email}>
+                        {user.name ? `${user.name} — ${user.email}` : user.email}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
@@ -103,7 +124,11 @@ export const AddMemberDialog = forwardRef<DialogHandle, { workshopId: string; hi
                 >
                   Cancel
                 </button>
-                <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+                <button
+                  type="submit"
+                  disabled={availableUsers.length === 0}
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:pointer-events-none disabled:opacity-40"
+                >
                   Add
                 </button>
               </div>

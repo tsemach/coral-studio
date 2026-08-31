@@ -27,6 +27,8 @@ export type WorkshopDetail = {
   members: WorkshopMember[]
 }
 
+export type AddableUser = { id: string; name: string | null; email: string }
+
 async function memberCounts(workshopIds: string[]): Promise<Map<string, number>> {
   if (workshopIds.length === 0) return new Map()
 
@@ -87,6 +89,16 @@ export async function getWorkshopDetail(workshopId: string): Promise<WorkshopDet
     .orderBy(workshopMembers.createdAt)
 
   return { ...workshop, members }
+}
+
+// Feeds AddMemberDialog's picker -- every active user, so the caller can see
+// and pick rather than having to already know someone's exact email.
+export async function listActiveUsers(): Promise<AddableUser[]> {
+  return db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.status, 'active'))
+    .orderBy(users.name, users.email)
 }
 
 // Shared by app/workshops/actions.ts's requireMember() guard (PR-2 onward) and

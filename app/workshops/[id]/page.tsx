@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { auth } from '@/auth'
-import { getWorkshopDetail, listWorkshopsForUser } from '@/lib/workshops/queries'
+import { getWorkshopDetail, listActiveUsers, listWorkshopsForUser } from '@/lib/workshops/queries'
 import { getScript, listAvailableScripts } from '@/lib/workshops/scripts'
 import { WorkshopShell } from '@/components/workshops/workshop-shell'
 
@@ -23,11 +23,20 @@ export default async function WorkshopPage({ params }: { params: Promise<{ id: s
   const isMember = detail.members.some((member) => member.userId === session.user!.id)
   if (!isMember && !isAdmin) redirect('/workshops')
 
-  const [list, script, availableScripts] = await Promise.all([
+  const [list, script, availableScripts, activeUsers] = await Promise.all([
     listWorkshopsForUser(session.user.id, isAdmin),
     detail.scriptSlug ? getScript(detail.scriptSlug) : Promise.resolve(null),
     listAvailableScripts(),
+    listActiveUsers(),
   ])
 
-  return <WorkshopShell workshops={list} selected={detail} script={script} availableScripts={availableScripts} />
+  return (
+    <WorkshopShell
+      workshops={list}
+      selected={detail}
+      script={script}
+      availableScripts={availableScripts}
+      activeUsers={activeUsers}
+    />
+  )
 }

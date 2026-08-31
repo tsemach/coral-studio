@@ -5,7 +5,7 @@ import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehears
 import { ScriptPanel } from '@/components/workshops/script-panel'
 import { WorkshopDetailsPanel } from '@/components/workshops/workshop-details-panel'
 import { WorkshopSidebarList } from '@/components/workshops/workshop-sidebar-list'
-import type { WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
+import type { AddableUser, WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
 // Server Component -- only the search filter (workshop-sidebar-list.tsx) and
@@ -16,12 +16,23 @@ export function WorkshopShell({
   selected,
   script,
   availableScripts,
+  activeUsers,
 }: {
   workshops: WorkshopListItem[]
   selected: WorkshopDetail | null
   script: Script | null
   availableScripts: ScriptSummary[]
+  activeUsers: AddableUser[]
 }) {
+  // Exclude the selected workshop's current members from its own picker --
+  // cheap since selected.members is already loaded. Cards elsewhere in the
+  // sidebar (their own kebab-menu Add User) don't have their membership
+  // loaded, so those show the unfiltered list; addMember() is idempotent
+  // either way (onConflictDoNothing), so picking an existing member there
+  // is a harmless no-op, not a bug.
+  const addableForSelected = selected
+    ? activeUsers.filter((user) => !selected.members.some((member) => member.userId === user.id))
+    : []
   return (
     <div className="flex min-h-screen flex-col bg-ink text-ink-foreground">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-ink-foreground/16 px-8 py-[18px]">
@@ -43,7 +54,7 @@ export function WorkshopShell({
           {selected && (
             <>
               <ScheduleRehearsalDialog workshopId={selected.id} rehearsalAt={selected.rehearsalAt} />
-              <AddMemberDialog workshopId={selected.id} />
+              <AddMemberDialog workshopId={selected.id} availableUsers={addableForSelected} />
             </>
           )}
         </div>
@@ -54,7 +65,7 @@ export function WorkshopShell({
       </div>
 
       <div className="flex flex-1">
-        <WorkshopSidebarList workshops={workshops} selectedId={selected?.id ?? null} />
+        <WorkshopSidebarList workshops={workshops} selectedId={selected?.id ?? null} activeUsers={activeUsers} />
 
         <div className="flex flex-1 flex-col px-8 py-6">
           {selected ? (

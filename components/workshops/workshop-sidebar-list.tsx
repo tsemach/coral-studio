@@ -3,14 +3,16 @@
 import { useMemo, useState } from 'react'
 import { createWorkshop } from '@/app/workshops/actions'
 import { WorkshopCard } from '@/components/workshops/workshop-card'
-import type { WorkshopListItem } from '@/lib/workshops/queries'
+import type { AddableUser, WorkshopListItem } from '@/lib/workshops/queries'
 
 export function WorkshopSidebarList({
   workshops,
   selectedId,
+  activeUsers,
 }: {
   workshops: WorkshopListItem[]
   selectedId: string | null
+  activeUsers: AddableUser[]
 }) {
   const [query, setQuery] = useState('')
 
@@ -73,6 +75,7 @@ export function WorkshopSidebarList({
               memberCount={workshop.memberCount}
               rehearsalAt={workshop.rehearsalAt}
               selected={workshop.id === selectedId}
+              activeUsers={activeUsers}
             />
           ))
         )}
