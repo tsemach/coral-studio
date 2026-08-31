@@ -79,13 +79,16 @@ Two panels, side by side on desktop and stacked on mobile (same responsive colla
 - When the workshop is new/empty, this panel opens directly in an editable state so the creator
   can set the group and schedule before the workshop has a script attached.
 
-**Script panel** (right, narrower) is collapsible:
-- Closed by default; its header is the toggle (implementation simplification from the original
-  sketch, which also showed a redundant left-edge arrow — one clear affordance is enough).
+**Script panel** (right, narrower) is always expanded — no collapse toggle (an earlier version
+had one; removed once it turned out the script is exactly the thing you want visible while
+rehearsing, not something worth an extra click to reveal). Its width is user-resizable via a
+drag handle on its left edge, hidden until hovered, mirroring the sidebar's own resize handle
+(the sidebar's is on its right edge, since it's a "grow the panel toward its neighbor" gesture
+either way).
 - Also lets a member attach one of the available pre-made scripts when none is set yet (a
   `<select>` populated from `lib/workshops/scripts.ts`'s `listAvailableScripts()`) — the sketch
   didn't show this step, but without it a workshop could never get a script in the first place.
-- When open, it loads the workshop's script JSON (attribute 1, see
+- It loads the workshop's script JSON (attribute 1, see
   [AWAKWNING-LEONARD-AND-SAYER.json](../../workshops/scripts/AWAKWNING-LEONARD-AND-SAYER.json) for
   the shape) and renders its `script_flow` entries top to bottom:
   - `dialogue` entries are shown as `character: line`, with each distinct `character` assigned a
