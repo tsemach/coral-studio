@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { UserMenu } from '@/components/user-menu'
+import { AddMemberDialog } from '@/components/workshops/add-member-dialog'
+import { WorkshopDetailsPanel } from '@/components/workshops/workshop-details-panel'
 import { WorkshopSidebarList } from '@/components/workshops/workshop-sidebar-list'
 import type { WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
 
@@ -34,14 +36,20 @@ export function WorkshopShell({
       <div className="flex flex-1">
         <WorkshopSidebarList workshops={workshops} selectedId={selected.id} />
 
-        <div className="flex-1 px-8 py-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">
-            Selected workshop
-          </p>
-          <h1 className="mt-1 text-[27px] font-semibold tracking-tight">{selected.title}</h1>
-          <p className="mt-6 text-sm text-ink-foreground/55">
-            Group, rehearsal, and script details are coming in the next PRs.
-          </p>
+        <div className="flex flex-1 flex-col px-8 py-6">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">
+                Selected workshop
+              </p>
+              <h1 className="mt-1 text-[27px] font-semibold tracking-tight">{selected.title}</h1>
+            </div>
+            <AddMemberDialog workshopId={selected.id} />
+          </div>
+
+          <div className="mt-5 flex flex-1 gap-5">
+            <WorkshopDetailsPanel workshop={selected} />
+          </div>
         </div>
       </div>
     </div>
