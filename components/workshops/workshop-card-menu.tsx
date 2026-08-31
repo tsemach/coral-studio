@@ -90,7 +90,7 @@ export function WorkshopCardMenu({
             }}
             className={menuItemClass}
           >
-            + Add user
+            Add user
           </button>
 
           <button

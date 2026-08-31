@@ -56,8 +56,10 @@ whichever workshop is currently open.
 - The overflow menu opens a small dropdown anchored to the card with per-workshop actions:
   **Edit** (first — the same modal as + New workshop, pre-filled with this workshop's title and
   script; any people picked here get added on top of the existing group, not shown/removed here),
-  **+ Add user**, **Schedule Rehearsal**, then either **Leave workshop** (when other members
-  remain) or **Delete** (attribute 8 — only once the caller is the last member left).
+  **Add user**, **Schedule Rehearsal**, then either **Leave workshop** (when other members
+  remain) or **Delete** (attribute 8 — only once the caller is the last member left). (The
+  header's own standalone button for this is still labeled "+ Add user" — the "+" only comes off
+  the menu item, which doesn't need one.)
 - The selected workshop's card is highlighted (`border-primary`), matching the active-tab style
   used on `/admin/settings`'s Users nav.
 - With no workshops at all, the page still renders this same shell — header, empty sidebar list,
