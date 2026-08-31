@@ -124,14 +124,18 @@ have meant "and manage them all" instead.
   plus the selected workshop's detail (`getWorkshopDetail`); if the id doesn't exist, or the
   caller is neither a member nor an admin, redirect to `/workshops`. Passes both down to
   `<WorkshopShell>`.
-- **`app/workshops/actions.ts`** (`'use server'`): `createWorkshop()` — inserts the empty
-  `workshops` row and, in the same call, a `workshopMembers` row for the caller (`type: 'actor'`)
-  so the creator is a member from the start (attribute 5) — then `renameWorkshop(id, title)`,
-  `deleteWorkshop(id)`, `duplicateWorkshop(id)`, `leaveWorkshop(id)`, `addMember(workshopId, userId,
-  type, part)`, `removeMember(workshopId, memberId)`, `updateMemberPart(memberId, part)`,
-  `setRehearsalDate(workshopId, date)`, `setWorkshopScript(workshopId, scriptSlug)`. Each starts
-  with `requireMember()` except `createWorkshop()` (nothing to be a member of yet — just requires
-  `auth()`).
+- **`app/workshops/actions.ts`** (`'use server'`): `createWorkshop(formData)` — backs the New
+  workshop modal; reads an optional `title`, `scriptSlug` (validated against
+  `listAvailableScripts()`), and a `members` field (a JSON array of `{userId, type, part}`,
+  re-validated against `listActiveUsers()` server-side rather than trusted from the client), and
+  inserts the `workshops` row plus every `workshopMembers` row — the caller (`type: 'actor'`,
+  attribute 5) and whoever else was picked — in one call. Then `addMember(workshopId, formData)`,
+  `removeMember(workshopId, memberId)`, `updateMember(workshopId, memberId, formData)` (type +
+  part together), `setRehearsalDate(workshopId, formData)`, `setWorkshopScript(workshopId,
+  formData)`, `leaveWorkshop(workshopId)`, `deleteWorkshop(workshopId)`. Each starts with
+  `requireMember()` except `createWorkshop()` (nothing to be a member of yet — just requires
+  `auth()`). `renameWorkshop()`/`duplicateWorkshop()` existed briefly but were removed once the
+  card menu dropped Rename/Duplicate in favor of + Add user/Schedule Rehearsal.
 
 **Design decision — leaving as the last member deletes the workshop.** Attribute 8 ("deleting a
 workshop can be done only if the user is the last one in the group") implies a workshop should
@@ -158,15 +162,26 @@ async function getWorkshopDetail(workshopId: string) {
 
 ## Components (`components/workshops/`)
 
+**Height chain, for any of the panels below that scroll internally**: `workshop-shell.tsx`'s
+root is `h-screen overflow-hidden` (not `min-h-screen` — a minimum, not a ceiling, so nothing
+below it ever becomes a bounded box otherwise) with `min-h-0` threaded through every `flex-1`
+level down to wherever a panel needs its own `overflow-y-auto`. Both pieces are required: the
+ceiling makes a bounded box possible, but each flex item's default `min-height: auto` still
+refuses to shrink below its content's size and silently defeats the overflow without the
+explicit `min-h-0` override at that level too.
+
 | File | Responsibility |
 |---|---|
-| `workshop-shell.tsx` | Server Component; lays out the header, sidebar, and content panels. The 'use client' boundary stays as deep as possible — pushed down into `workshop-sidebar-list.tsx` (search state) and, from PR-4, `script-panel.tsx` (open/closed state) individually, rather than one client wrapper owning both. |
-| `workshop-sidebar-list.tsx` (`'use client'`) | Search input + New-workshop button row, then the filtered `WorkshopCard` list. |
-| `workshop-card.tsx` (`'use client'`) | One sidebar card; owns its own `⋮` menu open/closed state (click-outside via `user-menu.tsx`'s pattern). |
-| `workshop-card-menu.tsx` | Rename / Duplicate / Leave / Delete dropdown content. Delete is disabled (shows only Leave) whenever `memberCount > 1`, so the UI can't attempt an action attribute 8 would reject server-side. |
-| `workshop-details-panel.tsx` | Group list (member rows + remove) and the rehearsal-date row. |
-| `add-member-dialog.tsx` | `<dialog>`-based form binding `addMember`, modeled on `delete-user-button.tsx`'s dialog. Looks up an existing **active** user by email — no invite-by-email, matching attribute 2a's "userId or user name (a unique identifier)." |
-| `script-panel.tsx` (`'use client'`) | Collapsed/expanded state; renders `<ScriptFlow>` when a script is attached and the panel is open, else an empty/attach-a-script state. |
+| `workshop-shell.tsx` | Server Component; lays out the header (back link, centered Schedule Rehearsal/+ Add user, avatar), sidebar, and content panels. The 'use client' boundary stays as deep as possible — pushed down into `workshop-sidebar-list.tsx` (search + resize state), `workshop-card-menu.tsx` (menu open state), and `script-panel.tsx` (resize state) individually, rather than one client wrapper owning all of it. Accepts `selected: WorkshopDetail | null` — with none selected (no workshops, or `/workshops` before it redirects), it renders the same shell with an empty sidebar and a "nothing selected" content area instead of a separate empty-state page. |
+| `workshop-sidebar-list.tsx` (`'use client'`) | Search input + `WorkshopFormDialog` (`mode="create"`) row, then the filtered `WorkshopCard` list. Owns its own width (`useState`, drag-resized via a handle on its right edge using Pointer Events + `setPointerCapture` — no window-level listeners to clean up). The handle's grip mark is `opacity-0` until hovered (`group-hover`); it's a drag affordance the pointer reveals, not a permanent fixture. |
+| `user-picker.tsx` (`'use client'`) | Reusable typeable-and-pickable user field — a hand-built combobox, not native `input[list]`+`<datalist>` (tried first; renders as unstyled, name-less browser chrome that can't be styled to match the app). Select-styled closed state; click opens a live-filtered (name or email substring), app-styled dropdown; picking closes it. Controlled and dumb: `selected: AddableUser \| null` is what to display, `onSelect(user)` fires on a pick, and the parent alone decides what happens next. `add-member-dialog.tsx` keeps `selected` (a persistent single choice) and passes `name="email"` — a hidden input carries the actual submitted email while the visible input shows the picked name, so the two can differ. `workshop-form-dialog.tsx` always passes `selected={null}` and pushes every pick onto a draft list instead, which is what makes the control reset to its placeholder after each one. |
+| `workshop-form-dialog.tsx` (`'use client'`) | One dialog, two modes, both against the same fields: title, an optional script `<select>`, and a `UserPicker`-backed running list of people to add (each with its own type/part, removable). `mode="create"` (the sidebar's "+ New workshop", default trigger button) submits `createWorkshop(formData)`; `mode="edit"` (each card's kebab-menu **Edit** — first item, above + Add user/Schedule Rehearsal) pre-fills title/script from the workshop's current values via `initialTitle`/`initialScriptSlug`, submits `updateWorkshop(workshopId, formData)`, and — like `add-member-dialog.tsx`/`schedule-rehearsal-dialog.tsx` — is `forwardRef` + `hideTrigger` so it can be mounted outside the dropdown that opens it. Edit's "add people" list is additive only: it doesn't show or let you remove the workshop's *existing* members (that's still `workshop-details-panel.tsx`'s job) — only picks made in this dialog get added on Save. |
+| `workshop-card.tsx` | One sidebar card (Server Component — no local state of its own). The `⋮` menu button is a positioned sibling of the card's `Link`, not a descendant — nesting a `<button>` inside an `<a>` is invalid HTML. |
+| `workshop-card-menu.tsx` (`'use client'`) | Owns the `⋮` dropdown's open/closed state (click-outside via `user-menu.tsx`'s pattern). Menu items: **Edit**, **Add user**, **Schedule Rehearsal** (the latter two open the same dialogs the header uses, scoped to this card's workshop — the header's own standalone button keeps its "+", the menu item doesn't need one), then **Leave workshop** or **Delete** — Delete only when `memberCount === 1`, so the UI can't attempt an action attribute 8 would reject server-side. |
+| `workshop-details-panel.tsx` | Group list (member rows + remove) and a read-only rehearsal-date display — editing happens via the Schedule Rehearsal dialog, not inline here. Scrolls internally (`overflow-y-auto` + `min-h-0`, see the height-chain note above) and carries a `min-w-[280px]` floor matching `script-panel.tsx`'s own `MIN_WIDTH`, since flexbox would otherwise let it shrink to nothing as the script panel (max width 1100px) is dragged wider. Its rows (`workshop-member-row.tsx`) disable the Part field whenever Type is set to Viewer — a part is an actor concept (attribute 2c), so it shouldn't be editable, or submitted, for a viewer. `add-member-dialog.tsx` and `workshop-form-dialog.tsx`'s own type/part fields follow the same rule. |
+| `add-member-dialog.tsx` / `schedule-rehearsal-dialog.tsx` | `<dialog>`-based forms binding `addMember` / `setRehearsalDate`, modeled on `delete-user-button.tsx`'s dialog. Each is `forwardRef` exposing an imperative `open()` and accepts a `hideTrigger` prop, since both are used two ways: with their own default button (the header) and as an always-mounted instance opened imperatively from `workshop-card-menu.tsx`'s menu item — the `<dialog>` can't be a descendant of the dropdown it's triggered from, since a `<dialog>` opened via `showModal()` force-closes the instant it (or an ancestor) stops being rendered, which the dropdown does the moment the click that opened it also closes the menu. `add-member-dialog.tsx` renders `<UserPicker>` (above) over every existing **active** user (`listActiveUsers()`, `lib/workshops/queries.ts`) rather than requiring the caller to type an exact email — no invite-by-email, matching attribute 2a's "userId or user name (a unique identifier)." The submitted value is still the user's email, so `addMember()`'s server-side lookup is unchanged. Every instance of this picker (the header's, and each card's own in `workshop-card-menu.tsx` — Add user and Edit's "add people" both) excludes that workshop's current members: `listWorkshopsForUser()` now returns each row's `memberUserIds` alongside `memberCount` (one query feeds both — `memberCount` is just `.length`), threaded down through `WorkshopCard` to `WorkshopCardMenu`, which filters `activeUsers` by it before handing the result to either dialog. |
+| `workshop-panels.tsx` (`'use client'`) | Owns `expanded` (`useState`) and lays out `WorkshopDetailsPanel` + `ScriptPanel` side by side. The toggle has to live here, one level up from both panels, rather than inside `script-panel.tsx` alone -- expanding hides `WorkshopDetailsPanel` entirely (`{!expanded && <WorkshopDetailsPanel .../>}`), which neither panel could do to its sibling on its own. |
+| `script-panel.tsx` (`'use client'`) | Always expanded (no collapse toggle) — renders `<ScriptFlow>` when a script is attached, else the attach-a-script picker. A ↔ button next to the title (`expanded`/`onToggleExpanded`, controlled by `workshop-panels.tsx`) fills the whole row width in place of the details panel; the resize handle (below) is hidden in that state, since there's no sibling left to give space to. Otherwise owns its own width the same way `workshop-sidebar-list.tsx` owns its own (Pointer Events + `setPointerCapture`, a hover-revealed grip), mirrored onto its left edge — dragging left grows it (`startWidth - deltaX`, the opposite sign from the sidebar's right-edge handle). Its content area scrolls internally (`overflow-y-auto`) with the scrollbar hidden (all three browser-specific rules: `scrollbar-width`, `-ms-overflow-style`, `::-webkit-scrollbar`) and `overscroll-contain` so wheel scrolling never chains up to move the page once the script content hits its own top/bottom. |
 | `script-flow.tsx` | Pure render of `script_flow` entries: `dialogue` lines colored per character, `action` lines italic. |
 
 ## Script rendering (`lib/workshops/`)
