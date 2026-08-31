@@ -19,11 +19,13 @@ export const AddMemberDialog = forwardRef<
 >(function AddMemberDialog({ workshopId, availableUsers, hideTrigger }, ref) {
     const dialogRef = useRef<HTMLDialogElement>(null)
     const [error, setError] = useState<string | null>(null)
-    const [email, setEmail] = useState('')
+    const [selectedUser, setSelectedUser] = useState<AddableUser | null>(null)
+    const [type, setType] = useState<'actor' | 'viewer'>('actor')
 
     function open() {
       setError(null)
-      setEmail('')
+      setSelectedUser(null)
+      setType('actor')
       dialogRef.current?.showModal()
     }
 
@@ -72,14 +74,15 @@ export const AddMemberDialog = forwardRef<
             <form action={handleSubmit} className="mt-5 flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-sm">
                 User
-                <UserPicker availableUsers={availableUsers} name="email" value={email} onChange={setEmail} required />
+                <UserPicker availableUsers={availableUsers} selected={selectedUser} onSelect={setSelectedUser} name="email" />
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
                 Type
                 <select
                   name="type"
-                  defaultValue="actor"
+                  value={type}
+                  onChange={(e) => setType(e.target.value as 'actor' | 'viewer')}
                   className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
                 >
                   <option value="actor">Actor</option>
@@ -92,7 +95,8 @@ export const AddMemberDialog = forwardRef<
                 <input
                   type="text"
                   name="part"
-                  className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
+                  disabled={type === 'viewer'}
+                  className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none disabled:opacity-40"
                 />
               </label>
 
@@ -108,7 +112,7 @@ export const AddMemberDialog = forwardRef<
                 </button>
                 <button
                   type="submit"
-                  disabled={availableUsers.length === 0}
+                  disabled={availableUsers.length === 0 || !selectedUser}
                   className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:pointer-events-none disabled:opacity-40"
                 >
                   Add

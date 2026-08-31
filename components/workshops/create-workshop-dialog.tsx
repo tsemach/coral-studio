@@ -18,30 +18,27 @@ export function CreateWorkshopDialog({
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [title, setTitle] = useState('')
   const [scriptSlug, setScriptSlug] = useState('')
-  const [pickerValue, setPickerValue] = useState('')
   const [members, setMembers] = useState<DraftMember[]>([])
   const [error, setError] = useState<string | null>(null)
 
   function open() {
     setTitle('')
     setScriptSlug('')
-    setPickerValue('')
     setMembers([])
     setError(null)
     dialogRef.current?.showModal()
   }
 
-  // UserPicker is dumb/controlled -- this is where "typing/picking fills the
-  // field" turns into "add them to the draft group and clear the field for
-  // the next pick," same reusable component AddMemberDialog uses for its
-  // single-field, form-submits-directly case.
-  function handlePickerChange(value: string) {
-    setPickerValue(value)
-    const match = availableUsers.find((user) => user.email.toLowerCase() === value.trim().toLowerCase())
-    if (match && !members.some((member) => member.userId === match.id)) {
-      setMembers((prev) => [...prev, { userId: match.id, name: match.name, email: match.email, type: 'actor', part: '' }])
-      setPickerValue('')
-    }
+  // UserPicker is dumb/controlled -- this is where "picking a user" turns
+  // into "add them to the draft group." Always passing selected={null} back
+  // in (never feeding a pick back as UserPicker's `selected`) is what makes
+  // the control reset to its placeholder after every pick, since here each
+  // pick should immediately clear the way for the next one rather than
+  // stick around the way it does in add-member-dialog.tsx's single-field
+  // case.
+  function handlePick(user: AddableUser) {
+    if (members.some((member) => member.userId === user.id)) return
+    setMembers((prev) => [...prev, { userId: user.id, name: user.name, email: user.email, type: 'actor', part: '' }])
   }
 
   function removeMember(userId: string) {
@@ -49,7 +46,12 @@ export function CreateWorkshopDialog({
   }
 
   function updateMemberType(userId: string, type: 'actor' | 'viewer') {
-    setMembers((prev) => prev.map((member) => (member.userId === userId ? { ...member, type } : member)))
+    // Clear part, not just disable its field -- unlike a plain form submit,
+    // this state gets serialized to JSON regardless of the input's disabled
+    // attribute, so a stale leftover part would otherwise still get sent.
+    setMembers((prev) =>
+      prev.map((member) => (member.userId === userId ? { ...member, type, part: type === 'viewer' ? '' : member.part } : member))
+    )
   }
 
   function updateMemberPart(userId: string, part: string) {
@@ -135,7 +137,7 @@ export function CreateWorkshopDialog({
             <div className="flex flex-col gap-2 text-sm">
               <label className="flex flex-col gap-1">
                 Add people <span className="text-ink-foreground/45">(optional)</span>
-                <UserPicker availableUsers={remainingUsers} value={pickerValue} onChange={handlePickerChange} />
+                <UserPicker availableUsers={remainingUsers} selected={null} onSelect={handlePick} placeholder="Add a person…" />
               </label>
 
               {members.length > 0 && (
@@ -158,7 +160,8 @@ export function CreateWorkshopDialog({
                         value={member.part}
                         onChange={(e) => updateMemberPart(member.userId, e.target.value)}
                         placeholder="Part"
-                        className="w-20 rounded-md border border-ink-foreground/16 bg-ink-card px-1.5 py-1 text-xs text-ink-foreground placeholder:text-ink-foreground/40"
+                        disabled={member.type === 'viewer'}
+                        className="w-20 rounded-md border border-ink-foreground/16 bg-ink-card px-1.5 py-1 text-xs text-ink-foreground placeholder:text-ink-foreground/40 disabled:opacity-40"
                       />
                       <button
                         type="button"
