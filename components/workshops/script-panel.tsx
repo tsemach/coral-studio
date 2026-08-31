@@ -69,7 +69,13 @@ export function ScriptPanel({
         <p className="mt-0.5 text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto border-t border-ink-foreground/14 px-5 py-4">
+      {/* overscroll-contain stops wheel scrolling from chaining to the page
+          once this reaches its own top/bottom -- the page never moves.
+          The three scrollbar rules hide the scrollbar (per-browser: no
+          shorthand covers Firefox, WebKit, and old Edge/IE at once) while
+          the element stays scrollable -- wheel/trackpad/keyboard scrolling
+          still works, just without a visible track. */}
+      <div className="flex-1 overflow-y-auto overscroll-contain border-t border-ink-foreground/14 px-5 py-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {script ? (
           <ScriptFlow script={script} />
         ) : availableScripts.length === 0 ? (
