@@ -1,6 +1,6 @@
 'use server'
 
-import { and, eq } from 'drizzle-orm'
+import { and, count, eq, inArray } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
@@ -25,25 +25,121 @@ export async function requireMember(workshopId: string) {
   return session.user as { id: string }
 }
 
+type DraftMember = { userId: string; type: 'actor' | 'viewer'; part: string }
+
+function parseDraftMembers(raw: string): DraftMember[] {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return []
+  }
+  if (!Array.isArray(parsed)) return []
+
+  return parsed.filter((m): m is DraftMember => {
+    if (typeof m !== 'object' || m === null) return false
+    const candidate = m as Record<string, unknown>
+    return (
+      typeof candidate.userId === 'string' &&
+      (candidate.type === 'actor' || candidate.type === 'viewer') &&
+      typeof candidate.part === 'string'
+    )
+  })
+}
+
+// Shared by createWorkshop() and updateWorkshop() -- '' means "no script."
+async function resolveScriptSlug(raw: string): Promise<string | null> {
+  const scriptSlug = raw.trim()
+  if (!scriptSlug) return null
+
+  const available = await listAvailableScripts()
+  if (!available.some((script) => script.slug === scriptSlug)) {
+    throw new Error('Unknown script')
+  }
+  return scriptSlug
+}
+
+// Shared by createWorkshop() and updateWorkshop(). Re-validated against the
+// DB, not trusted from the client -- the New/Edit workshop dialog only ever
+// offers users from listActiveUsers(), but a Server Action is directly
+// POSTable, so this can't assume the request came from that UI.
+async function insertValidatedMembers(workshopId: string, rawMembers: string, excludeUserId: string) {
+  const draftMembers = parseDraftMembers(rawMembers).filter((member) => member.userId !== excludeUserId)
+  if (draftMembers.length === 0) return
+
+  const requestedIds = draftMembers.map((member) => member.userId)
+  const validIds = new Set(
+    (
+      await db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(inArray(users.id, requestedIds), eq(users.status, 'active')))
+    ).map((row) => row.id)
+  )
+
+  const rows = draftMembers
+    .filter((member) => validIds.has(member.userId))
+    .map((member) => ({
+      workshopId,
+      userId: member.userId,
+      type: member.type,
+      part: member.part.trim() || null,
+    }))
+  if (rows.length === 0) return
+
+  await db.insert(workshopMembers).values(rows).onConflictDoNothing()
+}
+
 // Attribute 5: the creator is added to the group in the same call, so
 // membership -- not creatorship -- is what every other action gates on.
-export async function createWorkshop() {
+// Backs the "New workshop" dialog (workshop-form-dialog.tsx, mode="create"):
+// title and a script are optional (attribute 4 -- a workshop can still be
+// created empty and filled in later), and so are additional members picked
+// at creation.
+export async function createWorkshop(formData: FormData) {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
 
+  const title = String(formData.get('title') ?? '').trim()
+  const scriptSlug = await resolveScriptSlug(String(formData.get('scriptSlug') ?? ''))
+
   const [workshop] = await db
     .insert(workshops)
-    .values({ createdById: session.user.id })
+    .values({
+      ...(title ? { title } : {}),
+      scriptSlug,
+      createdById: session.user.id,
+    })
     .returning({ id: workshops.id })
 
-  await db.insert(workshopMembers).values({
-    workshopId: workshop.id,
-    userId: session.user.id,
-    type: 'actor',
-  })
+  await db.insert(workshopMembers).values({ workshopId: workshop.id, userId: session.user.id, type: 'actor' })
+  await insertValidatedMembers(workshop.id, String(formData.get('members') ?? '[]'), session.user.id)
 
   revalidatePath('/workshops')
   redirect(`/workshops/${workshop.id}`)
+}
+
+// Backs the same dialog in mode="edit" (workshop-card-menu.tsx's Edit item).
+// Unlike createWorkshop(), a blank title leaves the existing one alone
+// (silently resetting a real title back to "Untitled workshop" on an
+// accidental blank submit would be a worse default than just ignoring it),
+// and this never redirects -- Edit can be opened from any card in the
+// sidebar, not just the one currently open.
+export async function updateWorkshop(workshopId: string, formData: FormData) {
+  const member = await requireMember(workshopId)
+
+  const title = String(formData.get('title') ?? '').trim()
+  const scriptSlug = await resolveScriptSlug(String(formData.get('scriptSlug') ?? ''))
+
+  await db
+    .update(workshops)
+    .set({ ...(title ? { title } : {}), scriptSlug })
+    .where(eq(workshops.id, workshopId))
+
+  await insertValidatedMembers(workshopId, String(formData.get('members') ?? '[]'), member.id)
+
+  revalidatePath('/workshops')
+  revalidatePath(`/workshops/${workshopId}`)
 }
 
 // Attribute 6: any member (not just the creator) can add any other existing,
@@ -125,4 +221,47 @@ export async function setWorkshopScript(workshopId: string, formData: FormData) 
     .where(eq(workshops.id, workshopId))
 
   revalidatePath(`/workshops/${workshopId}`)
+}
+
+async function memberCountOf(workshopId: string): Promise<number> {
+  const [row] = await db
+    .select({ memberCount: count() })
+    .from(workshopMembers)
+    .where(eq(workshopMembers.workshopId, workshopId))
+  return row?.memberCount ?? 0
+}
+
+// Design decision (docs/workshops/design.md): leaving as the last member
+// deletes the workshop rather than leaving an orphaned, member-less row --
+// attribute 8 already implies a workshop shouldn't be able to sit at zero
+// members.
+export async function leaveWorkshop(workshopId: string) {
+  const member = await requireMember(workshopId)
+
+  if ((await memberCountOf(workshopId)) <= 1) {
+    await db.delete(workshops).where(eq(workshops.id, workshopId))
+  } else {
+    await db
+      .delete(workshopMembers)
+      .where(and(eq(workshopMembers.workshopId, workshopId), eq(workshopMembers.userId, member.id)))
+  }
+
+  revalidatePath('/workshops')
+  redirect('/workshops')
+}
+
+// Attribute 8: only when the caller is the last member. The card menu only
+// ever shows Delete in that state (Leave otherwise), but this re-asserts it
+// server-side regardless of what the UI sent.
+export async function deleteWorkshop(workshopId: string) {
+  await requireMember(workshopId)
+
+  if ((await memberCountOf(workshopId)) > 1) {
+    throw new Error('Leave the workshop instead -- delete only works once you are the last member')
+  }
+
+  await db.delete(workshops).where(eq(workshops.id, workshopId))
+
+  revalidatePath('/workshops')
+  redirect('/workshops')
 }

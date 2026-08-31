@@ -5,17 +5,19 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { UserMenu } from '@/components/user-menu'
 
-const navLinks = [
-  { label: 'About', href: '/#about' },
-  { label: 'Workshop', href: '/#workshop' },
-  { label: 'Communities', href: '/#community' },
-  { label: 'Contact', href: '/#contact' },
-]
-
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
   const { status } = useSession()
   const isLoggedIn = status === 'authenticated'
+
+  // Signed-in users get the dedicated /workshops page (COR-12); everyone
+  // else keeps scrolling to the homepage section, same as today.
+  const navLinks = [
+    { label: 'About', href: '/#about' },
+    { label: 'Workshops', href: isLoggedIn ? '/workshops' : '/#workshops' },
+    { label: 'Communities', href: '/#community' },
+    { label: 'Contact', href: '/#contact' },
+  ]
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md relative">

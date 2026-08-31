@@ -6,6 +6,7 @@ import type { WorkshopMember } from '@/lib/workshops/queries'
 
 export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; member: WorkshopMember }) {
   const [editing, setEditing] = useState(false)
+  const [draftType, setDraftType] = useState<'actor' | 'viewer'>(member.type)
 
   return (
     <div className="rounded-xl border border-ink-foreground/16 bg-ink px-4 py-3">
@@ -32,7 +33,10 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
           </span>
           <button
             type="button"
-            onClick={() => setEditing((v) => !v)}
+            onClick={() => {
+              if (!editing) setDraftType(member.type)
+              setEditing((v) => !v)
+            }}
             className="text-xs font-medium text-ink-foreground/45 hover:text-ink-foreground"
           >
             {editing ? 'Close' : 'Edit'}
@@ -55,7 +59,8 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
         >
           <select
             name="type"
-            defaultValue={member.type}
+            value={draftType}
+            onChange={(e) => setDraftType(e.target.value as 'actor' | 'viewer')}
             className="rounded-lg border border-ink-foreground/16 bg-ink-card px-2 py-1.5 text-xs text-ink-foreground"
           >
             <option value="actor">Actor</option>
@@ -65,7 +70,8 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
             name="part"
             defaultValue={member.part ?? ''}
             placeholder="Part (optional)"
-            className="min-w-0 flex-1 rounded-lg border border-ink-foreground/16 bg-ink-card px-2 py-1.5 text-xs text-ink-foreground placeholder:text-ink-foreground/40"
+            disabled={draftType === 'viewer'}
+            className="min-w-0 flex-1 rounded-lg border border-ink-foreground/16 bg-ink-card px-2 py-1.5 text-xs text-ink-foreground placeholder:text-ink-foreground/40 disabled:opacity-40"
           />
           <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
             Save
