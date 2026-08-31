@@ -13,10 +13,14 @@ export function ScriptPanel({
   workshopId,
   script,
   availableScripts,
+  expanded,
+  onToggleExpanded,
 }: {
   workshopId: string
   script: Script | null
   availableScripts: ScriptSummary[]
+  expanded: boolean
+  onToggleExpanded: () => void
 }) {
   const [width, setWidth] = useState(DEFAULT_WIDTH)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
@@ -46,27 +50,50 @@ export function ScriptPanel({
 
   return (
     <div
-      className="relative flex min-h-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink"
-      style={{ width }}
+      className={
+        expanded
+          ? 'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink'
+          : 'relative flex min-h-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink'
+      }
+      style={expanded ? undefined : { width }}
     >
       {/* Same generous 20px hit target + hover-revealed grip as the
-          sidebar's handle, mirrored onto the left edge. */}
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize script panel"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        className="group absolute top-0 -left-2.5 z-10 flex h-full w-5 cursor-col-resize touch-none items-center justify-center"
-      >
-        <div className="h-full w-px bg-ink-foreground/16 transition-colors group-hover:bg-ink-foreground/35" />
-        <div className="pointer-events-none absolute h-10 w-1.5 rounded-full bg-ink-foreground/70 opacity-0 transition-opacity group-hover:opacity-100" />
-      </div>
+          sidebar's handle, mirrored onto the left edge. Dragging it means
+          nothing with no sibling panel to give space to, so it's gone
+          while expanded. */}
+      {!expanded && (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize script panel"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          className="group absolute top-0 -left-2.5 z-10 flex h-full w-5 cursor-col-resize touch-none items-center justify-center"
+        >
+          <div className="h-full w-px bg-ink-foreground/16 transition-colors group-hover:bg-ink-foreground/35" />
+          <div className="pointer-events-none absolute h-10 w-1.5 rounded-full bg-ink-foreground/70 opacity-0 transition-opacity group-hover:opacity-100" />
+        </div>
+      )}
 
-      <div className="shrink-0 px-5 py-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Script</p>
-        <p className="mt-0.5 text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
+      <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Script</p>
+          <p className="mt-0.5 truncate text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          aria-label={expanded ? 'Show group details' : 'Expand script panel'}
+          title={expanded ? 'Show group details' : 'Expand script panel'}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="18 8 22 12 18 16"></polyline>
+            <polyline points="6 8 2 12 6 16"></polyline>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+          </svg>
+        </button>
       </div>
 
       {/* min-h-0 is the piece that was actually missing: a flex item's

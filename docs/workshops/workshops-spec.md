@@ -68,7 +68,9 @@ whichever workshop is currently open.
 
 ### Main content area
 Two panels, side by side on desktop and stacked on mobile (same responsive collapse as
-`UsersView`).
+`UsersView`). A ↔ button on the script panel's header row, right side, toggles between this
+split view and the script panel alone filling the row — the details panel isn't just narrowed,
+it stops rendering entirely while expanded.
 
 **Workshop details panel** (left/center, wider) shows, for the selected workshop:
 - The group: each member's name, their type (`viewer` / `actor`), and their part if set. Members

@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { UserMenu } from '@/components/user-menu'
 import { AddMemberDialog } from '@/components/workshops/add-member-dialog'
 import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
-import { ScriptPanel } from '@/components/workshops/script-panel'
-import { WorkshopDetailsPanel } from '@/components/workshops/workshop-details-panel'
+import { WorkshopPanels } from '@/components/workshops/workshop-panels'
 import { WorkshopSidebarList } from '@/components/workshops/workshop-sidebar-list'
 import type { AddableUser, WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
@@ -84,10 +83,7 @@ export function WorkshopShell({
             <>
               <h1 className="shrink-0 text-[27px] font-semibold tracking-tight">{selected.title}</h1>
 
-              <div className="mt-5 flex min-h-0 flex-1 gap-5">
-                <WorkshopDetailsPanel workshop={selected} />
-                <ScriptPanel workshopId={selected.id} script={script} availableScripts={availableScripts} />
-              </div>
+              <WorkshopPanels workshop={selected} script={script} availableScripts={availableScripts} />
             </>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center text-center">
