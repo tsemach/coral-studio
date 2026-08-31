@@ -1,20 +1,41 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { createWorkshop } from '@/app/workshops/actions'
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
+import { createWorkshop, updateWorkshop } from '@/app/workshops/actions'
 import { UserPicker } from '@/components/workshops/user-picker'
 import type { AddableUser } from '@/lib/workshops/queries'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
 
+export type DialogHandle = { open: () => void }
+
 type DraftMember = { userId: string; name: string | null; email: string; type: 'actor' | 'viewer'; part: string }
 
-export function CreateWorkshopDialog({
-  availableUsers,
-  availableScripts,
-}: {
+type WorkshopFormDialogProps = {
   availableUsers: AddableUser[]
   availableScripts: ScriptSummary[]
-}) {
+  hideTrigger?: boolean
+} & (
+  | { mode: 'create' }
+  | { mode: 'edit'; workshopId: string; initialTitle: string; initialScriptSlug: string | null }
+)
+
+// One reusable dialog backs both "+ New workshop" (the sidebar) and "Edit"
+// (each card's kebab menu, first item) -- same title/script/add-people
+// fields, only the heading/button copy and which Server Action gets called
+// differ. forwardRef + hideTrigger for the same reason as add-member-dialog/
+// schedule-rehearsal-dialog: Edit is only ever triggered from inside
+// WorkshopCardMenu's dropdown, whose own showModal()-force-close-on-unmount
+// problem needs this dialog mounted outside that conditional render.
+export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogProps>(function WorkshopFormDialog(
+  props,
+  ref
+) {
+  const { availableUsers, availableScripts, hideTrigger } = props
+  const isEdit = props.mode === 'edit'
+  const workshopId = props.mode === 'edit' ? props.workshopId : null
+  const initialTitle = props.mode === 'edit' ? props.initialTitle : ''
+  const initialScriptSlug = props.mode === 'edit' ? props.initialScriptSlug : null
+
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [title, setTitle] = useState('')
   const [scriptSlug, setScriptSlug] = useState('')
@@ -22,20 +43,19 @@ export function CreateWorkshopDialog({
   const [error, setError] = useState<string | null>(null)
 
   function open() {
-    setTitle('')
-    setScriptSlug('')
+    setTitle(initialTitle)
+    setScriptSlug(initialScriptSlug ?? '')
     setMembers([])
     setError(null)
     dialogRef.current?.showModal()
   }
 
+  useImperativeHandle(ref, () => ({ open }))
+
   // UserPicker is dumb/controlled -- this is where "picking a user" turns
   // into "add them to the draft group." Always passing selected={null} back
   // in (never feeding a pick back as UserPicker's `selected`) is what makes
-  // the control reset to its placeholder after every pick, since here each
-  // pick should immediately clear the way for the next one rather than
-  // stick around the way it does in add-member-dialog.tsx's single-field
-  // case.
+  // the control reset to its placeholder after every pick.
   function handlePick(user: AddableUser) {
     if (members.some((member) => member.userId === user.id)) return
     setMembers((prev) => [...prev, { userId: user.id, name: user.name, email: user.email, type: 'actor', part: '' }])
@@ -64,7 +84,12 @@ export function CreateWorkshopDialog({
     formData.set('scriptSlug', scriptSlug)
     formData.set('members', JSON.stringify(members.map(({ userId, type, part }) => ({ userId, type, part }))))
     try {
-      await createWorkshop(formData)
+      if (isEdit && workshopId) {
+        await updateWorkshop(workshopId, formData)
+        dialogRef.current?.close()
+      } else {
+        await createWorkshop(formData)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     }
@@ -76,18 +101,20 @@ export function CreateWorkshopDialog({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={open}
-        aria-label="New workshop"
-        title="New workshop"
-        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground transition-transform hover:-translate-y-0.5"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
+      {!hideTrigger && (
+        <button
+          type="button"
+          onClick={open}
+          aria-label="New workshop"
+          title="New workshop"
+          className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground transition-transform hover:-translate-y-0.5"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      )}
 
       {/* Same <dialog> reasoning as add-member-dialog.tsx: no box styling
           directly on <dialog> (a click in its own padding would otherwise
@@ -101,9 +128,11 @@ export function CreateWorkshopDialog({
         className="m-auto max-w-md border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-md rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-          <p className="text-lg font-semibold">New workshop</p>
+          <p className="text-lg font-semibold">{isEdit ? 'Edit workshop' : 'New workshop'}</p>
           <p className="mt-1 text-sm text-ink-foreground/60">
-            Only a title is required -- attach a script and add people now, or come back later.
+            {isEdit
+              ? 'Update the title or script, or add more people to the group.'
+              : 'Only a title is required -- attach a script and add people now, or come back later.'}
           </p>
 
           <form action={handleSubmit} className="mt-5 flex flex-col gap-4">
@@ -188,7 +217,7 @@ export function CreateWorkshopDialog({
                 Cancel
               </button>
               <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-                Create
+                {isEdit ? 'Save' : 'Create'}
               </button>
             </div>
           </form>
@@ -196,4 +225,4 @@ export function CreateWorkshopDialog({
       </dialog>
     </>
   )
-}
+})

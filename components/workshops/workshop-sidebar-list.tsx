@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { CreateWorkshopDialog } from '@/components/workshops/create-workshop-dialog'
+import { WorkshopFormDialog } from '@/components/workshops/workshop-form-dialog'
 import { WorkshopCard } from '@/components/workshops/workshop-card'
 import type { AddableUser, WorkshopListItem } from '@/lib/workshops/queries'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
@@ -79,7 +79,7 @@ export function WorkshopSidebarList({
             className="h-[38px] w-full rounded-[10px] border border-ink-foreground/16 bg-ink pl-[34px] pr-3 text-[13.5px] text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
           />
         </div>
-        <CreateWorkshopDialog availableUsers={activeUsers} availableScripts={availableScripts} />
+        <WorkshopFormDialog mode="create" availableUsers={activeUsers} availableScripts={availableScripts} />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -91,10 +91,12 @@ export function WorkshopSidebarList({
               key={workshop.id}
               id={workshop.id}
               title={workshop.title}
+              scriptSlug={workshop.scriptSlug}
               memberCount={workshop.memberCount}
               rehearsalAt={workshop.rehearsalAt}
               selected={workshop.id === selectedId}
               activeUsers={activeUsers}
+              availableScripts={availableScripts}
             />
           ))
         )}

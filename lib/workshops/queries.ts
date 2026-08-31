@@ -5,6 +5,7 @@ import { users, workshopMembers, workshops } from '@/lib/database/schema'
 export type WorkshopListItem = {
   id: string
   title: string
+  scriptSlug: string | null
   rehearsalAt: Date | null
   memberCount: number
 }
@@ -45,11 +46,11 @@ async function memberCounts(workshopIds: string[]): Promise<Map<string, number>>
 export async function listWorkshopsForUser(userId: string, isAdmin: boolean): Promise<WorkshopListItem[]> {
   const rows = isAdmin
     ? await db
-        .select({ id: workshops.id, title: workshops.title, rehearsalAt: workshops.rehearsalAt })
+        .select({ id: workshops.id, title: workshops.title, scriptSlug: workshops.scriptSlug, rehearsalAt: workshops.rehearsalAt })
         .from(workshops)
         .orderBy(desc(workshops.createdAt))
     : await db
-        .select({ id: workshops.id, title: workshops.title, rehearsalAt: workshops.rehearsalAt })
+        .select({ id: workshops.id, title: workshops.title, scriptSlug: workshops.scriptSlug, rehearsalAt: workshops.rehearsalAt })
         .from(workshops)
         .innerJoin(workshopMembers, eq(workshopMembers.workshopId, workshops.id))
         .where(eq(workshopMembers.userId, userId))

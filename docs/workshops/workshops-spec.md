@@ -54,6 +54,8 @@ whichever workshop is currently open.
 - Below it, one card per workshop the current user belongs to, most recently active first. Each
   card shows the workshop's title (from its script) and a **⋮ overflow menu** on the right edge.
 - The overflow menu opens a small dropdown anchored to the card with per-workshop actions:
+  **Edit** (first — the same modal as + New workshop, pre-filled with this workshop's title and
+  script; any people picked here get added on top of the existing group, not shown/removed here),
   **+ Add user**, **Schedule Rehearsal**, then either **Leave workshop** (when other members
   remain) or **Delete** (attribute 8 — only once the caller is the last member left).
 - The selected workshop's card is highlighted (`border-primary`), matching the active-tab style

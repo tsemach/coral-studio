@@ -4,26 +4,33 @@ import { useEffect, useRef, useState } from 'react'
 import { deleteWorkshop, leaveWorkshop } from '@/app/workshops/actions'
 import { AddMemberDialog, type DialogHandle } from '@/components/workshops/add-member-dialog'
 import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
+import { WorkshopFormDialog } from '@/components/workshops/workshop-form-dialog'
 import type { AddableUser } from '@/lib/workshops/queries'
+import type { ScriptSummary } from '@/lib/workshops/scripts'
 
 const menuItemClass = 'block w-full px-4 py-2 text-left text-[13.5px] text-ink-foreground/80 hover:bg-ink'
 
 export function WorkshopCardMenu({
   workshopId,
   title,
+  scriptSlug,
   memberCount,
   rehearsalAt,
   activeUsers,
+  availableScripts,
 }: {
   workshopId: string
   title: string
+  scriptSlug: string | null
   memberCount: number
   rehearsalAt: Date | null
   activeUsers: AddableUser[]
+  availableScripts: ScriptSummary[]
 }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
+  const editRef = useRef<DialogHandle>(null)
   const addMemberRef = useRef<DialogHandle>(null)
   const scheduleRef = useRef<DialogHandle>(null)
 
@@ -64,6 +71,17 @@ export function WorkshopCardMenu({
           onClick={(e) => e.stopPropagation()}
           className="absolute right-0 top-[calc(100%+6px)] z-10 w-[190px] rounded-lg border border-ink-foreground/16 bg-ink-card py-1 shadow-lg"
         >
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              editRef.current?.open()
+            }}
+            className={menuItemClass}
+          >
+            Edit
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -114,6 +132,16 @@ export function WorkshopCardMenu({
           opened via showModal() force-closes the instant it (or an
           ancestor) stops being rendered, which the dropdown does the
           moment a menu item click also closes it. */}
+      <WorkshopFormDialog
+        ref={editRef}
+        mode="edit"
+        workshopId={workshopId}
+        initialTitle={title}
+        initialScriptSlug={scriptSlug}
+        availableUsers={activeUsers}
+        availableScripts={availableScripts}
+        hideTrigger
+      />
       <AddMemberDialog ref={addMemberRef} workshopId={workshopId} availableUsers={activeUsers} hideTrigger />
       <ScheduleRehearsalDialog ref={scheduleRef} workshopId={workshopId} rehearsalAt={rehearsalAt} hideTrigger />
 

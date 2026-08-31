@@ -75,12 +75,7 @@ export function WorkshopShell({
         <div className="flex flex-1 flex-col px-8 py-6">
           {selected ? (
             <>
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">
-                  Selected workshop
-                </p>
-                <h1 className="mt-1 text-[27px] font-semibold tracking-tight">{selected.title}</h1>
-              </div>
+              <h1 className="text-[27px] font-semibold tracking-tight">{selected.title}</h1>
 
               <div className="mt-5 flex flex-1 gap-5">
                 <WorkshopDetailsPanel workshop={selected} />
