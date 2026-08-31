@@ -22,7 +22,6 @@ export function WorkshopPanels({
 
   return (
     <div className="mt-5 flex min-h-0 flex-1 gap-5">
-      {!expanded && <WorkshopDetailsPanel workshop={workshop} />}
       <ScriptPanel
         workshopId={workshop.id}
         script={script}
@@ -30,6 +29,7 @@ export function WorkshopPanels({
         expanded={expanded}
         onToggleExpanded={() => setExpanded((v) => !v)}
       />
+      {!expanded && <WorkshopDetailsPanel workshop={workshop} />}
     </div>
   )
 }

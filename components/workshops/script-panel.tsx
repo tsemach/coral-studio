@@ -5,7 +5,6 @@ import { setWorkshopScript } from '@/app/workshops/actions'
 import { ScriptFlow } from '@/components/workshops/script-flow'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
-const DEFAULT_WIDTH = 380
 const MIN_WIDTH = 280
 const MAX_WIDTH = 1100
 
@@ -22,24 +21,29 @@ export function ScriptPanel({
   expanded: boolean
   onToggleExpanded: () => void
 }) {
-  const [width, setWidth] = useState(DEFAULT_WIDTH)
+  // TEMP: null means "no drag yet -- render at 2/3 of the row via w-2/3
+  // (a CSS percentage, not a guessed pixel default)." Becomes an explicit
+  // px number on the first drag and stays that way after.
+  const [width, setWidth] = useState<number | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
 
-  // Same pointer-capture approach as workshop-sidebar-list.tsx's resize
-  // handle, mirrored: this handle sits on the panel's LEFT edge, so growing
-  // the panel means dragging left (negative deltaX), the opposite sign from
-  // the sidebar's right-edge handle.
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      dragRef.current = { startX: e.clientX, startWidth: width }
-      e.currentTarget.setPointerCapture(e.pointerId)
-    },
-    [width]
-  )
+  // TEMP: script panel now sits on the LEFT (workshop-panels.tsx swapped the
+  // JSX order), so this handle moved to the right edge -- same math as
+  // workshop-sidebar-list.tsx's own right-edge handle now (growing means
+  // dragging right, positive deltaX). Reads the live rendered width off the
+  // DOM instead of `width` state, since state is still null in the w-2/3
+  // default case -- this way the drag picks up from wherever it visually is
+  // regardless of which mode it started in.
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const startWidth = panelRef.current?.getBoundingClientRect().width ?? MIN_WIDTH
+    dragRef.current = { startX: e.clientX, startWidth }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }, [])
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragRef.current) return
-    const next = dragRef.current.startWidth - (e.clientX - dragRef.current.startX)
+    const next = dragRef.current.startWidth + (e.clientX - dragRef.current.startX)
     setWidth(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, next)))
   }, [])
 
@@ -50,16 +54,19 @@ export function ScriptPanel({
 
   return (
     <div
+      ref={panelRef}
       className={
         expanded
           ? 'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink'
-          : 'relative flex min-h-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink'
+          : width === null
+            ? 'relative flex min-h-0 w-2/3 shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink'
+            : 'relative flex min-h-0 shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink'
       }
-      style={expanded ? undefined : { width }}
+      style={expanded || width === null ? undefined : { width }}
     >
       {/* Same generous 20px hit target + hover-revealed grip as the
-          sidebar's handle, mirrored onto the left edge. Dragging it means
-          nothing with no sibling panel to give space to, so it's gone
+          sidebar's handle -- now on the right edge (TEMP swap). Dragging it
+          means nothing with no sibling panel to give space to, so it's gone
           while expanded. */}
       {!expanded && (
         <div
@@ -69,7 +76,7 @@ export function ScriptPanel({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          className="group absolute top-0 -left-2.5 z-10 flex h-full w-5 cursor-col-resize touch-none items-center justify-center"
+          className="group absolute top-0 -right-2.5 z-10 flex h-full w-5 cursor-col-resize touch-none items-center justify-center"
         >
           <div className="h-full w-px bg-ink-foreground/16 transition-colors group-hover:bg-ink-foreground/35" />
           <div className="pointer-events-none absolute h-10 w-1.5 rounded-full bg-ink-foreground/70 opacity-0 transition-opacity group-hover:opacity-100" />
