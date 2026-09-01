@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { setWorkshopScript } from '@/app/workshops/actions'
 import { ScriptFlow } from '@/components/workshops/script-flow'
+import { canSplitByCharacter } from '@/lib/workshops/script-colors'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
 const MIN_WIDTH = 280
@@ -25,8 +26,13 @@ export function ScriptPanel({
   // (a CSS percentage, not a guessed pixel default)." Becomes an explicit
   // px number on the first drag and stays that way after.
   const [width, setWidth] = useState<number | null>(null)
+  const [splitByCharacter, setSplitByCharacter] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  // COR-14 rules 1-2: disabled for a monologue (nothing to split) and for
+  // more than 3 speaking characters (no defined layout beyond that).
+  const canSplit = script !== null && canSplitByCharacter(script)
 
   // TEMP: script panel now sits on the LEFT (workshop-panels.tsx swapped the
   // JSX order), so this handle moved to the right edge -- same math as
@@ -88,19 +94,44 @@ export function ScriptPanel({
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Script</p>
           <p className="mt-0.5 truncate text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
         </div>
-        <button
-          type="button"
-          onClick={onToggleExpanded}
-          aria-label={expanded ? 'Show group details' : 'Expand script panel'}
-          title={expanded ? 'Show group details' : 'Expand script panel'}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="18 8 22 12 18 16"></polyline>
-            <polyline points="6 8 2 12 6 16"></polyline>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-          </svg>
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setSplitByCharacter((v) => !v)}
+            disabled={!canSplit}
+            aria-label={splitByCharacter ? 'Show script as one column' : 'Split script by character'}
+            title={
+              canSplit
+                ? splitByCharacter
+                  ? 'Show script as one column'
+                  : 'Split script by character'
+                : 'Needs 2-3 speaking characters to split'
+            }
+            className={
+              splitByCharacter
+                ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
+                : 'flex h-8 w-8 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30'
+            }
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="7.5" height="16" rx="1.5"></rect>
+              <rect x="13.5" y="4" width="7.5" height="16" rx="1.5"></rect>
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={onToggleExpanded}
+            aria-label={expanded ? 'Show group details' : 'Expand script panel'}
+            title={expanded ? 'Show group details' : 'Expand script panel'}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 8 22 12 18 16"></polyline>
+              <polyline points="6 8 2 12 6 16"></polyline>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* min-h-0 is the piece that was actually missing: a flex item's
@@ -115,7 +146,7 @@ export function ScriptPanel({
           without a visible track. */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-ink-foreground/14 px-5 py-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {script ? (
-          <ScriptFlow script={script} />
+          <ScriptFlow script={script} splitByCharacter={splitByCharacter} />
         ) : availableScripts.length === 0 ? (
           <p className="text-sm text-ink-foreground/55">No scripts are available to attach yet.</p>
         ) : (

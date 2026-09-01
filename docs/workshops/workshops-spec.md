@@ -81,6 +81,26 @@ you want visible while rehearsing, not something worth an extra click to reveal)
 user-resizable via a drag handle on its right edge (the shared edge with the details panel),
 hidden until hovered, same mechanism as the sidebar's own resize handle on its right edge —
 both grow their panel by dragging toward the neighbor they're pushing into.
+- Also lets a member attach one of the available pre-made scripts when none is set yet (a
+  `<select>` populated from `lib/workshops/scripts.ts`'s `listAvailableScripts()`) — the sketch
+  didn't show this step, but without it a workshop could never get a script in the first place.
+- It loads the workshop's script JSON (attribute 1, see
+  [AWAKWNING-LEONARD-AND-SAYER.json](../../workshops/scripts/AWAKWNING-LEONARD-AND-SAYER.json) for
+  the shape) and renders its `script_flow` entries top to bottom:
+  - `dialogue` entries are shown as `character: line`, with each distinct `character` assigned a
+    consistent color so a reader can follow who's speaking at a glance.
+  - `action` entries are shown in a neutral, non-colored style (italic, centered) between dialogue
+    lines, matching how they read in a script.
+- This panel is read-only in the initial version — script *editing* is out of scope for COR-12.
+- **Split by character** (COR-14): a header button toggles between the single-column view above
+  and a side-by-side layout, one column per speaking character. Disabled for a monologue (one
+  character — nothing to split) and for more than 3 speaking characters (no defined layout past
+  that); enabled only for exactly 2 or 3. Every `script_flow` entry keeps its own row regardless
+  of type, in original order, which is what keeps the conversation's back-and-forth aligned across
+  columns: a `dialogue` row fills only its speaker's column and leaves the others blank for that
+  row, while an `action` row spans the full width rather than sitting in any one column. Column
+  headers (the character names, colored to match) stay pinned to the top of the panel while the
+  rows beneath them scroll.
 
 **Workshop details panel** (right, narrower) shows, for the selected workshop:
 - The group: each member's name, their type (`viewer` / `actor`), and their part if set. Members
@@ -90,16 +110,5 @@ both grow their panel by dragging toward the neighbor they're pushing into.
   Rehearsal action (title row or sidebar menu), not edited inline in this panel.
 - When the workshop is new/empty, this panel opens directly in an editable state so the creator
   can set the group and schedule before the workshop has a script attached.
-- Also lets a member attach one of the available pre-made scripts when none is set yet (a
-  `<select>` populated from `lib/workshops/scripts.ts`'s `listAvailableScripts()`) — the sketch
-  didn't show this step, but without it a workshop could never get a script in the first place.
-- It loads the workshop's script JSON (attribute 1, see
-  [AWAKWNING-LEONARD-AND-SAYER.json](../../workshops/scripts/AWAKWNING-LEONARD-AND-SAYER.json) for
-  the shape) and renders its `script_flow` entries top to bottom:
-  - `dialogue` entries are shown as `character: line`, with each distinct `character` assigned a
-    consistent color so a reader can follow who's speaking at a glance.
-  - `action` entries are shown in a neutral, non-colored style (e.g. italic) between dialogue
-    lines, matching how they read in a script.
-- This panel is read-only in the initial version — script *editing* is out of scope for COR-12.
 
   
