@@ -95,6 +95,7 @@ export function WorkshopSidebarList({
               memberCount={workshop.memberCount}
               memberUserIds={workshop.memberUserIds}
               rehearsalAt={workshop.rehearsalAt}
+              location={workshop.location}
               selected={workshop.id === selectedId}
               activeUsers={activeUsers}
               availableScripts={availableScripts}

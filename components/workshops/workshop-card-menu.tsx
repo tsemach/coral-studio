@@ -17,6 +17,7 @@ export function WorkshopCardMenu({
   memberCount,
   memberUserIds,
   rehearsalAt,
+  location,
   activeUsers,
   availableScripts,
 }: {
@@ -26,6 +27,7 @@ export function WorkshopCardMenu({
   memberCount: number
   memberUserIds: string[]
   rehearsalAt: Date | null
+  location: 'studio' | 'online' | null
   activeUsers: AddableUser[]
   availableScripts: ScriptSummary[]
 }) {
@@ -150,7 +152,7 @@ export function WorkshopCardMenu({
         hideTrigger
       />
       <AddMemberDialog ref={addMemberRef} workshopId={workshopId} availableUsers={addableUsers} hideTrigger />
-      <ScheduleRehearsalDialog ref={scheduleRef} workshopId={workshopId} rehearsalAt={rehearsalAt} hideTrigger />
+      <ScheduleRehearsalDialog ref={scheduleRef} workshopId={workshopId} rehearsalAt={rehearsalAt} location={location} hideTrigger />
 
       {/* No padding/box styling directly on <dialog> -- see
           schedule-rehearsal-dialog.tsx for why a click in that padding

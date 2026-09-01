@@ -1,12 +1,13 @@
 import NextAuth from 'next-auth'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import Credentials from 'next-auth/providers/credentials'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from './lib/database'
 import { users, accounts, sessions, verificationTokens } from './lib/database/schema'
 import authConfig from './auth.config'
 import { verifyCredentials } from './lib/verifyCredentials'
 import { notifyAdminsOfPendingApproval } from './lib/emailVerification'
+import { hasCalendarAccess } from './lib/google/calendar'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -69,10 +70,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return false
     },
+    // COR-15: @auth/drizzle-adapter's linkAccount() (handle-login.js) only
+    // ever runs the FIRST time a provider account is linked -- every repeat
+    // sign-in takes the "already linked" branch and never touches the DB
+    // row again, even though Google just issued a fresh access/refresh
+    // token for whatever scope auth.config.ts currently requests. Without
+    // this, a user who linked Google before the calendar.events scope was
+    // added would keep a stale, calendar-less scope in `accounts` forever,
+    // no matter how many times they sign in afterward. `account` here is
+    // this sign-in's live tokenset regardless of whether it's a first link
+    // or a repeat one, so re-persist it every time.
+    async jwt(params) {
+      const token = await authConfig.callbacks!.jwt!(params)
+      if (params.account?.provider === 'google' && params.account.providerAccountId) {
+        const updates: Partial<typeof accounts.$inferInsert> = {
+          access_token: params.account.access_token,
+          expires_at: params.account.expires_at,
+          scope: params.account.scope,
+        }
+        if (params.account.refresh_token) updates.refresh_token = params.account.refresh_token
+        await db
+          .update(accounts)
+          .set(updates)
+          .where(and(eq(accounts.provider, 'google'), eq(accounts.providerAccountId, params.account.providerAccountId)))
+      }
+      return token
+    },
     // role/status are always read fresh from the DB rather than trusted
     // from the JWT's cached copy -- an admin flipping someone's role/status
     // (e.g. approving them, PR-3) must take effect on their next request,
-    // not just their next sign-in.
+    // not just their next sign-in. hasGoogleCalendar (COR-15) rides along on
+    // the same round trip -- it backs user-menu.tsx's "Connect Google
+    // Calendar" item, which needs to disappear the moment a connect
+    // succeeds, not just after the next sign-in.
     async session(params) {
       const session = await authConfig.callbacks!.session!(params)
       if (session.user?.id) {
@@ -85,6 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ;(session.user as { role?: string }).role = row.role
           ;(session.user as { status?: string }).status = row.status
         }
+        ;(session.user as { hasGoogleCalendar?: boolean }).hasGoogleCalendar = await hasCalendarAccess(session.user.id)
       }
       return session
     },
