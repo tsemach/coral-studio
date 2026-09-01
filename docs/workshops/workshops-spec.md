@@ -89,7 +89,7 @@ both grow their panel by dragging toward the neighbor they're pushing into.
   the shape) and renders its `script_flow` entries top to bottom:
   - `dialogue` entries are shown as `character: line`, with each distinct `character` assigned a
     consistent color so a reader can follow who's speaking at a glance.
-  - `action` entries are shown in a neutral, non-colored style (e.g. italic) between dialogue
+  - `action` entries are shown in a neutral, non-colored style (italic, centered) between dialogue
     lines, matching how they read in a script.
 - This panel is read-only in the initial version — script *editing* is out of scope for COR-12.
 - **Split by character** (COR-14): a header button toggles between the single-column view above

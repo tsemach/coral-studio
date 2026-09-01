@@ -31,8 +31,10 @@ export function ScriptFlow({ script, splitByCharacter }: { script: Script; split
 
         {script.script_flow.map((entry, index) =>
           entry.type === 'action' ? (
-            // COR-14 rule 4: action lines span the whole width, not a column.
-            <p key={index} className="italic text-ink-foreground/55">
+            // COR-14 rule 4: action lines span the whole width, not a column,
+            // and are centered within it (also applied to the single-column
+            // view below, for consistency between the two modes).
+            <p key={index} className="text-center italic text-ink-foreground/55">
               {entry.text}
             </p>
           ) : (
