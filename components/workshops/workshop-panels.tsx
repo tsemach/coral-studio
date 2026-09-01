@@ -26,6 +26,7 @@ export function WorkshopPanels({
         workshopId={workshop.id}
         script={script}
         availableScripts={availableScripts}
+        members={workshop.members}
         expanded={expanded}
         onToggleExpanded={() => setExpanded((v) => !v)}
       />
