@@ -15,6 +15,7 @@ export function WorkshopCard({
   memberCount,
   memberUserIds,
   rehearsalAt,
+  location,
   selected,
   activeUsers,
   availableScripts,
@@ -25,6 +26,7 @@ export function WorkshopCard({
   memberCount: number
   memberUserIds: string[]
   rehearsalAt: Date | null
+  location: 'studio' | 'online' | null
   selected: boolean
   activeUsers: AddableUser[]
   availableScripts: ScriptSummary[]
@@ -57,6 +59,7 @@ export function WorkshopCard({
           memberCount={memberCount}
           memberUserIds={memberUserIds}
           rehearsalAt={rehearsalAt}
+          location={location}
           activeUsers={activeUsers}
           availableScripts={availableScripts}
         />

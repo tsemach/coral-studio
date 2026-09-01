@@ -6,9 +6,10 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { db } from '@/lib/database'
 import { users, workshopMembers, workshops } from '@/lib/database/schema'
-import { isWorkshopMember } from '@/lib/workshops/queries'
+import { getWorkshopDetail, isWorkshopMember } from '@/lib/workshops/queries'
 import { listAvailableScripts } from '@/lib/workshops/scripts'
 import { isValidEmail } from '@/lib/validation'
+import { deleteRehearsalEvent, getValidAccessToken, upsertRehearsalEvent } from '@/lib/google/calendar'
 
 // Render-time gating on the page is not a security boundary -- a Server
 // Action is directly POSTable, so every action re-checks the caller is a
@@ -191,13 +192,116 @@ export async function updateMember(workshopId: string, memberId: string, formDat
   revalidatePath(`/workshops/${workshopId}`)
 }
 
+const REHEARSAL_DURATION_MS = 2 * 60 * 60 * 1000
+
+// COR-15: best-effort Google Calendar sync on top of the rehearsal date --
+// never throws, so a Calendar API hiccup (or the acting member simply not
+// having a Google account with calendar access linked) never blocks saving
+// the date/location itself. One event, created under the acting member's own
+// Google account with every actor added as an attendee (Google emails them
+// an invite), rather than writing to each actor's calendar individually.
+async function syncRehearsalCalendarEvent(
+  workshopId: string,
+  actingUserId: string,
+  rehearsalAt: Date | null,
+  location: 'studio' | 'online',
+  meetingUrl: string | null,
+  existingGoogleEventId: string | null
+) {
+  const accessToken = await getValidAccessToken(actingUserId)
+  if (!accessToken) return
+
+  if (!rehearsalAt) {
+    if (existingGoogleEventId) await deleteRehearsalEvent(accessToken, existingGoogleEventId)
+    return
+  }
+
+  const detail = await getWorkshopDetail(workshopId)
+  if (!detail) return
+
+  const attendeeEmails = detail.members
+    .filter((member) => member.type === 'actor' && member.userId !== actingUserId)
+    .map((member) => member.email)
+
+  const result = await upsertRehearsalEvent(accessToken, existingGoogleEventId, {
+    title: `${detail.title} rehearsal`,
+    location,
+    meetingUrl,
+    start: rehearsalAt,
+    end: new Date(rehearsalAt.getTime() + REHEARSAL_DURATION_MS),
+    attendeeEmails,
+  })
+
+  if ('googleEventId' in result) {
+    await db.update(workshops).set({ googleEventId: result.googleEventId }).where(eq(workshops.id, workshopId))
+  } else {
+    console.error(`[calendar] failed to sync rehearsal event for workshop ${workshopId}: ${result.error}`)
+  }
+}
+
 export async function setRehearsalDate(workshopId: string, formData: FormData) {
-  await requireMember(workshopId)
+  const member = await requireMember(workshopId)
 
   const raw = String(formData.get('rehearsalAt') ?? '')
   const rehearsalAt = raw ? new Date(raw) : null
+  const location = formData.get('location') === 'online' ? 'online' : 'studio'
+  const meetingUrl = rehearsalAt && location === 'online' ? `https://meet.google.com/mock-${workshopId.slice(0, 8)}` : null
 
-  await db.update(workshops).set({ rehearsalAt }).where(eq(workshops.id, workshopId))
+  const [existing] = await db
+    .select({ googleEventId: workshops.googleEventId })
+    .from(workshops)
+    .where(eq(workshops.id, workshopId))
+    .limit(1)
+
+  await db
+    .update(workshops)
+    .set({
+      rehearsalAt,
+      location: rehearsalAt ? location : null,
+      meetingUrl,
+      ...(rehearsalAt ? {} : { googleEventId: null }),
+    })
+    .where(eq(workshops.id, workshopId))
+
+  // "Set google calendar" checkbox (schedule-rehearsal-dialog.tsx) --
+  // unchecked means the saver explicitly doesn't want this save to touch
+  // Google Calendar at all, so the sync call (create/update/delete) is
+  // skipped entirely rather than just failing silently on a missing token.
+  if (formData.get('syncCalendar') === 'on') {
+    await syncRehearsalCalendarEvent(workshopId, member.id, rehearsalAt, location, meetingUrl, existing?.googleEventId ?? null)
+  }
+
+  revalidatePath(`/workshops/${workshopId}`)
+}
+
+// Backs the "x" on workshop-details-panel.tsx's rehearsal card -- always
+// attempts the cancellation notice (unlike setRehearsalDate's checkbox-gated
+// sync), since clicking a dedicated cancel control is already an explicit
+// signal the caller wants everyone notified. deleteRehearsalEvent's
+// sendUpdates=all is what actually emails the cancellation to every
+// attendee; best-effort like the rest of the calendar integration, so a
+// missing/expired Google token still clears the rehearsal locally.
+export async function cancelRehearsal(workshopId: string) {
+  const member = await requireMember(workshopId)
+
+  const [existing] = await db
+    .select({ googleEventId: workshops.googleEventId })
+    .from(workshops)
+    .where(eq(workshops.id, workshopId))
+    .limit(1)
+
+  await db
+    .update(workshops)
+    .set({ rehearsalAt: null, location: null, meetingUrl: null, googleEventId: null })
+    .where(eq(workshops.id, workshopId))
+
+  if (existing?.googleEventId) {
+    const accessToken = await getValidAccessToken(member.id)
+    if (accessToken) {
+      const result = await deleteRehearsalEvent(accessToken, existing.googleEventId)
+      if (result) console.error(`[calendar] failed to cancel rehearsal event for workshop ${workshopId}: ${result.error}`)
+    }
+  }
 
   revalidatePath(`/workshops/${workshopId}`)
 }

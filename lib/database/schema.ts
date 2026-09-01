@@ -89,6 +89,14 @@ export const workshops = pgTable('workshops', {
   // until a script is attached -- script editing is out of scope for COR-12.
   scriptSlug: text('script_slug'),
   rehearsalAt: timestamp('rehearsal_at', { mode: 'date' }),
+  // COR-15: null until a rehearsal has been scheduled with a location.
+  location: text('location', { enum: ['studio', 'online'] }),
+  // Mock for now (COR-15) -- auto-set when location is 'online', cleared for 'studio'.
+  meetingUrl: text('meeting_url'),
+  // Google Calendar event id backing the rehearsal, so re-scheduling PATCHes
+  // the same event instead of creating duplicates, and clearing the
+  // rehearsal date can DELETE it.
+  googleEventId: text('google_event_id'),
   createdById: text('created_by_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),

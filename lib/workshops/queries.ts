@@ -7,6 +7,7 @@ export type WorkshopListItem = {
   title: string
   scriptSlug: string | null
   rehearsalAt: Date | null
+  location: 'studio' | 'online' | null
   memberCount: number
   memberUserIds: string[]
 }
@@ -25,6 +26,8 @@ export type WorkshopDetail = {
   title: string
   scriptSlug: string | null
   rehearsalAt: Date | null
+  location: 'studio' | 'online' | null
+  meetingUrl: string | null
   createdById: string
   members: WorkshopMember[]
 }
@@ -56,11 +59,23 @@ async function memberUserIdsByWorkshop(workshopIds: string[]): Promise<Map<strin
 export async function listWorkshopsForUser(userId: string, isAdmin: boolean): Promise<WorkshopListItem[]> {
   const rows = isAdmin
     ? await db
-        .select({ id: workshops.id, title: workshops.title, scriptSlug: workshops.scriptSlug, rehearsalAt: workshops.rehearsalAt })
+        .select({
+          id: workshops.id,
+          title: workshops.title,
+          scriptSlug: workshops.scriptSlug,
+          rehearsalAt: workshops.rehearsalAt,
+          location: workshops.location,
+        })
         .from(workshops)
         .orderBy(desc(workshops.createdAt))
     : await db
-        .select({ id: workshops.id, title: workshops.title, scriptSlug: workshops.scriptSlug, rehearsalAt: workshops.rehearsalAt })
+        .select({
+          id: workshops.id,
+          title: workshops.title,
+          scriptSlug: workshops.scriptSlug,
+          rehearsalAt: workshops.rehearsalAt,
+          location: workshops.location,
+        })
         .from(workshops)
         .innerJoin(workshopMembers, eq(workshopMembers.workshopId, workshops.id))
         .where(eq(workshopMembers.userId, userId))
@@ -80,6 +95,8 @@ export async function getWorkshopDetail(workshopId: string): Promise<WorkshopDet
       title: workshops.title,
       scriptSlug: workshops.scriptSlug,
       rehearsalAt: workshops.rehearsalAt,
+      location: workshops.location,
+      meetingUrl: workshops.meetingUrl,
       createdById: workshops.createdById,
     })
     .from(workshops)

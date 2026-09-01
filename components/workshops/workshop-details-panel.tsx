@@ -1,3 +1,4 @@
+import { CancelRehearsalButton } from '@/components/workshops/cancel-rehearsal-button'
 import { WorkshopMemberRow } from '@/components/workshops/workshop-member-row'
 import type { WorkshopDetail } from '@/lib/workshops/queries'
 
@@ -30,8 +31,26 @@ export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail })
 
       <div className="mt-6">
         <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Rehearsal</p>
-        <div className="rounded-xl border border-ink-foreground/16 bg-ink px-4 py-3">
+        <div className="relative rounded-xl border border-ink-foreground/16 bg-ink px-4 py-3 pr-9">
+          {workshop.rehearsalAt && (
+            <div className="absolute right-2 top-2">
+              <CancelRehearsalButton workshopId={workshop.id} />
+            </div>
+          )}
           <p className="text-sm text-ink-foreground">{formatRehearsalDisplay(workshop.rehearsalAt)}</p>
+          {workshop.rehearsalAt && (
+            <p className="mt-1 text-xs text-ink-foreground/55">
+              {workshop.location === 'online' ? 'Online' : 'Studio'}
+              {workshop.meetingUrl ? (
+                <>
+                  {' · '}
+                  <a href={workshop.meetingUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink-foreground">
+                    {workshop.meetingUrl}
+                  </a>
+                </>
+              ) : null}
+            </p>
+          )}
         </div>
         <p className="mt-2 text-xs text-ink-foreground/45">
           Set from &ldquo;Schedule Rehearsal&rdquo; in the top bar or the workshop&apos;s menu.

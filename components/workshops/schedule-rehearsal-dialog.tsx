@@ -1,6 +1,8 @@
 'use client'
 
 import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { usePathname } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
 import { setRehearsalDate } from '@/app/workshops/actions'
 import type { DialogHandle } from '@/components/workshops/add-member-dialog'
 
@@ -13,9 +15,12 @@ function formatRehearsalInputValue(date: Date | null) {
 // Same forwardRef + hideTrigger reasoning as add-member-dialog.tsx.
 export const ScheduleRehearsalDialog = forwardRef<
   DialogHandle,
-  { workshopId: string; rehearsalAt: Date | null; hideTrigger?: boolean }
->(function ScheduleRehearsalDialog({ workshopId, rehearsalAt, hideTrigger }, ref) {
+  { workshopId: string; rehearsalAt: Date | null; location: 'studio' | 'online' | null; hideTrigger?: boolean }
+>(function ScheduleRehearsalDialog({ workshopId, rehearsalAt, location, hideTrigger }, ref) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const { data: session } = useSession()
+  const pathname = usePathname()
+  const hasGoogleCalendar = (session?.user as { hasGoogleCalendar?: boolean } | undefined)?.hasGoogleCalendar
 
   function open() {
     dialogRef.current?.showModal()
@@ -58,6 +63,20 @@ export const ScheduleRehearsalDialog = forwardRef<
 
           <form
             action={async (formData) => {
+              const syncCalendar = formData.get('syncCalendar') === 'on'
+              // Checked but not yet connected: hand off to Google's consent
+              // screen instead of saving -- there's no way to get Calendar
+              // permission without that redirect, so this save doesn't
+              // happen yet. signIn() from an already-authenticated session
+              // links Google to the current account without changing how
+              // the user logs in (auth.ts's jwt callback persists the
+              // token); after approving, they land back here and hit Save
+              // again, which this time takes the branch below.
+              if (syncCalendar && !hasGoogleCalendar) {
+                dialogRef.current?.close()
+                await signIn('google', { callbackUrl: pathname })
+                return
+              }
               await setRehearsalDate(workshopId, formData)
               dialogRef.current?.close()
             }}
@@ -69,6 +88,20 @@ export const ScheduleRehearsalDialog = forwardRef<
               defaultValue={formatRehearsalInputValue(rehearsalAt)}
               className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground [color-scheme:dark] focus:outline-none"
             />
+
+            <select
+              name="location"
+              defaultValue={location ?? 'studio'}
+              className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
+            >
+              <option value="studio">Studio</option>
+              <option value="online">Online</option>
+            </select>
+
+            <label className="flex items-center gap-2 text-sm text-ink-foreground/80">
+              <input type="checkbox" name="syncCalendar" defaultChecked className="h-4 w-4 rounded border-ink-foreground/30 bg-ink" />
+              Set google calendar
+            </label>
 
             <div className="mt-2 flex justify-end gap-2">
               <button
