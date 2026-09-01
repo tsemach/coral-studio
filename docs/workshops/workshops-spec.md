@@ -87,8 +87,10 @@ both grow their panel by dragging toward the neighbor they're pushing into.
 - It loads the workshop's script JSON (attribute 1, see
   [AWAKWNING-LEONARD-AND-SAYER.json](../../workshops/scripts/AWAKWNING-LEONARD-AND-SAYER.json) for
   the shape) and renders its `script_flow` entries top to bottom:
-  - `dialogue` entries are shown as `character: line`, with each distinct `character` assigned a
-    consistent color so a reader can follow who's speaking at a glance.
+  - `dialogue` entries are shown centered, script-page style: the character's name on its own
+    line in uppercase (colored, one consistent color per distinct character so a reader can
+    follow who's speaking at a glance), the line itself on the line beneath it in the default
+    text color.
   - `action` entries are shown in a neutral, non-colored style (italic, centered) between dialogue
     lines, matching how they read in a script.
 - This panel is read-only in the initial version — script *editing* is out of scope for COR-12.

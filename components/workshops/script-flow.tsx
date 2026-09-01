@@ -59,20 +59,26 @@ export function ScriptFlow({ script, splitByCharacter }: { script: Script; split
     )
   }
 
+  // text-center on the container, not repeated per-line -- text-align
+  // inherits, so both the action paragraphs and the character-name/line
+  // pairs below pick it up for free.
   return (
-    <div className="flex flex-col gap-3 text-[13.5px] leading-relaxed">
+    <div className="flex flex-col gap-3 text-center text-[13.5px] leading-relaxed">
       {script.script_flow.map((entry, index) =>
         entry.type === 'action' ? (
           <p key={index} className="italic text-ink-foreground/55">
             {entry.text}
           </p>
         ) : (
-          <p key={index}>
-            <span className="mr-1.5 text-[12.5px] font-bold tracking-[0.04em]" style={{ color: colors[entry.character] }}>
+          // Name on its own line, uppercase, colored per character (unchanged
+          // coloring -- only the layout moved); the line itself sits directly
+          // beneath it in the default text color, also its own line.
+          <div key={index} className="flex flex-col gap-0.5">
+            <p className="text-[12.5px] font-bold uppercase tracking-[0.04em]" style={{ color: colors[entry.character] }}>
               {entry.character}
-            </span>
-            {entry.line}
-          </p>
+            </p>
+            <p>{entry.line}</p>
+          </div>
         )
       )}
     </div>
