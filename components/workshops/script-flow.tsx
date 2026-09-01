@@ -1,10 +1,33 @@
-import { assignCharacterColors, canSplitByCharacter, getSpeakingCharacters } from '@/lib/workshops/script-colors'
+import { canSplitByCharacter } from '@/lib/workshops/script-colors'
 import type { Script } from '@/lib/workshops/scripts'
 
-export function ScriptFlow({ script, splitByCharacter }: { script: Script; splitByCharacter: boolean }) {
-  const characters = getSpeakingCharacters(script)
-  const colors = assignCharacterColors(characters)
+// COR-16: the mark-a-part highlight, applied to a line whose character
+// equals markedCharacter (in either view below); its background color comes
+// from highlightColor (user-chosen in MarkPartDialog), not a fixed class.
+// justify-self-start overrides the split view's grid-cell stretch (that view
+// is left-aligned already, so start-aligning the shrunk box matches it);
+// self-center overrides the single-column view's flex-col stretch while
+// keeping it centered like the view's other text-center content -- self-start
+// there would un-stretch it but also left-align it, jumping it out of line
+// with the surrounding centered text. One of the two applies depending on
+// which view is active.
+const MARK_CLASSNAME = 'self-center justify-self-start rounded px-1 text-ink'
 
+export function ScriptFlow({
+  script,
+  splitByCharacter,
+  characters,
+  colors,
+  markedCharacter,
+  highlightColor,
+}: {
+  script: Script
+  splitByCharacter: boolean
+  characters: string[]
+  colors: Record<string, string>
+  markedCharacter: string | null
+  highlightColor: string
+}) {
   // Falls back to the single-column view below even if splitByCharacter is
   // true -- the toggle button is disabled whenever this is false, but state
   // can still go stale for a beat (e.g. the attached script changes out from
@@ -47,7 +70,13 @@ export function ScriptFlow({ script, splitByCharacter }: { script: Script; split
             <div key={index} className="grid gap-4" style={{ gridTemplateColumns: columns }}>
               {characters.map((character) =>
                 character === entry.character ? (
-                  <p key={character}>{entry.line}</p>
+                  <p
+                    key={character}
+                    className={character === markedCharacter ? MARK_CLASSNAME : undefined}
+                    style={character === markedCharacter ? { backgroundColor: highlightColor } : undefined}
+                  >
+                    {entry.line}
+                  </p>
                 ) : (
                   <div key={character} aria-hidden="true" />
                 )
@@ -77,7 +106,12 @@ export function ScriptFlow({ script, splitByCharacter }: { script: Script; split
             <p className="text-[12.5px] font-bold uppercase tracking-[0.04em]" style={{ color: colors[entry.character] }}>
               {entry.character}
             </p>
-            <p>{entry.line}</p>
+            <p
+              className={entry.character === markedCharacter ? MARK_CLASSNAME : undefined}
+              style={entry.character === markedCharacter ? { backgroundColor: highlightColor } : undefined}
+            >
+              {entry.line}
+            </p>
           </div>
         )
       )}
