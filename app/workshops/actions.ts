@@ -307,7 +307,8 @@ export async function cancelRehearsal(workshopId: string) {
 }
 
 // Script *editing* is out of scope for COR-12 (workshops-spec.md) -- this
-// only attaches one of the pre-made scripts under workshops/scripts/.
+// only attaches one of the scripts uploaded via the /scripts admin page,
+// stored in Vercel Blob (lib/workshops/scripts.ts).
 export async function setWorkshopScript(workshopId: string, formData: FormData) {
   await requireMember(workshopId)
 

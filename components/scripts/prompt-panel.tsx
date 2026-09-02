@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
-// Renders workshops/scripts/ai-prompt.md as-is (COR-17: "read from a static
-// markdown file and present as markdown"). Copy button copies the raw
+// Renders lib/scripts/ai-prompt.ts's AI_PROMPT_MARKDOWN as-is (COR-17: "read
+// a static markdown prompt and present as markdown"). Copy button copies the raw
 // markdown string, not the rendered HTML/text -- pasting the source into an
 // external AI chat is what step 3 of the issue asks for.
 //

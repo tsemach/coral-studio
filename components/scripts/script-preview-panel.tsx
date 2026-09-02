@@ -1,11 +1,18 @@
 import { ScriptFlow } from '@/components/workshops/script-flow'
+import { assignCharacterColors, getSpeakingCharacters } from '@/lib/workshops/script-colors'
 import type { Script } from '@/lib/workshops/scripts'
 
 // The middle "Script area" from the COR-17 sketch. Reuses ScriptFlow
 // directly -- no split-by-character or mark-a-part controls, since those
 // are workshop-member-specific (script-panel.tsx) and don't apply to a
-// management page with no rehearsal group attached.
+// management page with no rehearsal group attached. Character coloring is
+// still applied (assignCharacterColors/getSpeakingCharacters, both pure
+// functions with no workshop-member context) so the preview matches what
+// /workshops shows, per COR-17's "exactly as in the workshops" requirement.
 export function ScriptPreviewPanel({ script }: { script: Script | null }) {
+  const characters = script ? getSpeakingCharacters(script) : []
+  const colors = assignCharacterColors(characters)
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink">
       <div className="shrink-0 px-5 py-4">
@@ -20,8 +27,8 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
           <ScriptFlow
             script={script}
             splitByCharacter={false}
-            characters={[]}
-            colors={{}}
+            characters={characters}
+            colors={colors}
             markedCharacter={null}
             highlightColor=""
           />

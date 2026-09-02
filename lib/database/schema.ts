@@ -85,7 +85,7 @@ export const workshops = pgTable('workshops', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   title: text('title').default('Untitled workshop').notNull(),
-  // Filename stem under workshops/scripts/ (see lib/workshops/scripts.ts). Null
+  // Slug of a script stored in Vercel Blob (see lib/workshops/scripts.ts). Null
   // until a script is attached -- script editing is out of scope for COR-12.
   scriptSlug: text('script_slug'),
   rehearsalAt: timestamp('rehearsal_at', { mode: 'date' }),

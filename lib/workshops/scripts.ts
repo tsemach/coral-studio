@@ -53,18 +53,27 @@ export function isScriptShape(value: unknown): value is Omit<Script, 'slug'> {
 }
 
 export async function listAvailableScripts(): Promise<ScriptSummary[]> {
-  const { blobs } = await list({ prefix: SCRIPTS_PREFIX, token: BLOB_TOKEN })
-  const jsonBlobs = blobs.filter((blob) => blob.pathname.endsWith('.json'))
+  // Mirrors the old filesystem version's try/catch: this is called
+  // unconditionally from every /workshops page view, so a Blob
+  // misconfiguration or outage (bad/missing token, auth failure, rate
+  // limit) must degrade to "no scripts available" rather than taking down
+  // the entire pre-existing workshops feature.
+  try {
+    const { blobs } = await list({ prefix: SCRIPTS_PREFIX, token: BLOB_TOKEN })
+    const jsonBlobs = blobs.filter((blob) => blob.pathname.endsWith('.json'))
 
-  const scripts = await Promise.all(
-    jsonBlobs.map(async (blob) => {
-      const slug = blob.pathname.slice(SCRIPTS_PREFIX.length, -'.json'.length)
-      const script = await getScript(slug)
-      return script ? { slug: script.slug, title: script.title, scene: script.scene } : null
-    })
-  )
+    const scripts = await Promise.all(
+      jsonBlobs.map(async (blob) => {
+        const slug = blob.pathname.slice(SCRIPTS_PREFIX.length, -'.json'.length)
+        const script = await getScript(slug)
+        return script ? { slug: script.slug, title: script.title, scene: script.scene } : null
+      })
+    )
 
-  return scripts.filter((script): script is ScriptSummary => script !== null)
+    return scripts.filter((script): script is ScriptSummary => script !== null)
+  } catch {
+    return []
+  }
 }
 
 export async function getScript(slug: string): Promise<Script | null> {
@@ -78,7 +87,11 @@ export async function getScript(slug: string): Promise<Script | null> {
     // options for list/del), and the resolved value is `{ stream, blob, ... }`
     // (a raw ReadableStream body plus metadata), not a Response with `.text()`,
     // so it's wrapped in a `Response` to read it as text.
-    const result = await get(pathnameFor(slug), { access: 'private', token: BLOB_TOKEN })
+    // useCache: false bypasses the CDN cache (default true, per the same
+    // .d.ts) -- addScript() re-uploads with allowOverwrite: true to fix a
+    // bad conversion, and put()'s cacheControlMaxAge defaults to one month,
+    // so without this a re-upload could keep serving the stale cached copy.
+    const result = await get(pathnameFor(slug), { access: 'private', token: BLOB_TOKEN, useCache: false })
     if (!result || !result.stream) return null
 
     const raw = await new Response(result.stream).text()

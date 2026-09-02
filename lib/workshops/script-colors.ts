@@ -1,4 +1,4 @@
-// Type-only import: lib/workshops/scripts.ts uses Node's fs/path at runtime,
+// Type-only import: lib/workshops/scripts.ts uses @vercel/blob at runtime,
 // so it can only be imported from server code, but this file (pure
 // functions, no server-only imports) needs to be callable from
 // script-panel.tsx ('use client'). A `type` import is erased at compile
