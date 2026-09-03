@@ -1,3 +1,4 @@
+import { WorkshopLiveArea } from '@/components/workshops/workshop-live-area'
 import { WorkshopMain } from '@/components/workshops/workshop-main'
 import { WorkshopTopbar } from '@/components/workshops/workshop-topbar'
 import type { AddableUser, WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
@@ -38,14 +39,20 @@ export function WorkshopShell({
     <div className="flex h-screen flex-col overflow-hidden bg-ink text-ink-foreground">
       <WorkshopTopbar />
 
-      <WorkshopMain
-        workshops={workshops}
-        selected={selected}
-        script={script}
-        availableScripts={availableScripts}
-        activeUsers={activeUsers}
-        addableForSelected={addableForSelected}
-      />
+      {/* COR-18: the only client boundary here -- swaps WorkshopMain out for
+          the live video view (and keeps this the only server component in
+          the tree needing that awareness). WorkshopTopbar above always stays
+          mounted regardless of live state. */}
+      <WorkshopLiveArea workshopId={selected?.id ?? null}>
+        <WorkshopMain
+          workshops={workshops}
+          selected={selected}
+          script={script}
+          availableScripts={availableScripts}
+          activeUsers={activeUsers}
+          addableForSelected={addableForSelected}
+        />
+      </WorkshopLiveArea>
     </div>
   )
 }

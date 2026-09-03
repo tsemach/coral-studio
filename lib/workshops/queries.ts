@@ -142,3 +142,15 @@ export async function isWorkshopMember(workshopId: string, userId: string): Prom
     .limit(1)
   return !!row
 }
+
+// COR-18: feeds getLiveToken()'s canPublish decision -- a narrower query than
+// getWorkshopDetail() since minting a token only needs this one caller's
+// type, not the whole group.
+export async function getMemberType(workshopId: string, userId: string): Promise<'viewer' | 'actor' | null> {
+  const [row] = await db
+    .select({ type: workshopMembers.type })
+    .from(workshopMembers)
+    .where(and(eq(workshopMembers.workshopId, workshopId), eq(workshopMembers.userId, userId)))
+    .limit(1)
+  return row?.type ?? null
+}
