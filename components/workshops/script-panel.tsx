@@ -61,6 +61,10 @@ export function ScriptPanel({
   // choice -- only a new mark (or a script swap) replaces it.
   const [lastSelected, setLastSelected] = useState<string | null>(null)
   const [highlightColor, setHighlightColor] = useState(MARK_COLORS[0])
+  // Only affects the marked character's lines -- nothing to bold without a
+  // mark, so this stays a user preference rather than resetting alongside
+  // markedCharacter on erase/script swap.
+  const [boldMarked, setBoldMarked] = useState(false)
   const markDialogRef = useRef<DialogHandle>(null)
 
   // A stale mark from a previously-attached script can't apply to this one.
@@ -170,6 +174,24 @@ export function ScriptPanel({
           />
           <button
             type="button"
+            onClick={() => setBoldMarked((v) => !v)}
+            disabled={!markedCharacter}
+            aria-pressed={boldMarked}
+            aria-label={boldMarked ? 'Unbold marked lines' : 'Bold marked lines'}
+            title={markedCharacter ? (boldMarked ? 'Unbold marked lines' : 'Bold marked lines') : 'Mark a part first'}
+            className={
+              boldMarked
+                ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
+                : 'flex h-8 w-8 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30'
+            }
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 4h6a4 4 0 0 1 0 8H6z"></path>
+              <path d="M6 12h7a4 4 0 0 1 0 8H6z"></path>
+            </svg>
+          </button>
+          <button
+            type="button"
             onClick={() => setSplitByCharacter((v) => !v)}
             disabled={!canSplit}
             aria-label={splitByCharacter ? 'Show script as one column' : 'Split script by character'}
@@ -227,6 +249,7 @@ export function ScriptPanel({
             markedCharacter={markedCharacter}
             highlightColor={highlightColor}
             fontSize={fontSize}
+            boldMarked={boldMarked}
           />
         ) : availableScripts.length === 0 ? (
           <p className="text-sm text-ink-foreground/55">No scripts are available to attach yet.</p>

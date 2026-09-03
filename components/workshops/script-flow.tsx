@@ -21,6 +21,7 @@ export function ScriptFlow({
   markedCharacter,
   highlightColor,
   fontSize,
+  boldMarked,
 }: {
   script: Script
   splitByCharacter: boolean
@@ -29,7 +30,11 @@ export function ScriptFlow({
   markedCharacter: string | null
   highlightColor: string
   fontSize: number
+  boldMarked: boolean
 }) {
+  // Only the marked character's lines can go bold -- the toggle has no
+  // effect on anything else in the script.
+  const markClassName = boldMarked ? `${MARK_CLASSNAME} font-bold` : MARK_CLASSNAME
   // Falls back to the single-column view below even if splitByCharacter is
   // true -- the toggle button is disabled whenever this is false, but state
   // can still go stale for a beat (e.g. the attached script changes out from
@@ -77,7 +82,7 @@ export function ScriptFlow({
                 character === entry.character ? (
                   <p
                     key={character}
-                    className={character === markedCharacter ? MARK_CLASSNAME : undefined}
+                    className={character === markedCharacter ? markClassName : undefined}
                     style={character === markedCharacter ? { backgroundColor: highlightColor } : undefined}
                   >
                     {entry.line}
@@ -122,7 +127,7 @@ export function ScriptFlow({
               {entry.character}
             </p>
             <p
-              className={entry.character === markedCharacter ? MARK_CLASSNAME : undefined}
+              className={entry.character === markedCharacter ? markClassName : undefined}
               style={entry.character === markedCharacter ? { backgroundColor: highlightColor } : undefined}
             >
               {entry.line}
