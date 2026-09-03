@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { setWorkshopScript } from '@/app/workshops/actions'
 import { MARK_COLORS, MarkPartDialog } from '@/components/workshops/mark-part-dialog'
 import type { DialogHandle } from '@/components/workshops/add-member-dialog'
+import { DEFAULT_SCRIPT_FONT_SIZE, FontSizeControl } from '@/components/workshops/font-size-control'
 import { ScriptFlow } from '@/components/workshops/script-flow'
 import { assignCharacterColors, canSplitByCharacter, getSpeakingCharacters } from '@/lib/workshops/script-colors'
 import type { WorkshopMember } from '@/lib/workshops/queries'
@@ -33,6 +34,7 @@ export function ScriptPanel({
   // px number on the first drag and stays that way after.
   const [width, setWidth] = useState<number | null>(null)
   const [splitByCharacter, setSplitByCharacter] = useState(false)
+  const [fontSize, setFontSize] = useState(DEFAULT_SCRIPT_FONT_SIZE)
   const panelRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
 
@@ -127,6 +129,7 @@ export function ScriptPanel({
           <p className="mt-0.5 truncate text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <FontSizeControl fontSize={fontSize} onChange={setFontSize} />
           <button
             type="button"
             onClick={() => (markedCharacter ? setMarkedCharacter(null) : markDialogRef.current?.open())}
@@ -223,6 +226,7 @@ export function ScriptPanel({
             colors={colors}
             markedCharacter={markedCharacter}
             highlightColor={highlightColor}
+            fontSize={fontSize}
           />
         ) : availableScripts.length === 0 ? (
           <p className="text-sm text-ink-foreground/55">No scripts are available to attach yet.</p>

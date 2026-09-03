@@ -20,6 +20,7 @@ export function ScriptFlow({
   colors,
   markedCharacter,
   highlightColor,
+  fontSize,
 }: {
   script: Script
   splitByCharacter: boolean
@@ -27,6 +28,7 @@ export function ScriptFlow({
   colors: Record<string, string>
   markedCharacter: string | null
   highlightColor: string
+  fontSize: number
 }) {
   // Falls back to the single-column view below even if splitByCharacter is
   // true -- the toggle button is disabled whenever this is false, but state
@@ -37,14 +39,17 @@ export function ScriptFlow({
     const columns = `repeat(${characters.length}, 1fr)`
 
     return (
-      <div className="flex flex-col gap-3 text-[13.5px] leading-relaxed">
+      <div className="flex flex-col gap-3 leading-relaxed" style={{ fontSize }}>
         {/* Stays visible while the column below it scrolls, so a long scene
-            never loses track of which column belongs to whom. */}
+            never loses track of which column belongs to whom. text-[0.8em]
+            keeps this proportional to the surrounding fontSize (was a fixed
+            11px against a fixed 13.5px base) instead of staying a flat size
+            while the rest of the script scales via the font-size control. */}
         <div className="sticky top-0 z-10 -mx-5 -mt-4 grid gap-4 bg-ink px-5 pb-3 pt-4" style={{ gridTemplateColumns: columns }}>
           {characters.map((character) => (
             <p
               key={character}
-              className="truncate text-center text-[11px] font-bold uppercase tracking-[0.08em]"
+              className="truncate text-center text-[0.8em] font-bold uppercase tracking-[0.08em]"
               style={{ color: colors[character] }}
             >
               {character}
@@ -97,7 +102,7 @@ export function ScriptFlow({
   // details panel narrowing it the way workshops' does), which is much
   // harder to read than the same text wrapped narrower.
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-5 text-center text-[13.5px] leading-loose">
+    <div className="mx-auto flex max-w-2xl flex-col gap-5 text-center leading-loose" style={{ fontSize }}>
       {script.script_flow.map((entry, index) =>
         entry.type === 'action' ? (
           <p key={index} className="italic text-ink-foreground/55">
@@ -106,9 +111,12 @@ export function ScriptFlow({
         ) : (
           // Name on its own line, uppercase, colored per character (unchanged
           // coloring -- only the layout moved); the line itself sits directly
-          // beneath it in the default text color, also its own line.
+          // beneath it in the default text color, also its own line. text-[0.93em]
+          // keeps it proportional to fontSize (was a flat 12.5px against a
+          // flat 13.5px base) rather than staying fixed while the font-size
+          // control scales everything else.
           <div key={index} className="flex flex-col gap-0.5">
-            <p className="text-[12.5px] font-bold uppercase tracking-[0.04em]" style={{ color: colors[entry.character] }}>
+            <p className="text-[0.93em] font-bold uppercase tracking-[0.04em]" style={{ color: colors[entry.character] }}>
               {entry.character}
             </p>
             <p

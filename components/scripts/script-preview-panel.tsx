@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { DialogHandle } from '@/components/workshops/add-member-dialog'
+import { DEFAULT_SCRIPT_FONT_SIZE, FontSizeControl } from '@/components/workshops/font-size-control'
 import { MARK_COLORS, MarkPartDialog } from '@/components/workshops/mark-part-dialog'
 import { ScriptFlow } from '@/components/workshops/script-flow'
 import { assignCharacterColors, canSplitByCharacter, getSpeakingCharacters } from '@/lib/workshops/script-colors'
@@ -21,6 +22,7 @@ import type { Script } from '@/lib/workshops/scripts'
 // "exactly as in the workshops" requirement.
 export function ScriptPreviewPanel({ script }: { script: Script | null }) {
   const [splitByCharacter, setSplitByCharacter] = useState(false)
+  const [fontSize, setFontSize] = useState(DEFAULT_SCRIPT_FONT_SIZE)
   const [markedCharacter, setMarkedCharacter] = useState<string | null>(null)
   // Survives an erase, matching script-panel.tsx's rule 5 -- reopening the
   // dialog still shows the last choice; only a new mark or a script swap
@@ -49,6 +51,7 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <FontSizeControl fontSize={fontSize} onChange={setFontSize} />
           <button
             type="button"
             onClick={() => (markedCharacter ? setMarkedCharacter(null) : markDialogRef.current?.open())}
@@ -122,6 +125,7 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
             colors={colors}
             markedCharacter={markedCharacter}
             highlightColor={highlightColor}
+            fontSize={fontSize}
           />
         ) : (
           <p className="text-sm text-ink-foreground/55">Select a script from the list on the left.</p>
