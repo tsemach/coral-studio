@@ -62,24 +62,14 @@ export function UserMenu() {
             {email && <p className="truncate text-xs text-muted">{email}</p>}
           </div>
           {isAdmin && (
-            <>
-              <Link
-                href="/scripts"
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-sm text-foreground/85 hover:bg-background"
-              >
-                Scripts
-              </Link>
-              <Link
-                href="/admin/settings"
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-sm text-foreground/85 hover:bg-background"
-              >
-                Settings
-              </Link>
-            </>
+            <Link
+              href="/admin/settings"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-foreground/85 hover:bg-background"
+            >
+              Settings
+            </Link>
           )}
           <button
             type="button"
