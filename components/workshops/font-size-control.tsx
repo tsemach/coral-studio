@@ -8,10 +8,20 @@ const SCRIPT_FONT_SIZE_STEP = 1
 // Up/down font-size stepper for ScriptFlow's `fontSize` prop -- shared by
 // script-panel.tsx (/workshops) and script-preview-panel.tsx (/scripts) so
 // both host their own local fontSize state but render this one control
-// rather than duplicating the buttons.
-export function FontSizeControl({ fontSize, onChange }: { fontSize: number; onChange: (size: number) => void }) {
-  const canIncrease = fontSize < MAX_SCRIPT_FONT_SIZE
-  const canDecrease = fontSize > MIN_SCRIPT_FONT_SIZE
+// rather than duplicating the buttons. `disabled` covers the no-script-
+// selected/attached case, on top of the min/max bounds below -- there's
+// nothing to resize when there's no script rendered at all.
+export function FontSizeControl({
+  fontSize,
+  onChange,
+  disabled = false,
+}: {
+  fontSize: number
+  onChange: (size: number) => void
+  disabled?: boolean
+}) {
+  const canIncrease = !disabled && fontSize < MAX_SCRIPT_FONT_SIZE
+  const canDecrease = !disabled && fontSize > MIN_SCRIPT_FONT_SIZE
 
   return (
     <div className="flex shrink-0 items-center">

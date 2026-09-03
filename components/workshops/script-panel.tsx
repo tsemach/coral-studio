@@ -129,7 +129,7 @@ export function ScriptPanel({
           <p className="mt-0.5 truncate text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <FontSizeControl fontSize={fontSize} onChange={setFontSize} />
+          <FontSizeControl fontSize={fontSize} onChange={setFontSize} disabled={!script} />
           <button
             type="button"
             onClick={() => (markedCharacter ? setMarkedCharacter(null) : markDialogRef.current?.open())}

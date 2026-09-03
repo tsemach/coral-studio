@@ -95,14 +95,16 @@ export function ScriptFlow({
 
   // text-center on the container, not repeated per-line -- text-align
   // inherits, so both the action paragraphs and the character-name/line
-  // pairs below pick it up for free. max-w-2xl + mx-auto caps line length to
-  // a comfortable reading width regardless of how wide the surrounding
-  // panel is -- without it, a long monologue line stretches edge-to-edge in
-  // a wide container (e.g. /scripts' preview panel, which has no sibling
-  // details panel narrowing it the way workshops' does), which is much
-  // harder to read than the same text wrapped narrower.
+  // pairs below pick it up for free. max-w-4xl + mx-auto caps line length so
+  // it doesn't run edge-to-edge in a very wide container (a full-width
+  // /scripts preview, or workshops' expanded script panel) -- narrower than
+  // that, this cap doesn't engage at all (the container's own width already
+  // wins), which is why workshops' side-by-side layout (narrower script
+  // panel, sharing the row with WorkshopDetailsPanel) never showed this.
+  // 4xl rather than the original 2xl: 2xl left a visibly large empty gutter
+  // once the container was wide enough for the cap to actually apply.
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-5 text-center leading-loose" style={{ fontSize }}>
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 text-center leading-loose" style={{ fontSize }}>
       {script.script_flow.map((entry, index) =>
         entry.type === 'action' ? (
           <p key={index} className="italic text-ink-foreground/55">
