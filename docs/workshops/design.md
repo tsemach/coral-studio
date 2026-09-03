@@ -186,21 +186,20 @@ explicit `min-h-0` override at that level too.
 
 ## Script rendering (`lib/workshops/`)
 
-- **`scripts.ts`** (server-only): `listAvailableScripts()` reads the `.json` files directly out of
-  `workshops/scripts/` and returns `{ slug, title, scene }[]`; `getScript(slug)` reads and parses
-  one. No new dependency — this project doesn't use a schema-validation library anywhere
+- **`scripts.ts`** (server-only): scripts are stored as `.json` blobs in Vercel Blob (COR-17,
+  uploaded via the `/scripts` admin page), not on the filesystem. `listAvailableScripts()` lists
+  and reads them via `@vercel/blob` and returns `{ slug, title, scene }[]`; `getScript(slug)` reads
+  and parses one. No new dependency — this project doesn't use a schema-validation library anywhere
   (`lib/validation.ts` is hand-rolled checks), so `getScript` validates the parsed shape with a
   small manual type guard in the same style, not a new `zod` dependency.
 - **`script-colors.ts`**: `assignCharacterColors(characters: string[])` — deterministic, by order
   of first appearance, cycling a fixed set of oklch hues at the mock's `78% 0.11` lightness/chroma
   so new characters keep getting distinct, harmonious colors.
 
-**Known content gap, not a code problem**: of the six scripts under `workshops/scripts/`, only
-`AWAKWNING-LEONARD-AND-SAYER.json` actually exists as a `.json` file today — the rest are PDFs or a
-`.docx`. `listAvailableScripts()` will only ever offer what's there, so at launch the script picker
-has exactly one real entry. The mock's sidebar cards ("Marriage Story," "Fleabag S2E5") are
-illustrative, not implying those scripts are usable yet — more `.json` conversions are a content
-task, not part of this plan.
+**Update (COR-17)**: scripts now live in Vercel Blob rather than the filesystem, uploaded and
+managed via the `/scripts` admin page (see `lib/workshops/scripts.ts`, `addScript()`). The mock's
+sidebar cards ("Marriage Story," "Fleabag S2E5") remain illustrative — `listAvailableScripts()`
+only ever offers what's actually been uploaded to Blob for the current environment.
 
 ## Nav integration
 
@@ -227,8 +226,9 @@ where the array is defined.
    spec-stated; confirm before PR-1 locks in the schema/action split around it.
 2. **Leave-as-last-member auto-deletes** (above) — same status: a reasonable reading of attribute
    8, not a stated rule.
-3. **Script source is the bundled `workshops/scripts/*.json` library**, not a per-workshop upload —
-   the spec never describes an upload flow, and "script editing is out of scope for COR-12"
-   (workshops-spec.md) suggests attaching a pre-made script is the intended scope. Worth
-   confirming before PR-4, since it's the one area where the spec is genuinely silent on where
-   the JSON comes from.
+3. **Script source is the pre-made script library**, not a per-workshop upload — the spec never
+   describes an upload flow, and "script editing is out of scope for COR-12" (workshops-spec.md)
+   suggests attaching a pre-made script is the intended scope. Worth confirming before PR-4, since
+   it's the one area where the spec is genuinely silent on where the JSON comes from. (Resolved by
+   COR-17: the library is managed centrally via the `/scripts` admin page and stored in Vercel
+   Blob, not per-workshop uploads.)

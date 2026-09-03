@@ -1,0 +1,56 @@
+'use client'
+
+export const DEFAULT_SCRIPT_FONT_SIZE = 13.5
+const MIN_SCRIPT_FONT_SIZE = 10
+const MAX_SCRIPT_FONT_SIZE = 20
+const SCRIPT_FONT_SIZE_STEP = 1
+
+// Up/down font-size stepper for ScriptFlow's `fontSize` prop -- shared by
+// script-panel.tsx (/workshops) and script-preview-panel.tsx (/scripts) so
+// both host their own local fontSize state but render this one control
+// rather than duplicating the buttons. `disabled` covers the no-script-
+// selected/attached case, on top of the min/max bounds below -- there's
+// nothing to resize when there's no script rendered at all.
+export function FontSizeControl({
+  fontSize,
+  onChange,
+  disabled = false,
+}: {
+  fontSize: number
+  onChange: (size: number) => void
+  disabled?: boolean
+}) {
+  const canIncrease = !disabled && fontSize < MAX_SCRIPT_FONT_SIZE
+  const canDecrease = !disabled && fontSize > MIN_SCRIPT_FONT_SIZE
+
+  return (
+    <div className="flex shrink-0 items-center">
+      <button
+        type="button"
+        onClick={() => onChange(Math.min(MAX_SCRIPT_FONT_SIZE, fontSize + SCRIPT_FONT_SIZE_STEP))}
+        disabled={!canIncrease}
+        aria-label="Increase script font size"
+        title="Increase font size"
+        className="flex h-8 w-6 items-center justify-center rounded-l-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
+        </svg>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(MIN_SCRIPT_FONT_SIZE, fontSize - SCRIPT_FONT_SIZE_STEP))}
+        disabled={!canDecrease}
+        aria-label="Decrease script font size"
+        title="Decrease font size"
+        className="flex h-8 w-6 items-center justify-center rounded-r-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <polyline points="5 12 12 19 19 12"></polyline>
+        </svg>
+      </button>
+    </div>
+  )
+}

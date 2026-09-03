@@ -1,5 +1,4 @@
-import { promises as fs } from 'fs'
-import path from 'path'
+import { del, get, list, put } from '@vercel/blob'
 
 export type ScriptFlowEntry =
   | { type: 'action'; text: string }
@@ -14,9 +13,27 @@ export type Script = {
 
 export type ScriptSummary = { slug: string; title: string; scene: string }
 
-const SCRIPTS_DIR = path.join(process.cwd(), 'workshops', 'scripts')
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN
 
-function isScriptFlowEntry(value: unknown): value is ScriptFlowEntry {
+// COR-17: one shared Blob store, separated by a path prefix rather than
+// separate stores per environment -- "prod" only in an actual Vercel
+// Production deployment, "dev" everywhere else (local dev, preview
+// deployments), matching VERCEL_ENV's three possible values
+// (undefined locally, "preview", or "production").
+const SCRIPTS_PREFIX = `coral-studio-blob/${process.env.VERCEL_ENV === 'production' ? 'prod' : 'dev'}/scripts/`
+
+function pathnameFor(slug: string): string {
+  return `${SCRIPTS_PREFIX}${slug}.json`
+}
+
+// slug comes from either an uploaded file's name (addScript) or a Blob
+// pathname (listAvailableScripts) -- guarded the same way regardless of
+// origin, same regex the filesystem version used to keep the path safe.
+function isValidSlug(slug: string): boolean {
+  return /^[a-zA-Z0-9._-]+$/.test(slug)
+}
+
+export function isScriptFlowEntry(value: unknown): value is ScriptFlowEntry {
   if (typeof value !== 'object' || value === null) return false
   const entry = value as Record<string, unknown>
   if (entry.type === 'action') return typeof entry.text === 'string'
@@ -24,7 +41,7 @@ function isScriptFlowEntry(value: unknown): value is ScriptFlowEntry {
   return false
 }
 
-function isScriptShape(value: unknown): value is Omit<Script, 'slug'> {
+export function isScriptShape(value: unknown): value is Omit<Script, 'slug'> {
   if (typeof value !== 'object' || value === null) return false
   const script = value as Record<string, unknown>
   return (
@@ -35,41 +52,112 @@ function isScriptShape(value: unknown): value is Omit<Script, 'slug'> {
   )
 }
 
-// Only .json files under workshops/scripts/ are usable -- most of that
-// directory today is PDFs/a .docx with no .json counterpart yet (a content
-// gap, not a code problem; see docs/workshops/design.md).
-export async function listAvailableScripts(): Promise<ScriptSummary[]> {
-  let entries: string[]
-  try {
-    entries = await fs.readdir(SCRIPTS_DIR)
-  } catch {
-    return []
-  }
+// Shared by listAvailableScripts() and listScriptsWithContent() -- one
+// list() + N getScript() pass, so callers that need both the sidebar
+// summaries and one script's full content (the Scripts manager's
+// /scripts/[slug] page) can get both from a single batch instead of
+// re-fetching the selected script a second time via a separate getScript()
+// call.
+async function fetchAllScripts(): Promise<Script[]> {
+  const { blobs } = await list({ prefix: SCRIPTS_PREFIX, token: BLOB_TOKEN })
+  const jsonBlobs = blobs.filter((blob) => blob.pathname.endsWith('.json'))
 
-  const jsonFiles = entries.filter((name) => name.endsWith('.json'))
   const scripts = await Promise.all(
-    jsonFiles.map(async (fileName) => {
-      const slug = fileName.replace(/\.json$/, '')
-      const script = await getScript(slug)
-      return script ? { slug: script.slug, title: script.title, scene: script.scene } : null
+    jsonBlobs.map((blob) => {
+      const slug = blob.pathname.slice(SCRIPTS_PREFIX.length, -'.json'.length)
+      return getScript(slug)
     })
   )
 
-  return scripts.filter((script): script is ScriptSummary => script !== null)
+  return scripts.filter((script): script is Script => script !== null)
+}
+
+// Full-content batch fetch for pages that need more than just the sidebar
+// summary -- see fetchAllScripts()'s comment.
+export async function listScriptsWithContent(): Promise<Script[]> {
+  // Same try/catch reasoning as listAvailableScripts() below: degrade to
+  // "no scripts" rather than crash on a Blob misconfiguration/outage.
+  try {
+    return await fetchAllScripts()
+  } catch {
+    return []
+  }
+}
+
+export async function listAvailableScripts(): Promise<ScriptSummary[]> {
+  // Mirrors the old filesystem version's try/catch: this is called
+  // unconditionally from every /workshops page view, so a Blob
+  // misconfiguration or outage (bad/missing token, auth failure, rate
+  // limit) must degrade to "no scripts available" rather than taking down
+  // the entire pre-existing workshops feature.
+  const scripts = await listScriptsWithContent()
+  return scripts.map((script) => ({ slug: script.slug, title: script.title, scene: script.scene }))
 }
 
 export async function getScript(slug: string): Promise<Script | null> {
-  // slug is meant to only ever come from listAvailableScripts()'s own output
-  // (via workshops.scriptSlug, set by setWorkshopScript()), but guard the
-  // filesystem path the same way regardless of where a slug came from.
-  if (!/^[a-zA-Z0-9._-]+$/.test(slug)) return null
+  if (!isValidSlug(slug)) return null
 
   try {
-    const raw = await fs.readFile(path.join(SCRIPTS_DIR, `${slug}.json`), 'utf-8')
+    // get() accepts a pathname directly (resolving the store's base URL from
+    // the read-write token) and returns null on a 404, per
+    // node_modules/@vercel/blob/dist/index.d.ts -- no list()/head() lookup
+    // needed first. `access` is a required option there (unlike the filter
+    // options for list/del), and the resolved value is `{ stream, blob, ... }`
+    // (a raw ReadableStream body plus metadata), not a Response with `.text()`,
+    // so it's wrapped in a `Response` to read it as text.
+    // useCache: false bypasses the CDN cache (default true, per the same
+    // .d.ts) -- addScript() re-uploads with allowOverwrite: true to fix a
+    // bad conversion, and put()'s cacheControlMaxAge defaults to one month,
+    // so without this a re-upload could keep serving the stale cached copy.
+    const result = await get(pathnameFor(slug), { access: 'private', token: BLOB_TOKEN, useCache: false })
+    if (!result || !result.stream) return null
+
+    const raw = await new Response(result.stream).text()
     const parsed: unknown = JSON.parse(raw)
     if (!isScriptShape(parsed)) return null
     return { slug, ...parsed }
   } catch {
     return null
   }
+}
+
+// Backs the "+ Add script" upload in the Scripts manager (app/scripts/actions.ts).
+// JSON-only (COR-17 decision): the uploaded file must already match the
+// schema below so it's immediately renderable via ScriptFlow -- there is no
+// raw PDF/DOCX storage path in this app; conversion happens externally via
+// the AI prompt (components/scripts/prompt-panel.tsx).
+export async function addScript(file: File): Promise<{ slug: string } | { error: string }> {
+  const slug = file.name.replace(/\.json$/i, '')
+  if (!isValidSlug(slug)) {
+    return { error: 'File name must contain only letters, numbers, dots, dashes and underscores.' }
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(await file.text())
+  } catch {
+    return { error: 'That file is not valid JSON.' }
+  }
+  if (!isScriptShape(parsed)) {
+    return { error: 'JSON must have a title (string), scene (string), and script_flow array matching the schema.' }
+  }
+
+  // addRandomSuffix: false keeps the pathname == slug-derived key (so
+  // getScript/deleteScript can address it without a lookup table);
+  // allowOverwrite: true lets re-uploading the same file name replace it,
+  // which is the expected way to fix a bad conversion.
+  await put(pathnameFor(slug), JSON.stringify(parsed), {
+    access: 'private',
+    contentType: 'application/json',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    token: BLOB_TOKEN,
+  })
+
+  return { slug }
+}
+
+export async function deleteScript(slug: string): Promise<void> {
+  if (!isValidSlug(slug)) return
+  await del(pathnameFor(slug), { token: BLOB_TOKEN })
 }

@@ -7,15 +7,19 @@ import { UserMenu } from '@/components/user-menu'
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const isLoggedIn = status === 'authenticated'
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin'
 
   // Signed-in users get the dedicated /workshops page (COR-12); everyone
-  // else keeps scrolling to the homepage section, same as today.
+  // else keeps scrolling to the homepage section, same as today. Scripts
+  // (COR-17) is admin-only, so it's spliced in conditionally rather than
+  // always present like the rest of the nav.
   const navLinks = [
     { label: 'About', href: '/#about' },
     { label: 'Workshops', href: isLoggedIn ? '/workshops' : '/#workshops' },
     { label: 'Communities', href: '/#community' },
+    ...(isAdmin ? [{ label: 'Scripts', href: '/scripts' }] : []),
     { label: 'Contact', href: '/#contact' },
   ]
 
