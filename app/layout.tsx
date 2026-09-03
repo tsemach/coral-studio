@@ -20,6 +20,12 @@ export const metadata: Metadata = {
       'Serious, practical acting training in English. Weekly classes, special workshops, and a supportive community in Belgrade.',
     type: 'website',
   },
+  // Named public/glumacki-icon.svg rather than app/icon.svg, so it needs to
+  // be declared explicitly here -- Next's file-convention icon detection
+  // only picks up the exact reserved filename `icon.svg` under app/.
+  icons: {
+    icon: '/glumacki-icon.svg',
+  },
 }
 
 export const viewport: Viewport = {
