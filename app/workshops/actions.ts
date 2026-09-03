@@ -26,6 +26,27 @@ export async function requireMember(workshopId: string) {
   return session.user as { id: string }
 }
 
+// Same as requireMember(), but an admin passes without needing membership --
+// COR-17: admins already see every workshop regardless of membership
+// (attribute 9, lib/workshops/queries.ts's listWorkshopsForUser), so being
+// able to attach a script to one they're browsing but haven't joined matches
+// that same broad-visibility intent. Scoped to setWorkshopScript() only, not
+// the rest of this file (adding/removing members, scheduling, leaving,
+// deleting) -- those stay member-only unless asked for separately.
+async function requireMemberOrAdmin(workshopId: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  if ((session.user as { role?: string }).role === 'admin') {
+    return session.user as { id: string }
+  }
+
+  const member = await isWorkshopMember(workshopId, session.user.id)
+  if (!member) throw new Error('Unauthorized')
+
+  return session.user as { id: string }
+}
+
 type DraftMember = { userId: string; type: 'actor' | 'viewer'; part: string }
 
 function parseDraftMembers(raw: string): DraftMember[] {
@@ -310,7 +331,7 @@ export async function cancelRehearsal(workshopId: string) {
 // only attaches one of the scripts uploaded via the /scripts admin page,
 // stored in Vercel Blob (lib/workshops/scripts.ts).
 export async function setWorkshopScript(workshopId: string, formData: FormData) {
-  await requireMember(workshopId)
+  await requireMemberOrAdmin(workshopId)
 
   const scriptSlug = String(formData.get('scriptSlug') ?? '').trim()
   if (scriptSlug) {
