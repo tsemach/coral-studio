@@ -52,28 +52,46 @@ export function isScriptShape(value: unknown): value is Omit<Script, 'slug'> {
   )
 }
 
+// Shared by listAvailableScripts() and listScriptsWithContent() -- one
+// list() + N getScript() pass, so callers that need both the sidebar
+// summaries and one script's full content (the Scripts manager's
+// /scripts/[slug] page) can get both from a single batch instead of
+// re-fetching the selected script a second time via a separate getScript()
+// call.
+async function fetchAllScripts(): Promise<Script[]> {
+  const { blobs } = await list({ prefix: SCRIPTS_PREFIX, token: BLOB_TOKEN })
+  const jsonBlobs = blobs.filter((blob) => blob.pathname.endsWith('.json'))
+
+  const scripts = await Promise.all(
+    jsonBlobs.map((blob) => {
+      const slug = blob.pathname.slice(SCRIPTS_PREFIX.length, -'.json'.length)
+      return getScript(slug)
+    })
+  )
+
+  return scripts.filter((script): script is Script => script !== null)
+}
+
+// Full-content batch fetch for pages that need more than just the sidebar
+// summary -- see fetchAllScripts()'s comment.
+export async function listScriptsWithContent(): Promise<Script[]> {
+  // Same try/catch reasoning as listAvailableScripts() below: degrade to
+  // "no scripts" rather than crash on a Blob misconfiguration/outage.
+  try {
+    return await fetchAllScripts()
+  } catch {
+    return []
+  }
+}
+
 export async function listAvailableScripts(): Promise<ScriptSummary[]> {
   // Mirrors the old filesystem version's try/catch: this is called
   // unconditionally from every /workshops page view, so a Blob
   // misconfiguration or outage (bad/missing token, auth failure, rate
   // limit) must degrade to "no scripts available" rather than taking down
   // the entire pre-existing workshops feature.
-  try {
-    const { blobs } = await list({ prefix: SCRIPTS_PREFIX, token: BLOB_TOKEN })
-    const jsonBlobs = blobs.filter((blob) => blob.pathname.endsWith('.json'))
-
-    const scripts = await Promise.all(
-      jsonBlobs.map(async (blob) => {
-        const slug = blob.pathname.slice(SCRIPTS_PREFIX.length, -'.json'.length)
-        const script = await getScript(slug)
-        return script ? { slug: script.slug, title: script.title, scene: script.scene } : null
-      })
-    )
-
-    return scripts.filter((script): script is ScriptSummary => script !== null)
-  } catch {
-    return []
-  }
+  const scripts = await listScriptsWithContent()
+  return scripts.map((script) => ({ slug: script.slug, title: script.title, scene: script.scene }))
 }
 
 export async function getScript(slug: string): Promise<Script | null> {
