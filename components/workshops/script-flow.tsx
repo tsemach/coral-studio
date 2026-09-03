@@ -90,9 +90,14 @@ export function ScriptFlow({
 
   // text-center on the container, not repeated per-line -- text-align
   // inherits, so both the action paragraphs and the character-name/line
-  // pairs below pick it up for free.
+  // pairs below pick it up for free. max-w-2xl + mx-auto caps line length to
+  // a comfortable reading width regardless of how wide the surrounding
+  // panel is -- without it, a long monologue line stretches edge-to-edge in
+  // a wide container (e.g. /scripts' preview panel, which has no sibling
+  // details panel narrowing it the way workshops' does), which is much
+  // harder to read than the same text wrapped narrower.
   return (
-    <div className="flex flex-col gap-3 text-center text-[13.5px] leading-relaxed">
+    <div className="mx-auto flex max-w-2xl flex-col gap-5 text-center text-[13.5px] leading-loose">
       {script.script_flow.map((entry, index) =>
         entry.type === 'action' ? (
           <p key={index} className="italic text-ink-foreground/55">
