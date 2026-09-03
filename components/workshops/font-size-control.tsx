@@ -23,8 +23,9 @@ export function FontSizeControl({ fontSize, onChange }: { fontSize: number; onCh
         title="Increase font size"
         className="flex h-8 w-6 items-center justify-center rounded-l-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30"
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="18 15 12 9 6 15"></polyline>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
         </svg>
       </button>
       <button
@@ -35,8 +36,9 @@ export function FontSizeControl({ fontSize, onChange }: { fontSize: number; onCh
         title="Decrease font size"
         className="flex h-8 w-6 items-center justify-center rounded-r-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30"
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <polyline points="5 12 12 19 19 12"></polyline>
         </svg>
       </button>
     </div>
