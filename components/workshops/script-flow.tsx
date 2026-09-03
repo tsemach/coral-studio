@@ -20,6 +20,8 @@ export function ScriptFlow({
   colors,
   markedCharacter,
   highlightColor,
+  fontSize,
+  boldMarked,
 }: {
   script: Script
   splitByCharacter: boolean
@@ -27,7 +29,12 @@ export function ScriptFlow({
   colors: Record<string, string>
   markedCharacter: string | null
   highlightColor: string
+  fontSize: number
+  boldMarked: boolean
 }) {
+  // Only the marked character's lines can go bold -- the toggle has no
+  // effect on anything else in the script.
+  const markClassName = boldMarked ? `${MARK_CLASSNAME} font-bold` : MARK_CLASSNAME
   // Falls back to the single-column view below even if splitByCharacter is
   // true -- the toggle button is disabled whenever this is false, but state
   // can still go stale for a beat (e.g. the attached script changes out from
@@ -37,14 +44,17 @@ export function ScriptFlow({
     const columns = `repeat(${characters.length}, 1fr)`
 
     return (
-      <div className="flex flex-col gap-3 text-[13.5px] leading-relaxed">
+      <div className="flex flex-col gap-3 leading-relaxed" style={{ fontSize }}>
         {/* Stays visible while the column below it scrolls, so a long scene
-            never loses track of which column belongs to whom. */}
+            never loses track of which column belongs to whom. text-[0.8em]
+            keeps this proportional to the surrounding fontSize (was a fixed
+            11px against a fixed 13.5px base) instead of staying a flat size
+            while the rest of the script scales via the font-size control. */}
         <div className="sticky top-0 z-10 -mx-5 -mt-4 grid gap-4 bg-ink px-5 pb-3 pt-4" style={{ gridTemplateColumns: columns }}>
           {characters.map((character) => (
             <p
               key={character}
-              className="truncate text-center text-[11px] font-bold uppercase tracking-[0.08em]"
+              className="truncate text-center text-[0.8em] font-bold uppercase tracking-[0.08em]"
               style={{ color: colors[character] }}
             >
               {character}
@@ -72,7 +82,7 @@ export function ScriptFlow({
                 character === entry.character ? (
                   <p
                     key={character}
-                    className={character === markedCharacter ? MARK_CLASSNAME : undefined}
+                    className={character === markedCharacter ? markClassName : undefined}
                     style={character === markedCharacter ? { backgroundColor: highlightColor } : undefined}
                   >
                     {entry.line}
@@ -90,9 +100,16 @@ export function ScriptFlow({
 
   // text-center on the container, not repeated per-line -- text-align
   // inherits, so both the action paragraphs and the character-name/line
-  // pairs below pick it up for free.
+  // pairs below pick it up for free. max-w-4xl + mx-auto caps line length so
+  // it doesn't run edge-to-edge in a very wide container (a full-width
+  // /scripts preview, or workshops' expanded script panel) -- narrower than
+  // that, this cap doesn't engage at all (the container's own width already
+  // wins), which is why workshops' side-by-side layout (narrower script
+  // panel, sharing the row with WorkshopDetailsPanel) never showed this.
+  // 4xl rather than the original 2xl: 2xl left a visibly large empty gutter
+  // once the container was wide enough for the cap to actually apply.
   return (
-    <div className="flex flex-col gap-3 text-center text-[13.5px] leading-relaxed">
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 text-center leading-loose" style={{ fontSize }}>
       {script.script_flow.map((entry, index) =>
         entry.type === 'action' ? (
           <p key={index} className="italic text-ink-foreground/55">
@@ -101,13 +118,16 @@ export function ScriptFlow({
         ) : (
           // Name on its own line, uppercase, colored per character (unchanged
           // coloring -- only the layout moved); the line itself sits directly
-          // beneath it in the default text color, also its own line.
+          // beneath it in the default text color, also its own line. text-[0.93em]
+          // keeps it proportional to fontSize (was a flat 12.5px against a
+          // flat 13.5px base) rather than staying fixed while the font-size
+          // control scales everything else.
           <div key={index} className="flex flex-col gap-0.5">
-            <p className="text-[12.5px] font-bold uppercase tracking-[0.04em]" style={{ color: colors[entry.character] }}>
+            <p className="text-[0.93em] font-bold uppercase tracking-[0.04em]" style={{ color: colors[entry.character] }}>
               {entry.character}
             </p>
             <p
-              className={entry.character === markedCharacter ? MARK_CLASSNAME : undefined}
+              className={entry.character === markedCharacter ? markClassName : undefined}
               style={entry.character === markedCharacter ? { backgroundColor: highlightColor } : undefined}
             >
               {entry.line}

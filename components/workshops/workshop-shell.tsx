@@ -30,6 +30,7 @@ export function WorkshopShell({
   const addableForSelected = selected
     ? activeUsers.filter((user) => !selected.members.some((member) => member.userId === user.id))
     : []
+
   return (
     // h-screen + overflow-hidden (not min-h-screen) is load-bearing: without
     // an actual height ceiling here, flex-1 below never becomes a bounded

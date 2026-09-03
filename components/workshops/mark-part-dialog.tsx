@@ -6,16 +6,18 @@ import type { DialogHandle } from '@/components/workshops/add-member-dialog'
 // COR-16: a fixed palette, not a free color input -- kept to shades bright
 // enough for the dark ink background and for text-ink (near-black) on top of
 // them to stay legible, unlike a typical light-background swatch set (which
-// leans on white/gray/black that would wash out or vanish here).
+// leans on white/gray/black that would wash out or vanish here). One step
+// lighter than the original per feedback -- the near-black overlay text
+// reads more clearly against these than the deeper originals.
 export const MARK_COLORS = [
-  '#fde047', // yellow
-  '#bef264', // lime
-  '#5eead4', // teal
-  '#67e8f9', // cyan
-  '#7dd3fc', // sky
-  '#f9a8d4', // pink
-  '#fda4af', // rose
-  '#fdba74', // orange
+  '#fef08a', // yellow
+  '#d9f99d', // lime
+  '#99f6e4', // teal
+  '#a5f3fc', // cyan
+  '#bae6fd', // sky
+  '#fbcfe8', // pink
+  '#fecdd3', // rose
+  '#fed7aa', // orange
 ]
 
 // COR-16: opened from ScriptPanel's mark icon. A picker, not a form -- every

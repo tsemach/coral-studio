@@ -26,6 +26,28 @@ export async function requireMember(workshopId: string) {
   return session.user as { id: string }
 }
 
+// Same as requireMember(), but an admin passes without needing membership --
+// COR-17: admins already see every workshop regardless of membership
+// (attribute 9, lib/workshops/queries.ts's listWorkshopsForUser), so being
+// able to edit one they're browsing but haven't joined (title, script, or
+// via updateWorkshop()'s Edit modal) matches that same broad-visibility
+// intent. Scoped to updateWorkshop()/setWorkshopScript() only, not the rest
+// of this file (adding/removing members outside the Edit modal, scheduling,
+// leaving, deleting) -- those stay member-only unless asked for separately.
+async function requireMemberOrAdmin(workshopId: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  if ((session.user as { role?: string }).role === 'admin') {
+    return session.user as { id: string }
+  }
+
+  const member = await isWorkshopMember(workshopId, session.user.id)
+  if (!member) throw new Error('Unauthorized')
+
+  return session.user as { id: string }
+}
+
 type DraftMember = { userId: string; type: 'actor' | 'viewer'; part: string }
 
 function parseDraftMembers(raw: string): DraftMember[] {
@@ -127,7 +149,7 @@ export async function createWorkshop(formData: FormData) {
 // and this never redirects -- Edit can be opened from any card in the
 // sidebar, not just the one currently open.
 export async function updateWorkshop(workshopId: string, formData: FormData) {
-  const member = await requireMember(workshopId)
+  const member = await requireMemberOrAdmin(workshopId)
 
   const title = String(formData.get('title') ?? '').trim()
   const scriptSlug = await resolveScriptSlug(String(formData.get('scriptSlug') ?? ''))
@@ -307,9 +329,10 @@ export async function cancelRehearsal(workshopId: string) {
 }
 
 // Script *editing* is out of scope for COR-12 (workshops-spec.md) -- this
-// only attaches one of the pre-made scripts under workshops/scripts/.
+// only attaches one of the scripts uploaded via the /scripts admin page,
+// stored in Vercel Blob (lib/workshops/scripts.ts).
 export async function setWorkshopScript(workshopId: string, formData: FormData) {
-  await requireMember(workshopId)
+  await requireMemberOrAdmin(workshopId)
 
   const scriptSlug = String(formData.get('scriptSlug') ?? '').trim()
   if (scriptSlug) {

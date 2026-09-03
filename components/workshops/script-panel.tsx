@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { setWorkshopScript } from '@/app/workshops/actions'
 import { MARK_COLORS, MarkPartDialog } from '@/components/workshops/mark-part-dialog'
 import type { DialogHandle } from '@/components/workshops/add-member-dialog'
+import { DEFAULT_SCRIPT_FONT_SIZE, FontSizeControl } from '@/components/workshops/font-size-control'
 import { ScriptFlow } from '@/components/workshops/script-flow'
 import { assignCharacterColors, canSplitByCharacter, getSpeakingCharacters } from '@/lib/workshops/script-colors'
 import type { WorkshopMember } from '@/lib/workshops/queries'
@@ -33,6 +34,7 @@ export function ScriptPanel({
   // px number on the first drag and stays that way after.
   const [width, setWidth] = useState<number | null>(null)
   const [splitByCharacter, setSplitByCharacter] = useState(false)
+  const [fontSize, setFontSize] = useState(DEFAULT_SCRIPT_FONT_SIZE)
   const panelRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
 
@@ -59,6 +61,10 @@ export function ScriptPanel({
   // choice -- only a new mark (or a script swap) replaces it.
   const [lastSelected, setLastSelected] = useState<string | null>(null)
   const [highlightColor, setHighlightColor] = useState(MARK_COLORS[0])
+  // Only affects the marked character's lines -- nothing to bold without a
+  // mark, so this stays a user preference rather than resetting alongside
+  // markedCharacter on erase/script swap.
+  const [boldMarked, setBoldMarked] = useState(false)
   const markDialogRef = useRef<DialogHandle>(null)
 
   // A stale mark from a previously-attached script can't apply to this one.
@@ -127,6 +133,25 @@ export function ScriptPanel({
           <p className="mt-0.5 truncate text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <FontSizeControl fontSize={fontSize} onChange={setFontSize} disabled={!script} />
+          <button
+            type="button"
+            onClick={() => setBoldMarked((v) => !v)}
+            disabled={!markedCharacter}
+            aria-pressed={boldMarked}
+            aria-label={boldMarked ? 'Unbold marked lines' : 'Bold marked lines'}
+            title={markedCharacter ? (boldMarked ? 'Unbold marked lines' : 'Bold marked lines') : 'Mark a part first'}
+            className={
+              boldMarked
+                ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
+                : 'flex h-8 w-8 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30'
+            }
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 12a4 4 0 0 0 0-8H6v8"></path>
+              <path d="M15 20a4 4 0 0 0 0-8H6v8Z"></path>
+            </svg>
+          </button>
           <button
             type="button"
             onClick={() => (markedCharacter ? setMarkedCharacter(null) : markDialogRef.current?.open())}
@@ -223,6 +248,8 @@ export function ScriptPanel({
             colors={colors}
             markedCharacter={markedCharacter}
             highlightColor={highlightColor}
+            fontSize={fontSize}
+            boldMarked={boldMarked}
           />
         ) : availableScripts.length === 0 ? (
           <p className="text-sm text-ink-foreground/55">No scripts are available to attach yet.</p>
