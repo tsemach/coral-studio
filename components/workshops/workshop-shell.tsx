@@ -1,9 +1,5 @@
-import Link from 'next/link'
-import { UserMenu } from '@/components/user-menu'
-import { AddMemberDialog } from '@/components/workshops/add-member-dialog'
-import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
-import { WorkshopPanels } from '@/components/workshops/workshop-panels'
-import { WorkshopSidebarList } from '@/components/workshops/workshop-sidebar-list'
+import { WorkshopMain } from '@/components/workshops/workshop-main'
+import { WorkshopTopbar } from '@/components/workshops/workshop-topbar'
 import type { AddableUser, WorkshopDetail, WorkshopListItem } from '@/lib/workshops/queries'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
@@ -40,58 +36,16 @@ export function WorkshopShell({
     // min-height:auto refuses to shrink below its content size, which
     // silently defeats overflow at whichever level omits it).
     <div className="flex h-screen flex-col overflow-hidden bg-ink text-ink-foreground">
-      <div className="flex items-center justify-between border-b border-ink-foreground/16 px-8 py-[18px]">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Back to site"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-ink-foreground/16 text-ink-foreground/55 transition-colors hover:border-ink-foreground/30 hover:text-ink-foreground"
-          >
-            ←
-          </Link>
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">Workshops</p>
-            <p className="mt-0.5 text-[21px] font-semibold tracking-tight">Rehearsal Room</p>
-          </div>
-        </div>
+      <WorkshopTopbar />
 
-        <UserMenu />
-      </div>
-
-      <div className="flex min-h-0 flex-1">
-        <WorkshopSidebarList
-          workshops={workshops}
-          selectedId={selected?.id ?? null}
-          activeUsers={activeUsers}
-          availableScripts={availableScripts}
-        />
-
-        <div className="flex min-h-0 flex-1 flex-col px-8 py-6">
-          {selected ? (
-            <>
-              <div className="flex shrink-0 items-center justify-between gap-4">
-                <h1 className="text-[27px] font-semibold tracking-tight">{selected.title}</h1>
-                <div className="flex items-center gap-3">
-                  <ScheduleRehearsalDialog workshopId={selected.id} rehearsalAt={selected.rehearsalAt} location={selected.location} />
-                  <AddMemberDialog workshopId={selected.id} availableUsers={addableForSelected} />
-                </div>
-              </div>
-
-              <WorkshopPanels workshop={selected} script={script} availableScripts={availableScripts} />
-            </>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">Workshops</p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight">No workshop selected</h1>
-              <p className="mt-2 max-w-sm text-sm text-ink-foreground/55">
-                {workshops.length === 0
-                  ? 'Create a workshop from the sidebar to start building a group, scheduling a rehearsal, and attaching a script.'
-                  : 'Choose a workshop from the sidebar.'}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      <WorkshopMain
+        workshops={workshops}
+        selected={selected}
+        script={script}
+        availableScripts={availableScripts}
+        activeUsers={activeUsers}
+        addableForSelected={addableForSelected}
+      />
     </div>
   )
 }
