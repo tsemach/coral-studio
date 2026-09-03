@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { auth } from '@/auth'
 import { UserMenu } from '@/components/user-menu'
 import { AddMemberDialog } from '@/components/workshops/add-member-dialog'
 import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
@@ -11,7 +10,7 @@ import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 // Server Component -- only the search filter (workshop-sidebar-list.tsx) and
 // the script panel's open/closed state need to be Client Components;
 // everything else here renders on the server.
-export async function WorkshopShell({
+export function WorkshopShell({
   workshops,
   selected,
   script,
@@ -31,9 +30,6 @@ export async function WorkshopShell({
   const addableForSelected = selected
     ? activeUsers.filter((user) => !selected.members.some((member) => member.userId === user.id))
     : []
-
-  const session = await auth()
-  const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin'
 
   return (
     // h-screen + overflow-hidden (not min-h-screen) is load-bearing: without
@@ -59,17 +55,7 @@ export async function WorkshopShell({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {isAdmin && (
-            <Link
-              href="/scripts"
-              className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground transition-colors hover:border-ink-foreground/30"
-            >
-              Scripts
-            </Link>
-          )}
-          <UserMenu />
-        </div>
+        <UserMenu />
       </div>
 
       <div className="flex min-h-0 flex-1">
