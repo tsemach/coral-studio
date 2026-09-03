@@ -29,10 +29,11 @@ export async function requireMember(workshopId: string) {
 // Same as requireMember(), but an admin passes without needing membership --
 // COR-17: admins already see every workshop regardless of membership
 // (attribute 9, lib/workshops/queries.ts's listWorkshopsForUser), so being
-// able to attach a script to one they're browsing but haven't joined matches
-// that same broad-visibility intent. Scoped to setWorkshopScript() only, not
-// the rest of this file (adding/removing members, scheduling, leaving,
-// deleting) -- those stay member-only unless asked for separately.
+// able to edit one they're browsing but haven't joined (title, script, or
+// via updateWorkshop()'s Edit modal) matches that same broad-visibility
+// intent. Scoped to updateWorkshop()/setWorkshopScript() only, not the rest
+// of this file (adding/removing members outside the Edit modal, scheduling,
+// leaving, deleting) -- those stay member-only unless asked for separately.
 async function requireMemberOrAdmin(workshopId: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
@@ -148,7 +149,7 @@ export async function createWorkshop(formData: FormData) {
 // and this never redirects -- Edit can be opened from any card in the
 // sidebar, not just the one currently open.
 export async function updateWorkshop(workshopId: string, formData: FormData) {
-  const member = await requireMember(workshopId)
+  const member = await requireMemberOrAdmin(workshopId)
 
   const title = String(formData.get('title') ?? '').trim()
   const scriptSlug = await resolveScriptSlug(String(formData.get('scriptSlug') ?? ''))
