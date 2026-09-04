@@ -1,4 +1,5 @@
 import { AddMemberDialog } from '@/components/workshops/add-member-dialog'
+import { GoLiveButton } from '@/components/workshops/go-live-button'
 import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
 import { WorkshopPanels } from '@/components/workshops/workshop-panels'
 import { WorkshopSidebarList } from '@/components/workshops/workshop-sidebar-list'
@@ -35,6 +36,7 @@ export function WorkshopMain({
             <div className="flex shrink-0 items-center justify-between gap-4">
               <h1 className="text-[27px] font-semibold tracking-tight">{selected.title}</h1>
               <div className="flex items-center gap-3">
+                <GoLiveButton workshopId={selected.id} />
                 <ScheduleRehearsalDialog workshopId={selected.id} rehearsalAt={selected.rehearsalAt} location={selected.location} />
                 <AddMemberDialog workshopId={selected.id} availableUsers={addableForSelected} />
               </div>

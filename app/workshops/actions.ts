@@ -6,10 +6,11 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { db } from '@/lib/database'
 import { users, workshopMembers, workshops } from '@/lib/database/schema'
-import { getWorkshopDetail, isWorkshopMember } from '@/lib/workshops/queries'
+import { getMemberType, getWorkshopDetail, isWorkshopMember } from '@/lib/workshops/queries'
 import { listAvailableScripts } from '@/lib/workshops/scripts'
 import { isValidEmail } from '@/lib/validation'
 import { deleteRehearsalEvent, getValidAccessToken, upsertRehearsalEvent } from '@/lib/google/calendar'
+import { getLiveKitServerUrl, mintLiveToken, promoteParticipant } from '@/lib/workshops/live'
 
 // Render-time gating on the page is not a security boundary -- a Server
 // Action is directly POSTable, so every action re-checks the caller is a
@@ -384,6 +385,33 @@ export async function leaveWorkshop(workshopId: string) {
 // Attribute 8: only when the caller is the last member. The card menu only
 // ever shows Delete in that state (Leave otherwise), but this re-asserts it
 // server-side regardless of what the UI sent.
+// COR-18: mints this caller's room token for the "Go live" / "Live now" video
+// view. canPublish mirrors their workshop_members.type -- actors join able to
+// publish camera/mic, viewers join subscribe-only until promoted via
+// addMeToLiveSession() below. Member-only like the rest of this file (no
+// requireMemberOrAdmin bypass): browsing as admin isn't the same as being in
+// the group's video call.
+export async function getLiveToken(workshopId: string): Promise<{ token: string; serverUrl: string; canPublish: boolean }> {
+  const member = await requireMember(workshopId)
+  const session = member as { id: string; name?: string | null; email?: string | null }
+
+  const type = await getMemberType(workshopId, session.id)
+  const canPublish = type === 'actor'
+  const displayName = session.name || session.email || 'Guest'
+
+  const token = await mintLiveToken(workshopId, session.id, displayName, canPublish)
+  return { token, serverUrl: getLiveKitServerUrl(), canPublish }
+}
+
+// "Add me": promotes the caller from passive viewer to visible/publishing
+// participant for the current live session only -- deliberately doesn't
+// touch workshop_members.type, so it doesn't change their role in the group
+// once the call ends.
+export async function addMeToLiveSession(workshopId: string): Promise<void> {
+  const member = await requireMember(workshopId)
+  await promoteParticipant(workshopId, member.id)
+}
+
 export async function deleteWorkshop(workshopId: string) {
   await requireMember(workshopId)
 
