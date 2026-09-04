@@ -31,9 +31,10 @@ export async function requireMember(workshopId: string) {
 // (attribute 9, lib/workshops/queries.ts's listWorkshopsForUser), so being
 // able to edit one they're browsing but haven't joined (title, script, or
 // via updateWorkshop()'s Edit modal) matches that same broad-visibility
-// intent. Scoped to updateWorkshop()/setWorkshopScript() only, not the rest
-// of this file (adding/removing members outside the Edit modal, scheduling,
-// leaving, deleting) -- those stay member-only unless asked for separately.
+// intent. Also backs addMember() -- an admin otherwise has no door into a
+// workshop they haven't joined, since adding themselves is the only way in.
+// The rest of this file (removing members, scheduling, leaving, deleting)
+// stays member-only unless asked for separately.
 async function requireMemberOrAdmin(workshopId: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error('Unauthorized')
@@ -167,9 +168,12 @@ export async function updateWorkshop(workshopId: string, formData: FormData) {
 
 // Attribute 6: any member (not just the creator) can add any other existing,
 // active user -- no invite-by-email, matching attribute 2a's "userId or user
-// name (a unique identifier)."
+// name (a unique identifier)." requireMemberOrAdmin (not requireMember): an
+// admin browsing a workshop they haven't joined yet otherwise has no way in
+// -- the only door is this same dialog, so it has to accept admins the same
+// way updateWorkshop()/setWorkshopScript() already do (COR-17).
 export async function addMember(workshopId: string, formData: FormData) {
-  await requireMember(workshopId)
+  await requireMemberOrAdmin(workshopId)
 
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
   const type = formData.get('type') === 'viewer' ? 'viewer' : 'actor'
