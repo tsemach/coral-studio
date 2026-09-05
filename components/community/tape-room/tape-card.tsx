@@ -34,7 +34,7 @@ export function TapeCard({ tape }: { tape: TapeItem }) {
       </div>
 
       <Link href={`/community/tape-room/${tape.id}`} className="block focus:outline-hidden">
-        <h3 className="font-serif text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
+        <h3 className="text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
           {tape.title}
         </h3>
         <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-foreground/65">

@@ -93,7 +93,7 @@ export function TapeDetailModal({
 
         <div className="overflow-y-auto flex-1 pr-1 space-y-5 mt-4">
           <div>
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
               {tape.title}
             </h1>
 
@@ -117,7 +117,7 @@ export function TapeDetailModal({
 
           <section className="border-t border-ink-foreground/16 pt-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-serif text-base font-semibold tracking-tight text-ink-foreground">
+              <h2 className="text-base font-semibold tracking-tight text-ink-foreground">
                 Notes ({notes.length})
               </h2>
               {!isAddingNote && (

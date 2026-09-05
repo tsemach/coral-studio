@@ -57,7 +57,7 @@ export function CommunityShell({ view }: { view: CommunityView }) {
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-ink-foreground/5 text-lg text-ink-foreground/60">
               🎬
             </div>
-            <h3 className="font-serif text-base font-semibold text-ink-foreground">No tapes yet</h3>
+            <h3 className="text-base font-semibold text-ink-foreground">No tapes yet</h3>
             <p className="mt-1 text-xs text-ink-foreground/55 max-w-sm mx-auto">
               Be the first to share a self-tape or rehearsal clip for feedback.
             </p>
