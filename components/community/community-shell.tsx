@@ -18,7 +18,7 @@ export function CommunityShell({ view }: { view: CommunityView }) {
           <p className="text-xs uppercase tracking-[0.24em] text-accent font-semibold mb-1">
             Glumački Studio Community
           </p>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink-foreground md:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-ink-foreground md:text-4xl">
             The Actor Board
           </h1>
           <p className="mt-2 text-sm text-ink-foreground/65 max-w-xl">
@@ -38,7 +38,7 @@ export function CommunityShell({ view }: { view: CommunityView }) {
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-ink-foreground/5 text-lg text-ink-foreground/60">
                 🎭
               </div>
-              <h3 className="font-serif text-base font-semibold text-ink-foreground">No posts in this channel yet</h3>
+              <h3 className="text-base font-semibold text-ink-foreground">No posts in this channel yet</h3>
               <p className="mt-1 text-xs text-ink-foreground/55 max-w-sm mx-auto">
                 Be the first to post a line-reading request, audition notice, or craft question.
               </p>

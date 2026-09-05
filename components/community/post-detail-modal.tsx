@@ -162,7 +162,7 @@ export function PostDetailModal({
               )}
             </div>
 
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
               {post.title}
             </h1>
 
@@ -328,7 +328,7 @@ export function PostDetailModal({
 
           {/* Discussion Thread */}
           <section className="border-t border-ink-foreground/16 pt-4 space-y-4">
-            <h2 className="font-serif text-base font-semibold tracking-tight text-ink-foreground">
+            <h2 className="text-base font-semibold tracking-tight text-ink-foreground">
               Discussion ({comments.length})
             </h2>
 
