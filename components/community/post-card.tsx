@@ -37,7 +37,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
     <article className="group relative rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35">
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold text-primary">
+          <span className="font-semibold text-blue-200">
             {getChannelLabel(post.channel)}
           </span>
 
@@ -85,7 +85,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
       </div>
 
       <Link href={`/community/${post.id}`} className="block focus:outline-hidden">
-        <h3 className="font-serif text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
+        <h3 className="text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
           {post.title}
         </h3>
 
@@ -147,7 +147,10 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1">
+          <Link
+            href={`/community/${post.id}`}
+            className="inline-flex items-center gap-1 transition-colors hover:text-blue-200 focus:outline-hidden"
+          >
             <svg
               className="h-3.5 w-3.5"
               fill="none"
@@ -162,7 +165,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
               />
             </svg>
             <span>{post.commentsCount} {post.commentsCount === 1 ? 'reply' : 'replies'}</span>
-          </span>
+          </Link>
         </div>
       </div>
     </article>

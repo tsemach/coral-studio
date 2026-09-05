@@ -1,7 +1,4 @@
-'use client'
-
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import type { ReaderStatus } from '@/lib/community/types'
 
 const CHANNELS: { id: string; label: string; description: string; badge?: string }[] = [
@@ -10,13 +7,16 @@ const CHANNELS: { id: string; label: string; description: string; badge?: string
   { id: 'callboard', label: '#the-callboard', description: 'Belgrade auditions, student films & crew' },
   { id: 'craft_chat', label: '#craft-chat', description: 'Acting technique, scene analysis & questions' },
   { id: 'general', label: '#general', description: 'Studio news & discussions' },
+  { id: 'tape_room', label: 'Tape Room', description: 'Self-tapes and rehearsal clips with timecoded notes' },
 ]
 
-export function ChannelTabs() {
-  const searchParams = useSearchParams()
-  const activeChannel = searchParams.get('channel') || 'all'
-  const activeStatus = searchParams.get('status') as ReaderStatus | null
-
+export function ChannelTabs({
+  activeChannel = 'all',
+  activeStatus = null,
+}: {
+  activeChannel?: string
+  activeStatus?: ReaderStatus | null
+}) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 border-b border-ink-foreground/16 pb-3">

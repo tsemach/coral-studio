@@ -100,7 +100,7 @@ export function PostDetailModal({
         {/* Top Header with Channel & Close */}
         <div className="flex items-center justify-between border-b border-ink-foreground/16 pb-3 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-xs text-primary">
+            <span className="font-semibold text-xs text-blue-200">
               {getChannelLabel(post.channel)}
             </span>
             <span className="text-ink-foreground/30 text-xs">•</span>
@@ -162,7 +162,7 @@ export function PostDetailModal({
               )}
             </div>
 
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
               {post.title}
             </h1>
 
@@ -328,7 +328,7 @@ export function PostDetailModal({
 
           {/* Discussion Thread */}
           <section className="border-t border-ink-foreground/16 pt-4 space-y-4">
-            <h2 className="font-serif text-base font-semibold tracking-tight text-ink-foreground">
+            <h2 className="text-base font-semibold tracking-tight text-ink-foreground">
               Discussion ({comments.length})
             </h2>
 

@@ -3,14 +3,13 @@
 import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { put } from '@vercel/blob'
-import { auth } from '@/auth'
 import { db } from '@/lib/database'
 import {
   communityPosts,
   communityComments,
   communityAttachments,
-  users,
 } from '@/lib/database/schema'
+import { requireActiveUser } from '@/lib/community/auth'
 import type {
   CommunityChannel,
   ReaderStatus,
@@ -29,31 +28,6 @@ const ALLOWED_ATTACHMENT_TYPES = new Set([
 
 function isAllowedAttachment(file: File): boolean {
   return ALLOWED_ATTACHMENT_TYPES.has(file.type) && file.size > 0 && file.size <= MAX_ATTACHMENT_BYTES
-}
-
-export async function requireActiveUser() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error('Unauthorized')
-  }
-
-  const userRecords = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      role: users.role,
-      status: users.status,
-    })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1)
-
-  const currentUser = userRecords[0]
-  if (!currentUser || currentUser.status !== 'active') {
-    throw new Error('Forbidden: active account required')
-  }
-
-  return currentUser
 }
 
 export async function createCommunityPost(formData: FormData) {
