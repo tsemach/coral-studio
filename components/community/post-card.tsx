@@ -85,7 +85,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
       </div>
 
       <Link href={`/community/${post.id}`} className="block focus:outline-hidden">
-        <h3 className="font-serif text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-primary md:text-xl">
+        <h3 className="font-serif text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
           {post.title}
         </h3>
 
