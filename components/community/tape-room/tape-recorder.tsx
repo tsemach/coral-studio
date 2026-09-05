@@ -20,14 +20,20 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
       }
     }, [])
 
+    // The <video> element only mounts once isActive is true, so it doesn't
+    // exist yet at the point startCamera() resolves -- wiring srcObject here,
+    // keyed on isActive, runs after that element is actually in the DOM.
+    useEffect(() => {
+      if (isActive && videoRef.current && streamRef.current) {
+        videoRef.current.srcObject = streamRef.current
+      }
+    }, [isActive])
+
     async function startCamera() {
       setError(null)
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         streamRef.current = stream
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-        }
         setIsActive(true)
       } catch {
         setError('Could not access your camera and microphone. Check your browser permissions.')
