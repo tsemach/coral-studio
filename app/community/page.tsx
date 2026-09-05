@@ -25,7 +25,7 @@ export default async function CommunityPage({
 
   return (
     <main className="flex-1">
-      <CommunityShell posts={posts} currentChannel={channel || 'all'} />
+      <CommunityShell posts={posts} />
     </main>
   )
 }

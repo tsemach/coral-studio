@@ -7,7 +7,6 @@ export function CommunityShell({
   posts,
 }: {
   posts: CommunityPostItem[]
-  currentChannel: string
 }) {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 md:px-8 md:py-10">
