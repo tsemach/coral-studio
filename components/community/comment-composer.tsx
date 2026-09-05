@@ -29,7 +29,7 @@ export function CommentComposer({ postId }: { postId: string }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {error && (
-        <div className="rounded-sm bg-red-500/10 border border-red-500/30 p-2 text-xs text-red-900">
+        <div className="rounded-xl bg-red-500/15 border border-red-500/30 p-2 text-xs text-red-200">
           {error}
         </div>
       )}
@@ -45,7 +45,7 @@ export function CommentComposer({ postId }: { postId: string }) {
           placeholder="Offer to read lines, ask a question, or reply..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full rounded-sm border border-border bg-card p-3 text-xs leading-relaxed text-foreground placeholder:text-muted/70 focus:outline-hidden focus:border-primary"
+          className="w-full rounded-xl border border-ink-foreground/16 bg-ink p-3 text-xs leading-relaxed text-ink-foreground placeholder:text-ink-foreground/45 focus:border-ink-foreground/40 focus:outline-none"
         />
       </div>
 
@@ -53,7 +53,7 @@ export function CommentComposer({ postId }: { postId: string }) {
         <button
           type="submit"
           disabled={isPending || !content.trim()}
-          className="rounded-sm bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
+          className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
         >
           {isPending ? 'Posting...' : 'Reply'}
         </button>

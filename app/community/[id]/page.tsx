@@ -47,7 +47,7 @@ export default async function PostDetailPage({
   const isAdmin = (session.user as { role?: string }).role === 'admin'
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-background py-10 md:py-14">
+    <main className="flex-1 py-8 md:py-10">
       <div className="mx-auto max-w-4xl px-5 space-y-8 md:px-8">
         <PostDetail
           post={post}

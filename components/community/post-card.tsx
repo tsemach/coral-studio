@@ -34,36 +34,36 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
   const isCallboard = post.channel === 'callboard'
 
   return (
-    <article className="group relative rounded-sm border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted mb-3">
+    <article className="group relative rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-primary">
             {getChannelLabel(post.channel)}
           </span>
 
           {post.isPinned && (
-            <span className="inline-flex items-center rounded-sm bg-accent/20 px-2 py-0.5 text-[0.65rem] font-bold text-accent-foreground tracking-wide uppercase">
+            <span className="inline-flex items-center rounded-md bg-accent/20 px-2 py-0.5 text-[0.65rem] font-bold text-amber-200 border border-amber-400/30 tracking-wide uppercase">
               Pinned
             </span>
           )}
 
           {isReaderSOS && post.readerStatus && (
             <span
-              className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[0.7rem] font-medium ${
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[0.7rem] font-medium ${
                 post.readerStatus === 'seeking'
-                  ? 'bg-amber-500/20 text-amber-900 border border-amber-500/30'
+                  ? 'bg-amber-500/20 text-amber-200 border border-amber-500/40'
                   : post.readerStatus === 'matched'
-                  ? 'bg-emerald-500/20 text-emerald-900 border border-emerald-500/30'
-                  : 'bg-muted/20 text-muted border border-border'
+                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40'
+                  : 'bg-ink-foreground/10 text-ink-foreground/50 border border-ink-foreground/15'
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
                   post.readerStatus === 'seeking'
-                    ? 'bg-amber-600 animate-pulse'
+                    ? 'bg-amber-400 animate-pulse'
                     : post.readerStatus === 'matched'
-                    ? 'bg-emerald-600'
-                    : 'bg-muted'
+                    ? 'bg-emerald-400'
+                    : 'bg-ink-foreground/40'
                 }`}
               />
               {post.readerStatus === 'seeking'
@@ -75,25 +75,25 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
           )}
 
           {isCallboard && post.castingType && (
-            <span className="inline-flex items-center rounded-sm bg-blue-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-blue-900 border border-blue-500/25 capitalize">
+            <span className="inline-flex items-center rounded-md bg-blue-500/20 px-2 py-0.5 text-[0.7rem] font-medium text-blue-200 border border-blue-500/35 capitalize">
               {post.castingType.replace('_', ' ')}
             </span>
           )}
         </div>
 
-        <time className="text-muted/80">{formatRelativeTime(post.createdAt)}</time>
+        <time className="text-ink-foreground/45">{formatRelativeTime(post.createdAt)}</time>
       </div>
 
       <Link href={`/community/${post.id}`} className="block focus:outline-hidden">
-        <h3 className="font-serif text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary md:text-xl">
+        <h3 className="font-serif text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-primary md:text-xl">
           {post.title}
         </h3>
 
         {/* Specialized metadata strip */}
         {isReaderSOS && (post.rehearsalAt || post.sceneDetails) && (
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-foreground/80 bg-background/60 rounded-sm px-3 py-1.5 border border-border/50">
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-ink-foreground/80 bg-ink/70 rounded-lg px-3 py-1.5 border border-ink-foreground/12">
             {post.rehearsalAt && (
-              <span className="font-medium">
+              <span className="font-medium text-ink-foreground">
                 🕒 {new Date(post.rehearsalAt).toLocaleDateString('en-GB', {
                   weekday: 'short',
                   day: 'numeric',
@@ -104,12 +104,12 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
               </span>
             )}
             {post.rehearsalFormat && (
-              <span className="capitalize text-muted font-medium">
+              <span className="capitalize text-ink-foreground/60 font-medium">
                 📍 {post.rehearsalFormat}
               </span>
             )}
             {post.sceneDetails && (
-              <span className="text-muted truncate max-w-xs">
+              <span className="text-ink-foreground/60 truncate max-w-xs">
                 📄 {post.sceneDetails}
               </span>
             )}
@@ -117,8 +117,8 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
         )}
 
         {isCallboard && post.deadlineAt && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-foreground/80 bg-background/60 rounded-sm px-3 py-1.5 border border-border/50">
-            <span className="font-medium text-primary">
+          <div className="mt-2 flex items-center gap-2 text-xs text-ink-foreground/80 bg-ink/70 rounded-lg px-3 py-1.5 border border-ink-foreground/12">
+            <span className="font-medium text-accent">
               ⏳ Deadline: {new Date(post.deadlineAt).toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'short',
@@ -128,19 +128,19 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
           </div>
         )}
 
-        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted">
+        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-foreground/65">
           {post.content}
         </p>
       </Link>
 
-      <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-xs text-muted">
+      <div className="mt-4 flex items-center justify-between border-t border-ink-foreground/12 pt-3 text-xs text-ink-foreground/55">
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground/10 text-xs font-semibold text-foreground">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-ink-foreground/15 text-xs font-semibold text-ink-foreground">
             {post.authorName ? post.authorName.charAt(0).toUpperCase() : '?'}
           </div>
-          <span className="font-medium text-foreground">{post.authorName || 'Anonymous Member'}</span>
+          <span className="font-medium text-ink-foreground/90">{post.authorName || 'Anonymous Member'}</span>
           {post.authorRole === 'admin' && (
-            <span className="rounded-sm bg-primary/15 px-1.5 py-0.2 text-[0.65rem] font-medium text-primary uppercase tracking-wide">
+            <span className="rounded-md bg-primary/25 px-1.5 py-0.2 text-[0.65rem] font-medium text-primary-foreground uppercase tracking-wide">
               Studio Admin
             </span>
           )}

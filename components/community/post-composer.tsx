@@ -71,14 +71,14 @@ export function PostComposer() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="rounded-sm bg-red-500/10 border border-red-500/30 p-3 text-xs text-red-900">
+        <div className="rounded-xl bg-red-500/15 border border-red-500/30 p-3 text-xs text-red-200">
           {error}
         </div>
       )}
 
       {/* Channel selector */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-2">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-ink-foreground/55 mb-2">
           Select Channel
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -92,14 +92,14 @@ export function PostComposer() {
               key={item.id}
               type="button"
               onClick={() => setChannel(item.id as CommunityChannel)}
-              className={`flex flex-col text-left p-3 rounded-sm border transition-all ${
+              className={`flex flex-col text-left p-3 rounded-xl border transition-all cursor-pointer ${
                 channel === item.id
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                  : 'border-border bg-card hover:border-foreground/25'
+                  ? 'border-primary bg-primary/15 ring-1 ring-primary'
+                  : 'border-ink-foreground/16 bg-ink hover:border-ink-foreground/30'
               }`}
             >
-              <span className="font-semibold text-sm text-foreground">{item.label}</span>
-              <span className="text-[0.7rem] text-muted">{item.desc}</span>
+              <span className="font-semibold text-sm text-ink-foreground">{item.label}</span>
+              <span className="text-[0.7rem] text-ink-foreground/50">{item.desc}</span>
             </button>
           ))}
         </div>
@@ -107,37 +107,37 @@ export function PostComposer() {
 
       {/* Conditional: #reader-sos fields */}
       {channel === 'reader_sos' && (
-        <div className="rounded-sm border border-amber-500/30 bg-amber-500/5 p-4 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-900">
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-200">
             <span>🎭</span>
             <span>Reader Request Specifics</span>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+              <label className="block text-xs font-medium text-ink-foreground/80 mb-1">
                 When do you need lines read?
               </label>
               <input
                 type="datetime-local"
                 value={rehearsalAt}
                 onChange={(e) => setRehearsalAt(e.target.value)}
-                className="w-full rounded-sm border border-border bg-card px-3 py-2 text-xs text-foreground focus:outline-hidden focus:border-primary"
+                className="w-full rounded-xl border border-ink-foreground/16 bg-ink px-3 py-2 text-xs text-ink-foreground focus:border-ink-foreground/40 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+              <label className="block text-xs font-medium text-ink-foreground/80 mb-1">
                 Format
               </label>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setRehearsalFormat('studio')}
-                  className={`flex-1 rounded-sm py-2 text-xs font-medium border transition-colors ${
+                  className={`flex-1 rounded-xl py-2 text-xs font-medium border transition-colors cursor-pointer ${
                     rehearsalFormat === 'studio'
                       ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card border-border text-foreground hover:bg-foreground/5'
+                      : 'bg-ink border-ink-foreground/16 text-ink-foreground/75 hover:bg-ink-card'
                   }`}
                 >
                   At Studio
@@ -145,10 +145,10 @@ export function PostComposer() {
                 <button
                   type="button"
                   onClick={() => setRehearsalFormat('online')}
-                  className={`flex-1 rounded-sm py-2 text-xs font-medium border transition-colors ${
+                  className={`flex-1 rounded-xl py-2 text-xs font-medium border transition-colors cursor-pointer ${
                     rehearsalFormat === 'online'
                       ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card border-border text-foreground hover:bg-foreground/5'
+                      : 'bg-ink border-ink-foreground/16 text-ink-foreground/75 hover:bg-ink-card'
                   }`}
                 >
                   Online / Video
@@ -158,7 +158,7 @@ export function PostComposer() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-foreground mb-1">
+            <label className="block text-xs font-medium text-ink-foreground/80 mb-1">
               Scene Details & Characters
             </label>
             <input
@@ -166,7 +166,7 @@ export function PostComposer() {
               placeholder="e.g. 2 pages, dramatic scene, seeking male reader opposite Sarah"
               value={sceneDetails}
               onChange={(e) => setSceneDetails(e.target.value)}
-              className="w-full rounded-sm border border-border bg-card px-3 py-2 text-xs text-foreground focus:outline-hidden focus:border-primary"
+              className="w-full rounded-xl border border-ink-foreground/16 bg-ink px-3 py-2 text-xs text-ink-foreground placeholder:text-ink-foreground/40 focus:border-ink-foreground/40 focus:outline-none"
             />
           </div>
         </div>
@@ -174,21 +174,21 @@ export function PostComposer() {
 
       {/* Conditional: #the-callboard fields */}
       {channel === 'callboard' && (
-        <div className="rounded-sm border border-blue-500/30 bg-blue-500/5 p-4 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-900">
+        <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-blue-200">
             <span>📢</span>
             <span>Audition & Casting Details</span>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+              <label className="block text-xs font-medium text-ink-foreground/80 mb-1">
                 Opportunity Type
               </label>
               <select
                 value={castingType}
                 onChange={(e) => setCastingType(e.target.value as CastingType)}
-                className="w-full rounded-sm border border-border bg-card px-3 py-2 text-xs text-foreground focus:outline-hidden focus:border-primary"
+                className="w-full rounded-xl border border-ink-foreground/16 bg-ink px-3 py-2 text-xs text-ink-foreground focus:border-ink-foreground/40 focus:outline-none"
               >
                 <option value="student_film">Student Film (FDU / BK / Academy)</option>
                 <option value="theatre">Theatre Production</option>
@@ -199,14 +199,14 @@ export function PostComposer() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+              <label className="block text-xs font-medium text-ink-foreground/80 mb-1">
                 Submission Deadline
               </label>
               <input
                 type="date"
                 value={deadlineAt}
                 onChange={(e) => setDeadlineAt(e.target.value)}
-                className="w-full rounded-sm border border-border bg-card px-3 py-2 text-xs text-foreground focus:outline-hidden focus:border-primary"
+                className="w-full rounded-xl border border-ink-foreground/16 bg-ink px-3 py-2 text-xs text-ink-foreground focus:border-ink-foreground/40 focus:outline-none"
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ export function PostComposer() {
 
       {/* Common title and content */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-ink-foreground/55 mb-1">
           Post Title
         </label>
         <input
@@ -230,12 +230,12 @@ export function PostComposer() {
           }
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full rounded-sm border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:outline-hidden focus:border-primary"
+          className="w-full rounded-xl border border-ink-foreground/16 bg-ink px-4 py-2.5 text-sm text-ink-foreground placeholder:text-ink-foreground/40 focus:border-ink-foreground/40 focus:outline-none"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-ink-foreground/55 mb-1">
           Content / Description
         </label>
         <textarea
@@ -244,13 +244,13 @@ export function PostComposer() {
           placeholder="Provide context, character notes, audition sides, or questions..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full rounded-sm border border-border bg-card px-4 py-3 text-sm leading-relaxed text-foreground focus:outline-hidden focus:border-primary"
+          className="w-full rounded-xl border border-ink-foreground/16 bg-ink px-4 py-3 text-sm leading-relaxed text-ink-foreground placeholder:text-ink-foreground/40 focus:border-ink-foreground/40 focus:outline-none"
         />
       </div>
 
       {/* Attachments */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-ink-foreground/55 mb-1">
           Attachments (Sides, Script Excerpts, Photos)
         </label>
         <input
@@ -262,27 +262,27 @@ export function PostComposer() {
               setFiles(Array.from(e.target.files))
             }
           }}
-          className="w-full text-xs text-muted file:mr-4 file:rounded-sm file:border-0 file:bg-foreground/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-foreground hover:file:bg-foreground/15 cursor-pointer"
+          className="w-full text-xs text-ink-foreground/55 file:mr-4 file:rounded-xl file:border-0 file:bg-ink-foreground/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-foreground hover:file:bg-ink-foreground/20 cursor-pointer"
         />
         {files.length > 0 && (
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-xs text-ink-foreground/60">
             {files.length} file{files.length === 1 ? '' : 's'} selected ({files.map((f) => f.name).join(', ')})
           </p>
         )}
       </div>
 
       {/* Submit button */}
-      <div className="flex items-center justify-between border-t border-border pt-5">
+      <div className="flex items-center justify-between border-t border-ink-foreground/16 pt-5">
         <Link
           href="/community"
-          className="text-xs font-medium text-muted hover:text-foreground transition-colors"
+          className="text-xs font-medium text-ink-foreground/55 hover:text-ink-foreground transition-colors"
         >
           Cancel
         </Link>
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-sm bg-primary px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
+          className="rounded-xl bg-primary px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
         >
           {isPending ? 'Publishing...' : 'Publish Post'}
         </button>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import type { CommunityChannel, ReaderStatus } from '@/lib/community/types'
+import type { ReaderStatus } from '@/lib/community/types'
 
 const CHANNELS: { id: string; label: string; description: string; badge?: string }[] = [
   { id: 'all', label: 'All Channels', description: 'Everything from across the studio' },
@@ -19,7 +19,7 @@ export function ChannelTabs() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border/80 pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-ink-foreground/16 pb-3">
         {CHANNELS.map((ch) => {
           const isActive = activeChannel === ch.id
           const href = ch.id === 'all' ? '/community' : `/community?channel=${ch.id}`
@@ -28,15 +28,15 @@ export function ChannelTabs() {
             <Link
               key={ch.id}
               href={href}
-              className={`inline-flex items-center gap-2 rounded-sm px-3.5 py-1.5 text-xs font-medium transition-all ${
+              className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'bg-card text-foreground/80 hover:bg-foreground/5 hover:text-foreground border border-border/60'
+                  : 'bg-ink-card text-ink-foreground/70 hover:bg-ink-foreground/5 hover:border-ink-foreground/30 hover:text-ink-foreground border border-ink-foreground/16'
               }`}
             >
               <span>{ch.label}</span>
               {ch.badge && !isActive && (
-                <span className="rounded-full bg-accent/20 px-1.5 py-0.5 text-[0.65rem] font-semibold text-accent-foreground">
+                <span className="rounded-full bg-ink-foreground/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-ink-foreground/75">
                   {ch.badge}
                 </span>
               )}
@@ -47,33 +47,33 @@ export function ChannelTabs() {
 
       {activeChannel === 'reader_sos' && (
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-muted font-medium">Filter status:</span>
+          <span className="text-ink-foreground/55 font-medium">Filter status:</span>
           <Link
             href="/community?channel=reader_sos"
-            className={`rounded-sm px-2.5 py-1 transition-colors ${
+            className={`rounded-lg px-2.5 py-1 transition-colors ${
               !activeStatus
-                ? 'bg-foreground/15 text-foreground font-medium'
-                : 'text-muted hover:text-foreground'
+                ? 'bg-ink-foreground/15 text-ink-foreground font-medium'
+                : 'text-ink-foreground/55 hover:text-ink-foreground'
             }`}
           >
             All Requests
           </Link>
           <Link
             href="/community?channel=reader_sos&status=seeking"
-            className={`rounded-sm px-2.5 py-1 transition-colors ${
+            className={`rounded-lg px-2.5 py-1 transition-colors ${
               activeStatus === 'seeking'
-                ? 'bg-amber-500/20 text-amber-900 font-medium'
-                : 'text-muted hover:text-foreground'
+                ? 'bg-amber-500/20 text-amber-200 border border-amber-500/40 font-medium'
+                : 'text-ink-foreground/55 hover:text-ink-foreground'
             }`}
           >
             Seeking Reader Only
           </Link>
           <Link
             href="/community?channel=reader_sos&status=matched"
-            className={`rounded-sm px-2.5 py-1 transition-colors ${
+            className={`rounded-lg px-2.5 py-1 transition-colors ${
               activeStatus === 'matched'
-                ? 'bg-emerald-500/20 text-emerald-900 font-medium'
-                : 'text-muted hover:text-foreground'
+                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40 font-medium'
+                : 'text-ink-foreground/55 hover:text-ink-foreground'
             }`}
           >
             Matched

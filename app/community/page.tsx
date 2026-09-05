@@ -1,14 +1,8 @@
 import { redirect } from 'next/navigation'
-import type { Metadata } from 'next'
 import { auth } from '@/auth'
 import { listCommunityPosts } from '@/lib/community/queries'
 import { CommunityShell } from '@/components/community/community-shell'
 import type { CommunityChannel, ReaderStatus } from '@/lib/community/types'
-
-export const metadata: Metadata = {
-  title: 'The Actor Board — Glumački Studio',
-  description: 'Community board for scene partners, line reading, Belgrade auditions, and craft discussions.',
-}
 
 export default async function CommunityPage({
   searchParams,
@@ -30,7 +24,7 @@ export default async function CommunityPage({
   )
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-background">
+    <main className="flex-1">
       <CommunityShell posts={posts} currentChannel={channel || 'all'} />
     </main>
   )

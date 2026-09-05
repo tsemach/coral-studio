@@ -69,12 +69,12 @@ export function PostDetail({
   }
 
   return (
-    <div className="rounded-sm border border-border bg-card p-6 md:p-8 space-y-6">
+    <div className="rounded-xl border border-ink-foreground/16 bg-ink-card p-6 md:p-8 space-y-6">
       {/* Back and Metadata Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-foreground/16 pb-4">
         <Link
           href="/community"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-foreground/55 hover:text-ink-foreground transition-colors"
         >
           <span>←</span>
           <span>Back to All Posts</span>
@@ -84,8 +84,8 @@ export function PostDetail({
           <span className="font-semibold text-xs text-primary">
             {getChannelLabel(post.channel)}
           </span>
-          <span className="text-muted text-xs">•</span>
-          <time className="text-xs text-muted">{formatRelativeTime(post.createdAt)}</time>
+          <span className="text-ink-foreground/30 text-xs">•</span>
+          <time className="text-xs text-ink-foreground/45">{formatRelativeTime(post.createdAt)}</time>
         </div>
       </div>
 
@@ -93,28 +93,28 @@ export function PostDetail({
       <div>
         <div className="flex flex-wrap items-center gap-3 mb-3">
           {post.isPinned && (
-            <span className="rounded-sm bg-accent/20 px-2 py-0.5 text-[0.65rem] font-bold text-accent-foreground tracking-wide uppercase">
+            <span className="rounded-md bg-accent/20 px-2 py-0.5 text-[0.65rem] font-bold text-amber-200 border border-amber-400/30 tracking-wide uppercase">
               Pinned
             </span>
           )}
 
           {isReaderSOS && post.readerStatus && (
             <span
-              className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-semibold ${
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${
                 post.readerStatus === 'seeking'
-                  ? 'bg-amber-500/20 text-amber-900 border border-amber-500/30'
+                  ? 'bg-amber-500/20 text-amber-200 border border-amber-500/40'
                   : post.readerStatus === 'matched'
-                  ? 'bg-emerald-500/20 text-emerald-900 border border-emerald-500/30'
-                  : 'bg-muted/20 text-muted border border-border'
+                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40'
+                  : 'bg-ink-foreground/10 text-ink-foreground/50 border border-ink-foreground/15'
               }`}
             >
               <span
                 className={`h-2 w-2 rounded-full ${
                   post.readerStatus === 'seeking'
-                    ? 'bg-amber-600 animate-pulse'
+                    ? 'bg-amber-400 animate-pulse'
                     : post.readerStatus === 'matched'
-                    ? 'bg-emerald-600'
-                    : 'bg-muted'
+                    ? 'bg-emerald-400'
+                    : 'bg-ink-foreground/40'
                 }`}
               />
               {post.readerStatus === 'seeking'
@@ -126,32 +126,32 @@ export function PostDetail({
           )}
 
           {isCallboard && post.castingType && (
-            <span className="rounded-sm bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-900 border border-blue-500/25 capitalize">
+            <span className="rounded-md bg-blue-500/20 px-2.5 py-1 text-xs font-semibold text-blue-200 border border-blue-500/35 capitalize">
               {post.castingType.replace('_', ' ')}
             </span>
           )}
         </div>
 
-        <h1 className="font-serif text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+        <h1 className="font-serif text-2xl font-bold tracking-tight text-ink-foreground md:text-3xl">
           {post.title}
         </h1>
 
         {/* Author info strip */}
-        <div className="mt-3 flex items-center justify-between border-b border-border/50 pb-4">
+        <div className="mt-3 flex items-center justify-between border-b border-ink-foreground/12 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground/10 text-sm font-semibold text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-foreground/15 text-sm font-semibold text-ink-foreground">
               {post.authorName ? post.authorName.charAt(0).toUpperCase() : '?'}
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-xs text-foreground">{post.authorName || 'Anonymous Member'}</span>
+                <span className="font-medium text-xs text-ink-foreground">{post.authorName || 'Anonymous Member'}</span>
                 {post.authorRole === 'admin' && (
-                  <span className="rounded-sm bg-primary/15 px-1.5 py-0.2 text-[0.65rem] font-medium text-primary uppercase">
+                  <span className="rounded-md bg-primary/25 px-1.5 py-0.2 text-[0.65rem] font-medium text-primary-foreground uppercase">
                     Admin
                   </span>
                 )}
               </div>
-              <p className="text-[0.7rem] text-muted">Posted on {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p className="text-[0.7rem] text-ink-foreground/50">Posted on {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
 
@@ -160,7 +160,7 @@ export function PostDetail({
               type="button"
               disabled={isPending}
               onClick={handleDelete}
-              className="text-xs text-red-800 hover:text-red-950 transition-colors cursor-pointer"
+              className="text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
             >
               Delete Post
             </button>
@@ -170,15 +170,15 @@ export function PostDetail({
 
       {/* Specialized metadata display box */}
       {isReaderSOS && (post.rehearsalAt || post.sceneDetails || post.rehearsalFormat) && (
-        <div className="rounded-sm border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-xs">
-          <div className="font-semibold text-amber-950 uppercase tracking-wider text-[0.7rem]">
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-xs">
+          <div className="font-semibold text-amber-200 uppercase tracking-wider text-[0.7rem]">
             Reader SOS Session Details
           </div>
-          <div className="grid sm:grid-cols-2 gap-2 text-foreground">
+          <div className="grid sm:grid-cols-2 gap-2 text-ink-foreground">
             {post.rehearsalAt && (
               <div>
-                <span className="text-muted">Requested Time:</span>{' '}
-                <strong className="font-semibold">
+                <span className="text-ink-foreground/60">Requested Time:</span>{' '}
+                <strong className="font-semibold text-ink-foreground">
                   {new Date(post.rehearsalAt).toLocaleDateString('en-GB', {
                     weekday: 'short',
                     day: 'numeric',
@@ -191,14 +191,14 @@ export function PostDetail({
             )}
             {post.rehearsalFormat && (
               <div>
-                <span className="text-muted">Meeting Format:</span>{' '}
-                <strong className="capitalize">{post.rehearsalFormat}</strong>
+                <span className="text-ink-foreground/60">Meeting Format:</span>{' '}
+                <strong className="capitalize text-ink-foreground">{post.rehearsalFormat}</strong>
               </div>
             )}
             {post.sceneDetails && (
               <div className="sm:col-span-2">
-                <span className="text-muted">Scene & Character:</span>{' '}
-                <span>{post.sceneDetails}</span>
+                <span className="text-ink-foreground/60">Scene & Character:</span>{' '}
+                <span className="text-ink-foreground">{post.sceneDetails}</span>
               </div>
             )}
           </div>
@@ -206,13 +206,13 @@ export function PostDetail({
           {/* Author status toggle actions */}
           {canManage && (
             <div className="mt-3 pt-3 border-t border-amber-500/20 flex flex-wrap items-center gap-2">
-              <span className="text-muted font-medium">Update Status:</span>
+              <span className="text-ink-foreground/60 font-medium">Update Status:</span>
               {post.readerStatus !== 'matched' && (
                 <button
                   type="button"
                   disabled={isPending}
                   onClick={() => handleStatusChange('matched')}
-                  className="rounded-sm bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 transition-colors cursor-pointer"
+                  className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                 >
                   ✓ Mark as Matched
                 </button>
@@ -222,7 +222,7 @@ export function PostDetail({
                   type="button"
                   disabled={isPending}
                   onClick={() => handleStatusChange('seeking')}
-                  className="rounded-sm bg-amber-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-700 transition-colors cursor-pointer"
+                  className="rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-500 transition-colors cursor-pointer"
                 >
                   ↺ Reopen as Seeking
                 </button>
@@ -232,7 +232,7 @@ export function PostDetail({
                   type="button"
                   disabled={isPending}
                   onClick={() => handleStatusChange('closed')}
-                  className="rounded-sm border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground hover:bg-foreground/5 transition-colors cursor-pointer"
+                  className="rounded-lg border border-ink-foreground/20 bg-ink px-2.5 py-1 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors cursor-pointer"
                 >
                   Close Request
                 </button>
@@ -243,11 +243,11 @@ export function PostDetail({
       )}
 
       {isCallboard && post.deadlineAt && (
-        <div className="rounded-sm border border-blue-500/30 bg-blue-500/10 p-3 text-xs flex items-center justify-between">
-          <span className="text-blue-950 font-medium">
+        <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-3 text-xs flex items-center justify-between">
+          <span className="text-blue-200 font-medium">
             Submission Deadline:
           </span>
-          <strong className="text-primary font-bold">
+          <strong className="text-accent font-bold">
             {new Date(post.deadlineAt).toLocaleDateString('en-GB', {
               day: 'numeric',
               month: 'long',
@@ -258,14 +258,14 @@ export function PostDetail({
       )}
 
       {/* Main post body */}
-      <div className="prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
+      <div className="text-ink-foreground/90 leading-relaxed whitespace-pre-wrap text-sm">
         {post.content}
       </div>
 
       {/* Attachments gallery */}
       {post.attachments && post.attachments.length > 0 && (
-        <div className="border-t border-border/60 pt-4">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
+        <div className="border-t border-ink-foreground/16 pt-4">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-foreground/55 mb-3">
             Attachments ({post.attachments.length})
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -274,11 +274,11 @@ export function PostDetail({
               return (
                 <div
                   key={att.id}
-                  className="rounded-sm border border-border bg-background/50 p-2 overflow-hidden text-xs"
+                  className="rounded-xl border border-ink-foreground/16 bg-ink p-2 overflow-hidden text-xs"
                 >
                   {isImage ? (
                     <div className="space-y-1.5">
-                      <a href={att.url} target="_blank" rel="noreferrer" className="block relative aspect-4/3 overflow-hidden rounded-xs">
+                      <a href={att.url} target="_blank" rel="noreferrer" className="block relative aspect-4/3 overflow-hidden rounded-lg">
                         <Image
                           src={att.url}
                           alt={att.filename}
@@ -286,19 +286,19 @@ export function PostDetail({
                           className="object-cover hover:scale-105 transition-transform"
                         />
                       </a>
-                      <span className="block truncate text-muted text-[0.7rem]">{att.filename}</span>
+                      <span className="block truncate text-ink-foreground/55 text-[0.7rem]">{att.filename}</span>
                     </div>
                   ) : (
                     <a
                       href={att.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2 p-2 hover:bg-foreground/5 rounded-xs transition-colors"
+                      className="flex items-center gap-2 p-2 hover:bg-ink-foreground/5 rounded-lg transition-colors"
                     >
                       <span className="text-lg">📄</span>
                       <div className="truncate">
-                        <span className="font-medium text-foreground block truncate">{att.filename}</span>
-                        <span className="text-muted text-[0.65rem]">Download document</span>
+                        <span className="font-medium text-ink-foreground block truncate">{att.filename}</span>
+                        <span className="text-ink-foreground/45 text-[0.65rem]">Download document</span>
                       </div>
                     </a>
                   )}
