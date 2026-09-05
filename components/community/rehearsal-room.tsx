@@ -11,14 +11,18 @@ export function RehearsalRoom({ postId, onLeave }: { postId: string; onLeave: ()
 
   useEffect(() => {
     let cancelled = false
-    getRehearsalToken(postId).then((result: any) => {
-      if (cancelled) return
-      if ('error' in result) {
-        setError(result.error)
-      } else {
-        setSession(result)
-      }
-    })
+    getRehearsalToken(postId)
+      .then((result) => {
+        if (cancelled) return
+        if ('token' in result) {
+          setSession(result as { token: string; serverUrl: string })
+        } else {
+          setError((result as { error: string }).error)
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Could not join the rehearsal room')
+      })
     return () => {
       cancelled = true
     }
