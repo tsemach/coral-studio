@@ -50,7 +50,7 @@ export default async function PostDetailPage({
   return (
     <main className="flex-1 relative">
       {/* Underlying Community Board */}
-      <CommunityShell posts={boardPosts} />
+      <CommunityShell view={{ kind: 'posts', posts: boardPosts }} />
 
       {/* Floating Post Detail Modal */}
       <PostDetailModal
