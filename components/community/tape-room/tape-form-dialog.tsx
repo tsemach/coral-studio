@@ -7,6 +7,11 @@ import { createTape } from '@/app/community/tape-actions'
 import { TapeRecorder, type TapeRecorderHandle } from './tape-recorder'
 import { getVideoDuration } from './video-duration'
 
+// Mirrors the SCRIPTS_PREFIX convention in lib/workshops/scripts.ts, computed
+// client-side since onBeforeGenerateToken (app/community/tape-room/upload/route.ts)
+// can't rewrite the pathname the client requests -- only constrain it.
+const TAPE_ROOM_PREFIX = `coral-studio-blob/${process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'prod' : 'dev'}/tape-room/`
+
 export function TapeFormDialog() {
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -44,7 +49,7 @@ export function TapeFormDialog() {
     ;(async () => {
       try {
         const durationSeconds = await getVideoDuration(videoFile)
-        const blob = await upload(videoFile.name, videoFile, {
+        const blob = await upload(`${TAPE_ROOM_PREFIX}${videoFile.name}`, videoFile, {
           access: 'private',
           handleUploadUrl: '/community/tape-room/upload',
         })
