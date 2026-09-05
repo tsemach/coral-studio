@@ -120,8 +120,8 @@ export const communityAttachments = pgTable('community_attachments', {
 * `community-shell.tsx`: Primary shell matching Glumački Studio's warm, minimalist aesthetic.
 * `channel-tabs.tsx`: Tab navigation (`All`, `Reader SOS`, `The Callboard`, `Craft Chat`, `General`) with unread/active counters.
 * `post-card.tsx`: Card summary showing author avatar, role/badge, timestamp, channel tag, status chip, title, excerpt, and comment count.
-* `post-composer.tsx`: Dynamic form supporting markdown and file attachments.
-* `post-detail.tsx`: Single post view with author actions (Edit, Delete, Change Status).
+* `post-form-dialog.tsx`: Dynamic modal form supporting markdown content and file attachments (channel-specific fields shown conditionally).
+* `post-detail-modal.tsx`: Post detail rendered as a modal over the board, with author/admin actions (Delete, Change Status). There is no Edit action in the current implementation.
 * `comment-thread.tsx` & `comment-composer.tsx`: Chronological comments with markdown rendering.
 
 ---
@@ -129,7 +129,7 @@ export const communityAttachments = pgTable('community_attachments', {
 ## 6. Server Actions & Security (`app/community/actions.ts`)
 
 * `requireActiveUser()`: Verifies authenticated user session and `status === 'active'`.
-* `createPost(formData)`: Validates input, sanitizes markdown, uploads attachments to Vercel Blob, inserts records, and revalidates `/community`.
+* `createCommunityPost(formData)`: Validates input, validates attachment type/size, uploads accepted attachments to Vercel Blob (`access: 'public'`), inserts records, and revalidates `/community`.
 * `updatePostStatus(postId, newStatus)`: Author-only permission to toggle reader request status.
 * `deletePost(postId)`: Author-only or Admin permission.
 * `addComment(postId, content)`: Validates content and saves reply.

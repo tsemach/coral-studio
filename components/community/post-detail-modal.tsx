@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { updateReaderStatus } from '@/app/community/actions'
 import { DeletePostDialog } from './delete-post-dialog'
 import { CommentComposer } from './comment-composer'
+import { MarkdownContent } from './markdown-content'
 import type { CommunityPostDetail, CommentWithAuthor, ReaderStatus } from '@/lib/community/types'
 
 function formatRelativeTime(date: Date): string {
@@ -276,9 +277,7 @@ export function PostDetailModal({
           )}
 
           {/* Main post body */}
-          <div className="text-ink-foreground/90 leading-relaxed whitespace-pre-wrap text-sm">
-            {post.content}
-          </div>
+          <MarkdownContent content={post.content} className="text-ink-foreground/90 leading-relaxed text-sm" />
 
           {/* Attachments */}
           {post.attachments && post.attachments.length > 0 && (
@@ -360,9 +359,10 @@ export function PostDetailModal({
                       </time>
                     </div>
 
-                    <p className="text-xs text-ink-foreground/85 leading-relaxed whitespace-pre-wrap pl-7">
-                      {comment.content}
-                    </p>
+                    <MarkdownContent
+                      content={comment.content}
+                      className="text-xs text-ink-foreground/85 leading-relaxed pl-7"
+                    />
                   </div>
                 ))}
               </div>
