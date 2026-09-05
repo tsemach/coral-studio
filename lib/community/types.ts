@@ -13,6 +13,8 @@ export interface CommunityPostItem {
   authorImage: string | null
   authorRole: string
   readerStatus: ReaderStatus | null
+  matchedUserId: string | null
+  matchedUserName: string | null
   rehearsalAt: Date | null
   rehearsalFormat: RehearsalFormat | null
   sceneDetails: string | null
@@ -47,5 +49,14 @@ export interface CommentWithAuthor {
   authorImage: string | null
   authorRole: string
   content: string
+  createdAt: Date
+}
+
+export interface ReaderOfferItem {
+  id: string
+  userId: string
+  userName: string | null
+  userImage: string | null
+  sessionsRead: number
   createdAt: Date
 }
