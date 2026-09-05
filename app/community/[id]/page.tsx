@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { auth } from '@/auth'
 import { getCommunityPostById, listCommentsForPost, listCommunityPosts } from '@/lib/community/queries'
+import { listOffersForPost } from '@/lib/community/reader-queries'
 import { CommunityShell } from '@/components/community/community-shell'
 import { PostDetailModal } from '@/components/community/post-detail-modal'
 
@@ -45,6 +46,10 @@ export default async function PostDetailPage({
     notFound()
   }
 
+  const offers = post.channel === 'reader_sos' && post.readerStatus === 'seeking'
+    ? await listOffersForPost(id)
+    : []
+
   const isAdmin = (session.user as { role?: string }).role === 'admin'
 
   return (
@@ -58,6 +63,7 @@ export default async function PostDetailPage({
         comments={comments}
         currentUserId={session.user.id}
         isAdmin={isAdmin}
+        offers={offers}
       />
     </main>
   )

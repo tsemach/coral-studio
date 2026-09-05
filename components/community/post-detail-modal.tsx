@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { updateReaderStatus } from '@/app/community/actions'
+import { offerToRead, confirmReader } from '@/app/community/rehearsal-actions'
 import { DeletePostDialog } from './delete-post-dialog'
 import { CommentComposer } from './comment-composer'
 import { MarkdownContent } from './markdown-content'
-import type { CommunityPostDetail, CommentWithAuthor, ReaderStatus } from '@/lib/community/types'
+import { RehearsalRoom } from './rehearsal-room'
+import { SidesViewer } from './sides-viewer'
+import type { CommunityPostDetail, CommentWithAuthor, ReaderStatus, ReaderOfferItem } from '@/lib/community/types'
 
 function formatRelativeTime(date: Date): string {
   const now = new Date()
@@ -42,19 +45,25 @@ export function PostDetailModal({
   comments,
   currentUserId,
   isAdmin,
+  offers,
 }: {
   post: CommunityPostDetail
   comments: CommentWithAuthor[]
   currentUserId: string
   isAdmin: boolean
+  offers: ReaderOfferItem[]
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [isOfferPending, startOfferTransition] = useTransition()
+  const [inRoom, setInRoom] = useState(false)
 
   const isAuthor = currentUserId === post.authorId
   const canManage = isAuthor || isAdmin
   const isReaderSOS = post.channel === 'reader_sos'
   const isCallboard = post.channel === 'callboard'
+  const isMatchedReader = currentUserId === post.matchedUserId
+  const hasOffered = offers.some((o) => o.userId === currentUserId)
 
   const handleClose = () => {
     router.push('/community')
@@ -118,6 +127,12 @@ export function PostDetailModal({
         </div>
 
         {/* Scrollable Content Area */}
+        {inRoom ? (
+          <div className="overflow-y-auto flex-1 pr-1 mt-4 grid gap-4 md:grid-cols-2 min-h-0">
+            <RehearsalRoom postId={post.id} onLeave={() => setInRoom(false)} />
+            {post.attachments.length > 0 && <SidesViewer attachment={post.attachments[0]} />}
+          </div>
+        ) : (
         <div className="overflow-y-auto flex-1 pr-1 space-y-5 mt-4">
           {/* Status Badges & Title */}
           <div>
@@ -227,16 +242,6 @@ export function PostDetailModal({
               {canManage && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20 flex flex-wrap items-center gap-2">
                   <span className="text-ink-foreground/60 font-medium">Update Status:</span>
-                  {post.readerStatus !== 'matched' && (
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => handleStatusChange('matched')}
-                      className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
-                    >
-                      ✓ Mark as Matched
-                    </button>
-                  )}
                   {post.readerStatus !== 'seeking' && (
                     <button
                       type="button"
@@ -257,6 +262,63 @@ export function PostDetailModal({
                       Close Request
                     </button>
                   )}
+                </div>
+              )}
+
+              {!canManage && post.readerStatus === 'seeking' && !hasOffered && (
+                <div className="mt-3 pt-3 border-t border-amber-500/20">
+                  <button
+                    type="button"
+                    disabled={isOfferPending}
+                    onClick={() =>
+                      startOfferTransition(async () => {
+                        await offerToRead(post.id)
+                        router.refresh()
+                      })
+                    }
+                    className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+                  >
+                    I can read this
+                  </button>
+                </div>
+              )}
+
+              {canManage && post.readerStatus === 'seeking' && offers.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-amber-500/20 space-y-1.5">
+                  <span className="text-ink-foreground/60 font-medium block">Offers to read:</span>
+                  {offers.map((offer) => (
+                    <div key={offer.id} className="flex items-center justify-between gap-2 text-ink-foreground">
+                      <span>
+                        {offer.userName || 'Anonymous Member'}
+                        <span className="text-ink-foreground/45"> — {offer.sessionsRead} {offer.sessionsRead === 1 ? 'session' : 'sessions'} read</span>
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() =>
+                          startTransition(async () => {
+                            await confirmReader(post.id, offer.userId)
+                            router.refresh()
+                          })
+                        }
+                        className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+                      >
+                        Confirm as reader
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {post.readerStatus === 'matched' && (isAuthor || isMatchedReader) && (
+                <div className="mt-3 pt-3 border-t border-amber-500/20">
+                  <button
+                    type="button"
+                    onClick={() => setInRoom(true)}
+                    className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+                  >
+                    🎥 Open Rehearsal Room
+                  </button>
                 </div>
               )}
             </div>
@@ -374,6 +436,7 @@ export function PostDetailModal({
             </div>
           </section>
         </div>
+        )}
 
         {/* Modal Bottom Actions */}
         <div className="mt-4 pt-3 border-t border-ink-foreground/16 flex justify-end shrink-0">
