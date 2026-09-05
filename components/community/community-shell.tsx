@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { ChannelTabs } from './channel-tabs'
 import { PostCard } from './post-card'
+import { PostFormDialog } from './post-form-dialog'
 import type { CommunityPostItem } from '@/lib/community/types'
 
 export function CommunityShell({
@@ -26,13 +26,7 @@ export function CommunityShell({
         </div>
 
         <div className="shrink-0">
-          <Link
-            href="/community/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs transition-colors hover:bg-primary/90"
-          >
-            <span>+</span>
-            <span>New Post</span>
-          </Link>
+          <PostFormDialog />
         </div>
       </div>
 
@@ -53,12 +47,10 @@ export function CommunityShell({
               Be the first to post a line-reading request, audition notice, or craft question.
             </p>
             <div className="mt-5">
-              <Link
-                href="/community/new"
-                className="inline-flex items-center gap-1.5 rounded-xl border border-ink-foreground/20 px-3.5 py-1.5 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors"
-              >
-                Create a Post
-              </Link>
+              <PostFormDialog
+                triggerLabel="Create a Post"
+                triggerClassName="inline-flex items-center gap-1.5 rounded-xl border border-ink-foreground/20 px-3.5 py-1.5 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors cursor-pointer"
+              />
             </div>
           </div>
         ) : (

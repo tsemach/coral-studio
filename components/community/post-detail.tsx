@@ -4,7 +4,8 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { updateReaderStatus, deleteCommunityPost } from '@/app/community/actions'
+import { updateReaderStatus } from '@/app/community/actions'
+import { DeletePostDialog } from './delete-post-dialog'
 import type { CommunityPostDetail, ReaderStatus } from '@/lib/community/types'
 
 function formatRelativeTime(date: Date): string {
@@ -57,15 +58,6 @@ export function PostDetail({
       await updateReaderStatus(post.id, status)
       router.refresh()
     })
-  }
-
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this post?')) {
-      startTransition(async () => {
-        await deleteCommunityPost(post.id)
-        router.push('/community')
-      })
-    }
   }
 
   return (
@@ -155,16 +147,7 @@ export function PostDetail({
             </div>
           </div>
 
-          {canManage && (
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={handleDelete}
-              className="text-xs text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-            >
-              Delete Post
-            </button>
-          )}
+          {canManage && <DeletePostDialog postId={post.id} />}
         </div>
       </div>
 
