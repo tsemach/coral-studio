@@ -156,9 +156,19 @@ export async function updateReaderStatus(postId: string, status: ReaderStatus) {
     return { error: 'Unauthorized to update this post' }
   }
 
+  // Reopening or closing a request invalidates whoever was previously
+  // confirmed -- matching a reader now happens exclusively through
+  // confirmReader() (app/community/rehearsal-actions.ts), which sets
+  // matchedUserId and readerStatus together. Passing 'matched' to this
+  // action directly (nothing in the UI does, after Task 4) leaves
+  // matchedUserId untouched rather than guessing at a value.
   await db
     .update(communityPosts)
-    .set({ readerStatus: status, updatedAt: new Date() })
+    .set({
+      readerStatus: status,
+      matchedUserId: status === 'matched' ? undefined : null,
+      updatedAt: new Date(),
+    })
     .where(eq(communityPosts.id, postId))
 
   revalidatePath('/community')
