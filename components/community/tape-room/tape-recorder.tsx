@@ -52,9 +52,10 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
       }
       recorder.onstop = () => {
         const mimeType = recorder.mimeType || 'video/webm'
-        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm'
-        const blob = new Blob(chunksRef.current, { type: mimeType })
-        const file = new File([blob], `recording-${Date.now()}.${extension}`, { type: mimeType })
+        const baseMimeType = mimeType.split(';')[0]
+        const extension = baseMimeType.includes('mp4') ? 'mp4' : 'webm'
+        const blob = new Blob(chunksRef.current, { type: baseMimeType })
+        const file = new File([blob], `recording-${Date.now()}.${extension}`, { type: baseMimeType })
         onRecorded(file)
         stopCamera()
       }

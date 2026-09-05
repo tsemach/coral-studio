@@ -93,6 +93,7 @@ export function TapeFormDialog() {
             dialogRef.current?.close()
           }
         }}
+        onClose={() => recorderRef.current?.stopCamera()}
         className="m-auto w-full max-w-lg border-0 bg-transparent p-4 backdrop:bg-black/60 [color-scheme:dark]"
       >
         <div className="w-full rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[88vh] overflow-y-auto">
