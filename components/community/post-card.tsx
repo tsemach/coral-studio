@@ -147,7 +147,10 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1">
+          <Link
+            href={`/community/${post.id}`}
+            className="inline-flex items-center gap-1 transition-colors hover:text-blue-200 focus:outline-hidden"
+          >
             <svg
               className="h-3.5 w-3.5"
               fill="none"
@@ -162,7 +165,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
               />
             </svg>
             <span>{post.commentsCount} {post.commentsCount === 1 ? 'reply' : 'replies'}</span>
-          </span>
+          </Link>
         </div>
       </div>
     </article>
