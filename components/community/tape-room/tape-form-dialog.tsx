@@ -4,12 +4,13 @@ import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import { createTape } from '@/app/community/tape-actions'
-import { TapeRecorder } from './tape-recorder'
+import { TapeRecorder, type TapeRecorderHandle } from './tape-recorder'
 import { getVideoDuration } from './video-duration'
 
 export function TapeFormDialog() {
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const recorderRef = useRef<TapeRecorderHandle>(null)
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -87,7 +88,10 @@ export function TapeFormDialog() {
       <dialog
         ref={dialogRef}
         onClick={(e) => {
-          if (e.target === dialogRef.current) dialogRef.current?.close()
+          if (e.target === dialogRef.current) {
+            recorderRef.current?.stopCamera()
+            dialogRef.current?.close()
+          }
         }}
         className="m-auto w-full max-w-lg border-0 bg-transparent p-4 backdrop:bg-black/60 [color-scheme:dark]"
       >
@@ -101,7 +105,10 @@ export function TapeFormDialog() {
             </div>
             <button
               type="button"
-              onClick={() => dialogRef.current?.close()}
+              onClick={() => {
+                recorderRef.current?.stopCamera()
+                dialogRef.current?.close()
+              }}
               className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer"
               aria-label="Close dialog"
             >
@@ -164,7 +171,7 @@ export function TapeFormDialog() {
                     className="w-full text-xs text-ink-foreground/55 file:mr-3 file:rounded-lg file:border-0 file:bg-ink-foreground/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-foreground hover:file:bg-ink-foreground/20 cursor-pointer"
                   />
                   <p className="text-xs text-ink-foreground/45">or</p>
-                  <TapeRecorder onRecorded={setVideoFile} />
+                  <TapeRecorder ref={recorderRef} onRecorded={setVideoFile} />
                 </div>
               )}
             </div>
@@ -172,7 +179,10 @@ export function TapeFormDialog() {
             <div className="mt-2 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => dialogRef.current?.close()}
+                onClick={() => {
+                  recorderRef.current?.stopCamera()
+                  dialogRef.current?.close()
+                }}
                 className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground cursor-pointer"
               >
                 Cancel
