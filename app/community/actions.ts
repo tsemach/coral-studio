@@ -8,7 +8,6 @@ import {
   communityPosts,
   communityComments,
   communityAttachments,
-  users,
 } from '@/lib/database/schema'
 import { requireActiveUser } from '@/lib/community/auth'
 import type {
