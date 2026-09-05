@@ -46,12 +46,14 @@ export function PostDetailModal({
   currentUserId,
   isAdmin,
   offers,
+  hasOffered,
 }: {
   post: CommunityPostDetail
   comments: CommentWithAuthor[]
   currentUserId: string
   isAdmin: boolean
   offers: ReaderOfferItem[]
+  hasOffered: boolean
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -63,7 +65,6 @@ export function PostDetailModal({
   const isReaderSOS = post.channel === 'reader_sos'
   const isCallboard = post.channel === 'callboard'
   const isMatchedReader = currentUserId === post.matchedUserId
-  const hasOffered = offers.some((o) => o.userId === currentUserId)
 
   const handleClose = () => {
     router.push('/community')
@@ -265,7 +266,7 @@ export function PostDetailModal({
                 </div>
               )}
 
-              {!canManage && post.readerStatus === 'seeking' && !hasOffered && (
+              {!isAuthor && post.readerStatus === 'seeking' && !hasOffered && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20">
                   <button
                     type="button"
@@ -283,7 +284,7 @@ export function PostDetailModal({
                 </div>
               )}
 
-              {canManage && post.readerStatus === 'seeking' && offers.length > 0 && (
+              {canManage && offers.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20 space-y-1.5">
                   <span className="text-ink-foreground/60 font-medium block">Offers to read:</span>
                   {offers.map((offer) => (
@@ -291,6 +292,11 @@ export function PostDetailModal({
                       <span>
                         {offer.userName || 'Anonymous Member'}
                         <span className="text-ink-foreground/45"> — {offer.sessionsRead} {offer.sessionsRead === 1 ? 'session' : 'sessions'} read</span>
+                        {offer.userId === post.matchedUserId && (
+                          <span className="ml-1 rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald-200">
+                            Current
+                          </span>
+                        )}
                       </span>
                       <button
                         type="button"

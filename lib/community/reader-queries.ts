@@ -1,4 +1,4 @@
-import { eq, inArray, count } from 'drizzle-orm'
+import { and, eq, inArray, count } from 'drizzle-orm'
 import { db } from '@/lib/database'
 import { readerOffers, rehearsalSessions, users } from '@/lib/database/schema'
 import type { ReaderOfferItem } from './types'
@@ -32,4 +32,14 @@ export async function listOffersForPost(postId: string): Promise<ReaderOfferItem
   }
 
   return rows.map((row) => ({ ...row, sessionsRead: sessionCountMap.get(row.userId) ?? 0 }))
+}
+
+export async function hasUserOfferedToRead(postId: string, userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: readerOffers.id })
+    .from(readerOffers)
+    .where(and(eq(readerOffers.postId, postId), eq(readerOffers.userId, userId)))
+    .limit(1)
+
+  return !!row
 }
