@@ -565,6 +565,7 @@ git commit -m "feat(tape-room): serve private video through an authenticated rou
 - Modify: `components/community/channel-tabs.tsx`
 - Modify: `components/community/community-shell.tsx`
 - Modify: `app/community/page.tsx`
+- Modify: `app/community/[id]/page.tsx`
 - Create: `components/community/tape-room/tape-card.tsx`
 
 **Interfaces:**
@@ -785,15 +786,31 @@ export default async function CommunityPage({
 
 `rawChannel` is deliberately left as a plain `string | undefined` for the `tape_room` check, *before* casting to `CommunityChannel | undefined`. `tape_room` is not a member of the `CommunityChannel` union (it's a query-string value, not a `community_posts.channel` database value), so comparing an already-narrowed `CommunityChannel | undefined` against the literal `'tape_room'` would fail this repo's `strict: true` TypeScript config with "this comparison appears to be unintentional" (TS2367) — confirmed against `tsconfig.json`. Checking the raw string first, then casting only in the branch where the value is actually used as a `CommunityChannel`, avoids that error entirely.
 
-- [ ] **Step 5: Run TypeScript check**
+- [ ] **Step 5: Update the other existing caller of `CommunityShell`**
+
+`app/community/[id]/page.tsx` (the Actor Board's post-detail route, unrelated to Tape Room) also renders `CommunityShell` — currently `<CommunityShell posts={boardPosts} />`. Since Step 3 changed `CommunityShell`'s props to the discriminated `view` union, this call must be updated too or the whole project fails to type-check, not just Tape Room code. In `app/community/[id]/page.tsx`, change:
+
+```typescript
+      <CommunityShell posts={boardPosts} />
+```
+
+to:
+
+```typescript
+      <CommunityShell view={{ kind: 'posts', posts: boardPosts }} />
+```
+
+No other changes to that file are needed — `boardPosts` (from `listCommunityPosts()`) is unchanged.
+
+- [ ] **Step 6: Run TypeScript check**
 
 Run: `npx tsc --noEmit`
 Expected: FAIL — `TapeFormDialog` doesn't exist yet (Task 7). This is expected; continue to Task 7 before the final verification of this task. (If you're executing tasks strictly in order and stopping to verify after each one, note this exception here rather than treating it as a broken step — Tasks 6 and 7 are interdependent by design, since `CommunityShell` needs `TapeFormDialog` to exist for `tsc` to pass, and `TapeFormDialog` is naturally where the recording/upload UI belongs.)
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add components/community/channel-tabs.tsx components/community/community-shell.tsx components/community/tape-room/tape-card.tsx app/community/page.tsx
+git add components/community/channel-tabs.tsx components/community/community-shell.tsx components/community/tape-room/tape-card.tsx app/community/page.tsx "app/community/[id]/page.tsx"
 git commit -m "feat(tape-room): wire the Tape Room tab into the community board (COR-21)"
 ```
 
@@ -1560,8 +1577,7 @@ Same modal-over-board pattern as `app/community/[id]/page.tsx`:
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { auth } from '@/auth'
-import { getTapeById, listNotesForTape } from '@/lib/community/tape-queries'
-import { listTapes } from '@/lib/community/tape-queries'
+import { getTapeById, listNotesForTape, listTapes } from '@/lib/community/tape-queries'
 import { CommunityShell } from '@/components/community/community-shell'
 import { TapeDetailModal } from '@/components/community/tape-room/tape-detail-modal'
 
