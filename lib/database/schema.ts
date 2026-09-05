@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, primaryKey, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, integer, boolean, primaryKey, uniqueIndex } from 'drizzle-orm/pg-core'
 import type { AdapterAccountType } from 'next-auth/adapters'
 
 // Login is only permitted once status === 'active'. A credentials sign-up
@@ -127,3 +127,64 @@ export const workshopMembers = pgTable(
     },
   ]
 )
+
+// COR-20: Community Sub-project 1 -- The Actor Board
+export const communityPosts = pgTable('community_posts', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  channel: text('channel', {
+    enum: ['reader_sos', 'callboard', 'craft_chat', 'general'],
+  }).notNull(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  // Specialized fields for #reader-sos
+  readerStatus: text('reader_status', {
+    enum: ['seeking', 'matched', 'closed'],
+  }).default('seeking'),
+  rehearsalAt: timestamp('rehearsal_at', { mode: 'date' }),
+  rehearsalFormat: text('rehearsal_format', { enum: ['studio', 'online'] }),
+  sceneDetails: text('scene_details'),
+
+  // Specialized fields for #the-callboard
+  castingType: text('casting_type', {
+    enum: ['student_film', 'theatre', 'feature', 'commercial', 'crew_rec'],
+  }),
+  deadlineAt: timestamp('deadline_at', { mode: 'date' }),
+
+  isPinned: boolean('is_pinned').default(false).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
+export const communityComments = pgTable('community_comments', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  postId: text('post_id')
+    .notNull()
+    .references(() => communityPosts.id, { onDelete: 'cascade' }),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
+export const communityAttachments = pgTable('community_attachments', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'cascade' }),
+  commentId: text('comment_id').references(() => communityComments.id, { onDelete: 'cascade' }),
+  url: text('url').notNull(),
+  filename: text('filename').notNull(),
+  fileType: text('file_type').notNull(),
+  fileSize: integer('file_size'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
