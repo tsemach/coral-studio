@@ -2,6 +2,7 @@
 
 import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { del } from '@vercel/blob'
 import { db } from '@/lib/database'
 import { tapePosts, tapeNotes } from '@/lib/database/schema'
 import { requireActiveUser } from '@/lib/community/auth'
@@ -93,7 +94,7 @@ export async function deleteTape(tapeId: string) {
   const user = await requireActiveUser()
 
   const [tape] = await db
-    .select({ id: tapePosts.id, authorId: tapePosts.authorId })
+    .select({ id: tapePosts.id, authorId: tapePosts.authorId, videoPathname: tapePosts.videoPathname })
     .from(tapePosts)
     .where(eq(tapePosts.id, tapeId))
     .limit(1)
@@ -107,6 +108,14 @@ export async function deleteTape(tapeId: string) {
   }
 
   await db.delete(tapePosts).where(eq(tapePosts.id, tapeId))
+
+  try {
+    await del(tape.videoPathname, { token: process.env.BLOB_READ_WRITE_TOKEN })
+  } catch {
+    // The DB row is already gone -- the tape is deleted from the user's
+    // perspective either way. An orphaned blob is a cleanup concern, not a
+    // reason to fail the delete.
+  }
 
   revalidatePath('/community')
   return { success: true as const }
