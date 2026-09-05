@@ -1,9 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { auth } from '@/auth'
-import { getCommunityPostById, listCommentsForPost } from '@/lib/community/queries'
-import { PostDetail } from '@/components/community/post-detail'
-import { CommentThread } from '@/components/community/comment-thread'
+import { getCommunityPostById, listCommentsForPost, listCommunityPosts } from '@/lib/community/queries'
+import { CommunityShell } from '@/components/community/community-shell'
+import { PostDetailModal } from '@/components/community/post-detail-modal'
 
 export async function generateMetadata({
   params,
@@ -35,9 +35,10 @@ export default async function PostDetailPage({
     redirect(`/login?callbackUrl=/community/${id}`)
   }
 
-  const [post, comments] = await Promise.all([
+  const [post, comments, boardPosts] = await Promise.all([
     getCommunityPostById(id),
     listCommentsForPost(id),
+    listCommunityPosts(),
   ])
 
   if (!post) {
@@ -47,16 +48,17 @@ export default async function PostDetailPage({
   const isAdmin = (session.user as { role?: string }).role === 'admin'
 
   return (
-    <main className="flex-1 py-8 md:py-10">
-      <div className="mx-auto max-w-4xl px-5 space-y-8 md:px-8">
-        <PostDetail
-          post={post}
-          currentUserId={session.user.id}
-          isAdmin={isAdmin}
-        />
+    <main className="flex-1 relative">
+      {/* Underlying Community Board */}
+      <CommunityShell posts={boardPosts} currentChannel={post.channel} />
 
-        <CommentThread postId={post.id} comments={comments} />
-      </div>
+      {/* Floating Post Detail Modal */}
+      <PostDetailModal
+        post={post}
+        comments={comments}
+        currentUserId={session.user.id}
+        isAdmin={isAdmin}
+      />
     </main>
   )
 }
