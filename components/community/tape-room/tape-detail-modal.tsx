@@ -80,7 +80,7 @@ export function TapeDetailModal({
     >
       <div className="relative w-full max-w-3xl rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between border-b border-ink-foreground/16 pb-3 shrink-0">
-          <span className="font-semibold text-xs text-primary">Tape Room</span>
+          <span className="font-semibold text-xs text-blue-200">Tape Room</span>
           <button
             type="button"
             onClick={handleClose}

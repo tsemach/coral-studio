@@ -100,7 +100,7 @@ export function PostDetailModal({
         {/* Top Header with Channel & Close */}
         <div className="flex items-center justify-between border-b border-ink-foreground/16 pb-3 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-xs text-primary">
+            <span className="font-semibold text-xs text-blue-200">
               {getChannelLabel(post.channel)}
             </span>
             <span className="text-ink-foreground/30 text-xs">•</span>

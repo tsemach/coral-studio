@@ -29,7 +29,7 @@ export function TapeCard({ tape }: { tape: TapeItem }) {
   return (
     <article className="group relative rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35">
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
-        <span className="font-semibold text-primary">Tape Room</span>
+        <span className="font-semibold text-blue-200">Tape Room</span>
         <time className="text-ink-foreground/45">{formatRelativeTime(tape.createdAt)}</time>
       </div>
 
