@@ -18,6 +18,19 @@ import type {
   CastingType,
 } from '@/lib/community/types'
 
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024 // 10 MB
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+])
+
+function isAllowedAttachment(file: File): boolean {
+  return ALLOWED_ATTACHMENT_TYPES.has(file.type) && file.size > 0 && file.size <= MAX_ATTACHMENT_BYTES
+}
+
 export async function requireActiveUser() {
   const session = await auth()
   if (!session?.user?.id) {
@@ -119,20 +132,27 @@ export async function createCommunityPost(formData: FormData) {
   // Handle uploaded attachments if present
   const files = formData.getAll('attachments')
   for (const item of files) {
-    if (item instanceof File && item.size > 0) {
-      try {
-        const pathname = `community/${createdPost.id}/${Date.now()}-${item.name}`
-        const blob = await put(pathname, item, { access: 'public' })
-        await db.insert(communityAttachments).values({
-          postId: createdPost.id,
-          url: blob.url,
-          filename: item.name,
-          fileType: item.type || 'application/octet-stream',
-          fileSize: item.size,
-        })
-      } catch (err) {
-        console.error('Failed to upload community attachment to Vercel Blob:', err)
-      }
+    if (!(item instanceof File) || item.size === 0) continue
+
+    if (!isAllowedAttachment(item)) {
+      console.error(
+        `Rejected community attachment "${item.name}": type=${item.type} size=${item.size} (limit ${MAX_ATTACHMENT_BYTES} bytes, allowed types: ${[...ALLOWED_ATTACHMENT_TYPES].join(', ')})`
+      )
+      continue
+    }
+
+    try {
+      const pathname = `community/${createdPost.id}/${Date.now()}-${item.name}`
+      const blob = await put(pathname, item, { access: 'public' })
+      await db.insert(communityAttachments).values({
+        postId: createdPost.id,
+        url: blob.url,
+        filename: item.name,
+        fileType: item.type || 'application/octet-stream',
+        fileSize: item.size,
+      })
+    } catch (err) {
+      console.error('Failed to upload community attachment to Vercel Blob:', err)
     }
   }
 
