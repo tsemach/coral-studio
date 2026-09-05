@@ -23,20 +23,23 @@ export default async function CommunityPage({
     const tapes = await listTapes()
     return (
       <main className="flex-1">
-        <CommunityShell view={{ kind: 'tapes', tapes }} />
+        <CommunityShell view={{ kind: 'tapes', tapes }} activeChannelId={rawChannel} />
       </main>
     )
   }
 
   const channel = rawChannel as CommunityChannel | undefined
-  const posts = await listCommunityPosts(
-    channel && channel !== ('all' as unknown) ? channel : undefined,
-    status
-  )
+  const activeChannel = channel && channel !== ('all' as unknown) ? channel : undefined
+  const posts = await listCommunityPosts(activeChannel, status)
 
   return (
     <main className="flex-1">
-      <CommunityShell view={{ kind: 'posts', posts }} />
+      <CommunityShell
+        view={{ kind: 'posts', posts }}
+        activeChannel={activeChannel}
+        activeChannelId={rawChannel ?? 'all'}
+        activeStatus={status ?? null}
+      />
     </main>
   )
 }

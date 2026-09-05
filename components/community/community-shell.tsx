@@ -3,14 +3,24 @@ import { PostCard } from './post-card'
 import { PostFormDialog } from './post-form-dialog'
 import { TapeCard } from './tape-room/tape-card'
 import { TapeFormDialog } from './tape-room/tape-form-dialog'
-import type { CommunityPostItem } from '@/lib/community/types'
+import type { CommunityChannel, CommunityPostItem, ReaderStatus } from '@/lib/community/types'
 import type { TapeItem } from '@/lib/community/tape-types'
 
 type CommunityView =
   | { kind: 'posts'; posts: CommunityPostItem[] }
   | { kind: 'tapes'; tapes: TapeItem[] }
 
-export function CommunityShell({ view }: { view: CommunityView }) {
+export function CommunityShell({
+  view,
+  activeChannel,
+  activeChannelId = 'all',
+  activeStatus = null,
+}: {
+  view: CommunityView
+  activeChannel?: CommunityChannel
+  activeChannelId?: string
+  activeStatus?: ReaderStatus | null
+}) {
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 md:px-8 md:py-10">
       <div className="mb-8 flex flex-col justify-between gap-4 border-b border-ink-foreground/16 pb-8 md:flex-row md:items-end">
@@ -26,10 +36,16 @@ export function CommunityShell({ view }: { view: CommunityView }) {
           </p>
         </div>
 
-        <div className="shrink-0">{view.kind === 'posts' ? <PostFormDialog /> : <TapeFormDialog />}</div>
+        <div className="shrink-0">
+          {view.kind === 'posts' ? (
+            <PostFormDialog initialChannel={activeChannel} />
+          ) : (
+            <TapeFormDialog />
+          )}
+        </div>
       </div>
 
-      <ChannelTabs />
+      <ChannelTabs activeChannel={activeChannelId} activeStatus={activeStatus} />
 
       <div className="mt-8 space-y-4">
         {view.kind === 'posts' ? (
@@ -46,6 +62,7 @@ export function CommunityShell({ view }: { view: CommunityView }) {
                 <PostFormDialog
                   triggerLabel="Create a Post"
                   triggerClassName="inline-flex items-center gap-1.5 rounded-xl border border-ink-foreground/20 px-3.5 py-1.5 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors cursor-pointer"
+                  initialChannel={activeChannel}
                 />
               </div>
             </div>
