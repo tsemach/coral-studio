@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, count } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import { db } from '@/lib/database'
 import {
   communityPosts,
@@ -13,6 +14,8 @@ import type {
   CommunityPostDetail,
   CommentWithAuthor,
 } from './types'
+
+const matchedUser = alias(users, 'matched_user')
 
 export async function listCommunityPosts(
   channel?: CommunityChannel,
@@ -37,6 +40,8 @@ export async function listCommunityPosts(
       authorImage: users.image,
       authorRole: users.role,
       readerStatus: communityPosts.readerStatus,
+      matchedUserId: communityPosts.matchedUserId,
+      matchedUserName: matchedUser.name,
       rehearsalAt: communityPosts.rehearsalAt,
       rehearsalFormat: communityPosts.rehearsalFormat,
       sceneDetails: communityPosts.sceneDetails,
@@ -48,6 +53,7 @@ export async function listCommunityPosts(
     })
     .from(communityPosts)
     .innerJoin(users, eq(communityPosts.authorId, users.id))
+    .leftJoin(matchedUser, eq(communityPosts.matchedUserId, matchedUser.id))
 
   const rows = conditions.length > 0
     ? await query.where(and(...conditions)).orderBy(desc(communityPosts.isPinned), desc(communityPosts.createdAt))
@@ -80,6 +86,8 @@ export async function listCommunityPosts(
     authorImage: row.authorImage,
     authorRole: row.authorRole,
     readerStatus: row.readerStatus as ReaderStatus | null,
+    matchedUserId: row.matchedUserId,
+    matchedUserName: row.matchedUserName,
     rehearsalAt: row.rehearsalAt,
     rehearsalFormat: row.rehearsalFormat as CommunityPostItem['rehearsalFormat'],
     sceneDetails: row.sceneDetails,
@@ -104,6 +112,8 @@ export async function getCommunityPostById(id: string): Promise<CommunityPostDet
       authorImage: users.image,
       authorRole: users.role,
       readerStatus: communityPosts.readerStatus,
+      matchedUserId: communityPosts.matchedUserId,
+      matchedUserName: matchedUser.name,
       rehearsalAt: communityPosts.rehearsalAt,
       rehearsalFormat: communityPosts.rehearsalFormat,
       sceneDetails: communityPosts.sceneDetails,
@@ -115,6 +125,7 @@ export async function getCommunityPostById(id: string): Promise<CommunityPostDet
     })
     .from(communityPosts)
     .innerJoin(users, eq(communityPosts.authorId, users.id))
+    .leftJoin(matchedUser, eq(communityPosts.matchedUserId, matchedUser.id))
     .where(eq(communityPosts.id, id))
     .limit(1)
 
@@ -151,6 +162,8 @@ export async function getCommunityPostById(id: string): Promise<CommunityPostDet
     authorImage: row.authorImage,
     authorRole: row.authorRole,
     readerStatus: row.readerStatus as ReaderStatus | null,
+    matchedUserId: row.matchedUserId,
+    matchedUserName: row.matchedUserName,
     rehearsalAt: row.rehearsalAt,
     rehearsalFormat: row.rehearsalFormat as CommunityPostItem['rehearsalFormat'],
     sceneDetails: row.sceneDetails,

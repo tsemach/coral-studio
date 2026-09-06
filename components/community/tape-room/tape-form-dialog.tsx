@@ -15,6 +15,7 @@ const TAPE_ROOM_PREFIX = `coral-studio-blob/${process.env.NEXT_PUBLIC_VERCEL_ENV
 export function TapeFormDialog() {
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
   const recorderRef = useRef<TapeRecorderHandle>(null)
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
@@ -29,6 +30,13 @@ export function TapeFormDialog() {
     setDescription('')
     setVideoFile(null)
     setError(null)
+    // The dialog stays mounted between opens (showModal()/close() toggle
+    // visibility, not React), so a drag-resize's inline width/height would
+    // otherwise persist as a stuck oversized box on every later open.
+    if (contentRef.current) {
+      contentRef.current.style.width = ''
+      contentRef.current.style.height = ''
+    }
     dialogRef.current?.showModal()
   }
 
@@ -99,9 +107,12 @@ export function TapeFormDialog() {
           }
         }}
         onClose={() => recorderRef.current?.stopCamera()}
-        className="m-auto w-full max-w-lg border-0 bg-transparent p-4 backdrop:bg-black/60 [color-scheme:dark]"
+        className="m-auto max-w-[95vw] border-0 bg-transparent p-4 backdrop:bg-black/60 [color-scheme:dark]"
       >
-        <div className="w-full rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[88vh] overflow-y-auto">
+        <div
+          ref={contentRef}
+          className="resize overflow-auto rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl w-[min(32rem,95vw)] max-w-[95vw] max-h-[88vh] min-h-[24rem] min-w-[20rem]"
+        >
           <div className="flex items-center justify-between pb-2">
             <div>
               <p className="text-lg font-semibold text-ink-foreground">New tape</p>

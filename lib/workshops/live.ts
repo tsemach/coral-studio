@@ -1,30 +1,13 @@
-import { AccessToken, RoomServiceClient } from 'livekit-server-sdk'
+import { AccessToken } from 'livekit-server-sdk'
+import { requiredEnv, roomServiceClient } from '@/lib/livekit'
+
+export { getLiveKitServerUrl } from '@/lib/livekit'
 
 // One room per workshop, named by its id. LiveKit creates the room on first
 // join and tears it down once empty -- no DB row or webhook needed to track
 // "is this workshop live," isWorkshopLive() below just asks LiveKit directly.
 function roomNameFor(workshopId: string): string {
   return workshopId
-}
-
-function requiredEnv(name: 'LIVEKIT_URL' | 'LIVEKIT_API_KEY' | 'LIVEKIT_API_SECRET'): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`${name} is not set -- see .env.example`)
-  return value
-}
-
-// Not secret (just the server address, like any websocket URL) -- returned
-// alongside the token so the client can connect without a second,
-// separately-maintained NEXT_PUBLIC_ env var.
-export function getLiveKitServerUrl(): string {
-  return requiredEnv('LIVEKIT_URL')
-}
-
-function roomServiceClient(): RoomServiceClient {
-  // RoomServiceClient talks over plain https, so http(s):// works even
-  // though the client SDK connects to the same host over wss://.
-  const url = requiredEnv('LIVEKIT_URL').replace(/^wss:/, 'https:').replace(/^ws:/, 'http:')
-  return new RoomServiceClient(url, requiredEnv('LIVEKIT_API_KEY'), requiredEnv('LIVEKIT_API_SECRET'))
 }
 
 // Mints a per-user room token. canPublish gates whether this participant can

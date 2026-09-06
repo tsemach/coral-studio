@@ -27,20 +27,23 @@ export function TapeCard({ tape }: { tape: TapeItem }) {
   const duration = formatDuration(tape.durationSeconds)
 
   return (
-    <article className="group relative rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35">
+    <Link
+      href={`/community/tape-room/${tape.id}`}
+      className="group relative block rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35 focus:outline-hidden"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
         <span className="font-semibold text-blue-200">Tape Room</span>
         <time className="text-ink-foreground/45">{formatRelativeTime(tape.createdAt)}</time>
       </div>
 
-      <Link href={`/community/tape-room/${tape.id}`} className="block focus:outline-hidden">
+      <div>
         <h3 className="text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
           {tape.title}
         </h3>
         <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-foreground/65">
           {tape.description}
         </p>
-      </Link>
+      </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-ink-foreground/12 pt-3 text-xs text-ink-foreground/55">
         <div className="flex items-center gap-2">
@@ -55,6 +58,6 @@ export function TapeCard({ tape }: { tape: TapeItem }) {
           <span>{tape.notesCount} {tape.notesCount === 1 ? 'note' : 'notes'}</span>
         </div>
       </div>
-    </article>
+    </Link>
   )
 }

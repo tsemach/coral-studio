@@ -146,6 +146,11 @@ export const communityPosts = pgTable('community_posts', {
   readerStatus: text('reader_status', {
     enum: ['seeking', 'matched', 'closed'],
   }).default('seeking'),
+  // The confirmed reader for this request, set by confirmReader() once the
+  // author picks one of the members who offered (reader_offers below) --
+  // null until matched. onDelete: 'set null' so a post never becomes
+  // unreadable data just because the matched member's account is removed.
+  matchedUserId: text('matched_user_id').references(() => users.id, { onDelete: 'set null' }),
   rehearsalAt: timestamp('rehearsal_at', { mode: 'date' }),
   rehearsalFormat: text('rehearsal_format', { enum: ['studio', 'online'] }),
   sceneDetails: text('scene_details'),
@@ -185,6 +190,42 @@ export const communityAttachments = pgTable('community_attachments', {
   filename: text('filename').notNull(),
   fileType: text('file_type').notNull(),
   fileSize: integer('file_size'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
+// COR-22: Community Sub-project 3 -- Instant Virtual Rehearsal
+export const readerOffers = pgTable(
+  'reader_offers',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    postId: text('post_id')
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => ({
+    uniqueOfferPerUser: uniqueIndex('reader_offers_post_user_idx').on(table.postId, table.userId),
+  })
+)
+
+export const rehearsalSessions = pgTable('rehearsal_sessions', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  // Nullable + set null on delete -- a reader's session count should survive
+  // the original post being deleted later, not silently drop.
+  postId: text('post_id').references(() => communityPosts.id, { onDelete: 'set null' }),
+  readerId: text('reader_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 })
 
