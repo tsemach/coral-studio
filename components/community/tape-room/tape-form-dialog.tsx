@@ -99,9 +99,9 @@ export function TapeFormDialog() {
           }
         }}
         onClose={() => recorderRef.current?.stopCamera()}
-        className="m-auto w-full max-w-lg border-0 bg-transparent p-4 backdrop:bg-black/60 [color-scheme:dark]"
+        className="m-auto max-w-[95vw] border-0 bg-transparent p-4 backdrop:bg-black/60 [color-scheme:dark]"
       >
-        <div className="w-full rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[88vh] overflow-y-auto">
+        <div className="resize overflow-auto rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl w-[min(32rem,95vw)] max-w-[95vw] max-h-[88vh] min-h-[24rem] min-w-[20rem]">
           <div className="flex items-center justify-between pb-2">
             <div>
               <p className="text-lg font-semibold text-ink-foreground">New tape</p>

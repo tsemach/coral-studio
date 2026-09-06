@@ -78,7 +78,7 @@ export function TapeDetailModal({
       }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs [color-scheme:dark]"
     >
-      <div className="relative w-full max-w-3xl rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[90vh] flex flex-col">
+      <div className="relative resize overflow-hidden rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl w-[min(48rem,95vw)] max-w-[95vw] max-h-[90vh] min-h-[24rem] min-w-[24rem] flex flex-col">
         <div className="flex items-center justify-between border-b border-ink-foreground/16 pb-3 shrink-0">
           <span className="font-semibold text-xs text-blue-200">Tape Room</span>
           <button
