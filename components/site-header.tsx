@@ -18,7 +18,7 @@ export function SiteHeader() {
   const navLinks = [
     { label: 'About', href: '/#about' },
     { label: 'Workshops', href: isLoggedIn ? '/workshops' : '/#workshops' },
-    { label: 'Communities', href: '/#community' },
+    { label: 'Communities', href: isLoggedIn ? '/community' : '/#community' },
     ...(isAdmin ? [{ label: 'Scripts', href: '/scripts' }] : []),
     { label: 'Contact', href: '/#contact' },
   ]
