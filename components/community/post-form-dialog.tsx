@@ -107,7 +107,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
           onClick={open}
           className={
             triggerClassName ||
-            'inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs transition-transform hover:-translate-y-0.5 cursor-pointer'
+            'inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 cursor-pointer'
           }
         >
           {triggerLabel}
@@ -163,7 +163,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                     onClick={() => setChannel(item.id as CommunityChannel)}
                     className={`flex flex-col text-left p-2.5 rounded-lg border transition-all cursor-pointer ${
                       channel === item.id
-                        ? 'border-primary bg-primary/15 ring-1 ring-primary'
+                        ? 'border-blue-500/40 bg-blue-500/15 ring-1 ring-blue-500/40'
                         : 'border-ink-foreground/16 bg-ink hover:border-ink-foreground/30'
                     }`}
                   >
@@ -201,7 +201,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                         onClick={() => setRehearsalFormat('studio')}
                         className={`flex-1 rounded-lg py-1.5 text-xs font-medium border transition-colors cursor-pointer ${
                           rehearsalFormat === 'studio'
-                            ? 'bg-primary text-primary-foreground border-primary'
+                            ? 'border-blue-500/40 bg-blue-500/15 text-blue-300'
                             : 'bg-ink border-ink-foreground/16 text-ink-foreground/75 hover:bg-ink-card'
                         }`}
                       >
@@ -212,7 +212,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                         onClick={() => setRehearsalFormat('online')}
                         className={`flex-1 rounded-lg py-1.5 text-xs font-medium border transition-colors cursor-pointer ${
                           rehearsalFormat === 'online'
-                            ? 'bg-primary text-primary-foreground border-primary'
+                            ? 'border-blue-500/40 bg-blue-500/15 text-blue-300'
                             : 'bg-ink border-ink-foreground/16 text-ink-foreground/75 hover:bg-ink-card'
                         }`}
                       >
@@ -238,7 +238,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
             {/* Conditional: #the-callboard fields */}
             {channel === 'callboard' && (
               <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3.5 space-y-3">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-200">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-300">
                   <span>📢</span>
                   <span>Audition & Casting Details</span>
                 </div>
@@ -338,7 +338,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
               <button
                 type="submit"
                 disabled={isPending}
-                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer"
+                className="rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? 'Publishing…' : 'Create'}
               </button>

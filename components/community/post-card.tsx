@@ -53,7 +53,7 @@ export function PostCard({
     >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold text-blue-200">
+          <span className="font-semibold text-blue-300">
             {getChannelLabel(post.channel)}
           </span>
 
@@ -91,7 +91,7 @@ export function PostCard({
           )}
 
           {isCallboard && post.castingType && (
-            <span className="inline-flex items-center rounded-md bg-blue-500/20 px-2 py-0.5 text-[0.7rem] font-medium text-blue-200 border border-blue-500/35 capitalize">
+            <span className="inline-flex items-center rounded-md bg-blue-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-blue-300 border border-blue-500/40 capitalize">
               {post.castingType.replace('_', ' ')}
             </span>
           )}
@@ -101,7 +101,7 @@ export function PostCard({
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
+        <h3 className="text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-300 md:text-xl">
           {post.title}
         </h3>
 
@@ -156,14 +156,14 @@ export function PostCard({
           </div>
           <span className="font-medium text-ink-foreground/90">{post.authorName || 'Anonymous Member'}</span>
           {post.authorRole === 'admin' && (
-            <span className="rounded-md bg-primary/25 px-1.5 py-0.2 text-[0.65rem] font-medium text-primary-foreground uppercase tracking-wide">
+            <span className="rounded-md bg-blue-500/15 px-1.5 py-0.2 text-[0.65rem] font-medium text-blue-300 border border-blue-500/40 uppercase tracking-wide">
               Studio Admin
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1 transition-colors group-hover:text-blue-200">
+          <span className="inline-flex items-center gap-1 transition-colors group-hover:text-blue-300">
             <svg
               className="h-3.5 w-3.5"
               fill="none"

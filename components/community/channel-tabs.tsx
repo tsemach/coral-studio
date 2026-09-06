@@ -30,7 +30,7 @@ export function ChannelTabs({
               href={href}
               className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-xs'
+                  ? 'border border-blue-500/40 bg-blue-500/15 text-blue-300'
                   : 'bg-ink-card text-ink-foreground/70 hover:bg-ink-foreground/5 hover:border-ink-foreground/30 hover:text-ink-foreground border border-ink-foreground/16'
               }`}
             >

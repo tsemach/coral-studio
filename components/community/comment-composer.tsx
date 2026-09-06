@@ -53,7 +53,7 @@ export function CommentComposer({ postId }: { postId: string }) {
         <button
           type="submit"
           disabled={isPending || !content.trim()}
-          className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
+          className="rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-blue-500/65 disabled:opacity-50 transition-all cursor-pointer"
         >
           {isPending ? 'Posting...' : 'Reply'}
         </button>

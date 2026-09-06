@@ -155,7 +155,7 @@ export function PostDetailModal({
         {/* Top Header with Channel & Close */}
         <div className="flex items-center justify-between border-b border-ink-foreground/16 pb-3 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-xs text-blue-200">
+            <span className="font-semibold text-xs text-blue-300">
               {getChannelLabel(post.channel)}
             </span>
             <span className="text-ink-foreground/30 text-xs">•</span>
@@ -242,7 +242,7 @@ export function PostDetailModal({
               )}
 
               {isCallboard && post.castingType && (
-                <span className="rounded-md bg-blue-500/20 px-2.5 py-1 text-xs font-semibold text-blue-200 border border-blue-500/35 capitalize">
+                <span className="rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-300 border border-blue-500/40 capitalize">
                   {post.castingType.replace('_', ' ')}
                 </span>
               )}
@@ -262,7 +262,7 @@ export function PostDetailModal({
                   <div className="flex items-center gap-1.5">
                     <span className="font-medium text-xs text-ink-foreground">{post.authorName || 'Anonymous Member'}</span>
                     {post.authorRole === 'admin' && (
-                      <span className="rounded-md bg-primary/25 px-1.5 py-0.2 text-[0.65rem] font-medium text-primary-foreground uppercase">
+                      <span className="rounded-md bg-blue-500/15 px-1.5 py-0.2 text-[0.65rem] font-medium text-blue-300 border border-blue-500/40 uppercase">
                         Admin
                       </span>
                     )}
@@ -403,7 +403,7 @@ export function PostDetailModal({
           {/* Specialized Callboard Box */}
           {isCallboard && post.deadlineAt && (
             <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-3 text-xs flex items-center justify-between">
-              <span className="text-blue-200 font-medium">Submission Deadline:</span>
+              <span className="text-blue-300 font-medium">Submission Deadline:</span>
               <strong className="text-accent font-bold">
                 {new Date(post.deadlineAt).toLocaleDateString('en-GB', {
                   day: 'numeric',
@@ -487,7 +487,7 @@ export function PostDetailModal({
                           {comment.authorName || 'Anonymous Member'}
                         </span>
                         {comment.authorRole === 'admin' && (
-                          <span className="rounded-md bg-primary/25 px-1 py-0.2 text-[0.6rem] font-medium text-primary-foreground uppercase">
+                          <span className="rounded-md bg-blue-500/15 px-1 py-0.2 text-[0.6rem] font-medium text-blue-300 border border-blue-500/40 uppercase">
                             Admin
                           </span>
                         )}
