@@ -188,3 +188,39 @@ export const communityAttachments = pgTable('community_attachments', {
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
 })
 
+// COR-21: Community Sub-project 2 -- The Tape Room
+export const tapePosts = pgTable('tape_posts', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  // Blob pathname, not a public URL -- resolved server-side via get() in the
+  // video streaming route (app/community/tape-room/[tapeId]/video/route.ts),
+  // never exposed directly to the browser.
+  videoPathname: text('video_pathname').notNull(),
+  durationSeconds: integer('duration_seconds'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
+export const tapeNotes = pgTable('tape_notes', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  tapeId: text('tape_id')
+    .notNull()
+    .references(() => tapePosts.id, { onDelete: 'cascade' }),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  timestampSeconds: integer('timestamp_seconds').notNull(),
+  tag: text('tag', {
+    enum: ['objective_action', 'truthfulness_listening', 'vocal_physicality', 'framing_eyeline'],
+  }),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
