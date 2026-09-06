@@ -82,7 +82,7 @@ export function CommunityShell({
             </p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-4">
             {view.tapes.map((tape) => (
               <TapeCard key={tape.id} tape={tape} />
             ))}
