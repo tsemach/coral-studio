@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { updateReaderStatus } from '@/app/community/actions'
 import { offerToRead, confirmReader } from '@/app/community/rehearsal-actions'
@@ -56,9 +56,12 @@ export function PostDetailModal({
   hasOffered: boolean
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const [isOfferPending, startOfferTransition] = useTransition()
   const [inRoom, setInRoom] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const isAuthor = currentUserId === post.authorId
   const canManage = isAuthor || isAdmin
@@ -67,13 +70,46 @@ export function PostDetailModal({
   const isMatchedReader = currentUserId === post.matchedUserId
 
   const handleClose = () => {
-    router.push('/community')
+    // The card that opened this post carries its tab in ?channel= (see
+    // PostCard's detailHref) so closing lands back on that tab instead of
+    // always resetting to "All Channels".
+    const originChannel = searchParams.get('channel')
+    router.push(originChannel ? `/community?channel=${originChannel}` : '/community')
   }
 
-  // Close on Escape key press
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      modalRef.current?.requestFullscreen()
+    }
+  }
+
+  // Keep isFullscreen in sync however fullscreen ends -- our own button,
+  // the browser's native Escape handling, or an out-of-band F11/OS action.
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === modalRef.current)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  // The fullscreen button only shows while in the room -- leaving it (or the
+  // room erroring out) shouldn't strand the viewer in fullscreen with no way
+  // to see the exit control.
+  useEffect(() => {
+    if (!inRoom && document.fullscreenElement === modalRef.current) {
+      document.exitFullscreen()
+    }
+  }, [inRoom])
+
+  // Close on Escape key press -- but while fullscreen, the first Escape
+  // should only exit fullscreen (the browser already does this natively);
+  // closing the post entirely needs a second, separate Escape press.
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !document.fullscreenElement) {
         handleClose()
       }
     }
@@ -106,7 +142,16 @@ export function PostDetailModal({
       }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs [color-scheme:dark]"
     >
-      <div className="relative w-full max-w-2xl rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[90vh] flex flex-col">
+      <div
+        ref={modalRef}
+        className={`relative resize overflow-hidden rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl flex flex-col [color-scheme:dark] ${
+          isFullscreen
+            ? 'w-screen h-screen max-w-none max-h-none min-h-0 min-w-0'
+            : inRoom
+            ? 'w-[min(64rem,95vw)] h-[min(48rem,85vh)] max-w-[95vw] max-h-[90vh] min-h-[28rem] min-w-[36rem]'
+            : 'w-[min(42rem,95vw)] max-w-[95vw] max-h-[90vh] min-h-[20rem] min-w-[20rem]'
+        }`}
+      >
         {/* Top Header with Channel & Close */}
         <div className="flex items-center justify-between border-b border-ink-foreground/16 pb-3 shrink-0">
           <div className="flex items-center gap-2">
@@ -117,19 +162,44 @@ export function PostDetailModal({
             <time className="text-xs text-ink-foreground/45">{formatRelativeTime(post.createdAt)}</time>
           </div>
 
-          <button
-            type="button"
-            onClick={handleClose}
-            className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer transition-colors"
-            aria-label="Close modal"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-1">
+            {inRoom && (
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="text-ink-foreground/45 hover:text-ink-foreground p-1 cursor-pointer transition-colors"
+                aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              >
+                {isFullscreen ? (
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+                  </svg>
+                ) : (
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
+                  </svg>
+                )}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer transition-colors"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Content Area */}
         {inRoom ? (
-          <div className="overflow-y-auto flex-1 pr-1 mt-4 grid gap-4 md:grid-cols-2 min-h-0">
+          <div
+            className={`overflow-y-auto flex-1 pr-1 mt-4 grid gap-4 min-h-0 ${
+              post.attachments.length > 0 ? 'md:grid-cols-2' : ''
+            }`}
+          >
             <RehearsalRoom postId={post.id} onLeave={() => setInRoom(false)} />
             {post.attachments.length > 0 && <SidesViewer attachment={post.attachments[0]} />}
           </div>
@@ -242,7 +312,7 @@ export function PostDetailModal({
 
               {canManage && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20 flex flex-wrap items-center gap-2">
-                  <span className="text-ink-foreground/60 font-medium">Update Status:</span>
+                  <span className="text-ink-foreground/60 font-medium">Change status to:</span>
                   {post.readerStatus !== 'seeking' && (
                     <button
                       type="button"
