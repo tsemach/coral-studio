@@ -29,12 +29,28 @@ function getChannelLabel(channel: string): string {
   }
 }
 
-export function PostCard({ post }: { post: CommunityPostItem }) {
+export function PostCard({
+  post,
+  activeChannelId,
+}: {
+  post: CommunityPostItem
+  activeChannelId?: string
+}) {
   const isReaderSOS = post.channel === 'reader_sos'
   const isCallboard = post.channel === 'callboard'
+  // Carries the tab the viewer was on into the detail URL, so closing the
+  // modal (PostDetailModal's handleClose) can return to that same tab
+  // instead of always resetting to "All Channels".
+  const detailHref =
+    activeChannelId && activeChannelId !== 'all'
+      ? `/community/${post.id}?channel=${activeChannelId}`
+      : `/community/${post.id}`
 
   return (
-    <article className="group relative rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35">
+    <Link
+      href={detailHref}
+      className="group relative block rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35 focus:outline-hidden"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-blue-200">
@@ -84,7 +100,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
         <time className="text-ink-foreground/45">{formatRelativeTime(post.createdAt)}</time>
       </div>
 
-      <Link href={`/community/${post.id}`} className="block focus:outline-hidden">
+      <div>
         <h3 className="text-lg font-semibold tracking-tight text-ink-foreground transition-colors group-hover:text-blue-200 md:text-xl">
           {post.title}
         </h3>
@@ -131,7 +147,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
         <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-foreground/65">
           {post.content}
         </p>
-      </Link>
+      </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-ink-foreground/12 pt-3 text-xs text-ink-foreground/55">
         <div className="flex items-center gap-2">
@@ -147,10 +163,7 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href={`/community/${post.id}`}
-            className="inline-flex items-center gap-1 transition-colors hover:text-blue-200 focus:outline-hidden"
-          >
+          <span className="inline-flex items-center gap-1 transition-colors group-hover:text-blue-200">
             <svg
               className="h-3.5 w-3.5"
               fill="none"
@@ -165,9 +178,9 @@ export function PostCard({ post }: { post: CommunityPostItem }) {
               />
             </svg>
             <span>{post.commentsCount} {post.commentsCount === 1 ? 'reply' : 'replies'}</span>
-          </Link>
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   )
 }

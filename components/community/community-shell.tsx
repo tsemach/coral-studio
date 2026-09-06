@@ -67,7 +67,9 @@ export function CommunityShell({
               </div>
             </div>
           ) : (
-            view.posts.map((post) => <PostCard key={post.id} post={post} />)
+            view.posts.map((post) => (
+              <PostCard key={post.id} post={post} activeChannelId={activeChannelId} />
+            ))
           )
         ) : view.tapes.length === 0 ? (
           <div className="rounded-xl border border-dashed border-ink-foreground/20 bg-ink-card/60 p-12 text-center">
