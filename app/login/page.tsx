@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { LoginForm } from './login-form'
+import { LanguageToggle } from '@/components/i18n/language-toggle'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 export const metadata: Metadata = {
   title: 'Log in — Glumački Studio',
@@ -14,6 +16,7 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams
   const oauthPending = error === 'AccessDenied'
+  const { login: t } = await getDictionary()
 
   return (
     <main className="flex min-h-screen flex-col bg-ink text-ink-foreground">
@@ -26,29 +29,30 @@ export default async function LoginPage({
             Acting · Belgrade
           </span>
         </Link>
-        <Link
-          href="/"
-          className="text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground"
-        >
-          ← Back to site
-        </Link>
+        <div className="flex items-center gap-4">
+          <LanguageToggle variant="dark" />
+          <Link
+            href="/"
+            className="text-sm text-ink-foreground/70 transition-colors hover:text-ink-foreground"
+          >
+            {t.backToSite}
+          </Link>
+        </div>
       </header>
 
       <div className="flex flex-1 items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm">
           <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight">
-            Welcome back
+            {t.title}
           </h1>
-          <p className="mt-2 text-sm text-ink-foreground/60">
-            Log in to access your classes and studio updates.
-          </p>
+          <p className="mt-2 text-sm text-ink-foreground/60">{t.subtitle}</p>
 
           <LoginForm oauthPending={oauthPending} />
 
           <p className="mt-6 text-center text-sm text-ink-foreground/55">
-            New to the studio?{' '}
+            {t.newToStudio}{' '}
             <Link href="/register" className="text-accent hover:underline">
-              Create an account
+              {t.createAccount}
             </Link>
           </p>
         </div>

@@ -3,15 +3,13 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { OAuthButtons } from '@/components/oauth-buttons'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function LoginForm({ oauthPending = false }: { oauthPending?: boolean }) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(
-    oauthPending
-      ? "Your account was created and is waiting on admin approval. You'll be able to log in once it's approved."
-      : ''
-  )
+  const [error, setError] = useState(oauthPending ? t.login.oauthPendingError : '')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -21,7 +19,7 @@ export function LoginForm({ oauthPending = false }: { oauthPending?: boolean }) 
 
     const res = await signIn('credentials', { email, password, redirect: false })
     if (res?.error) {
-      setError('Invalid email or password, or your account is not active yet.')
+      setError(t.login.invalidCredentialsError)
       setLoading(false)
       return
     }
@@ -45,7 +43,7 @@ export function LoginForm({ oauthPending = false }: { oauthPending?: boolean }) 
             htmlFor="email"
             className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
           >
-            Email
+            {t.login.emailLabel}
           </label>
           <input
             id="email"
@@ -64,7 +62,7 @@ export function LoginForm({ oauthPending = false }: { oauthPending?: boolean }) 
             htmlFor="password"
             className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
           >
-            Password
+            {t.login.passwordLabel}
           </label>
           <input
             id="password"
@@ -83,7 +81,7 @@ export function LoginForm({ oauthPending = false }: { oauthPending?: boolean }) 
           disabled={loading}
           className="w-full rounded-sm bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-60"
         >
-          {loading ? 'Logging in…' : 'Log in'}
+          {loading ? t.login.submitLoading : t.login.submit}
         </button>
       </form>
 
