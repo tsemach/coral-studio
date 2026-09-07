@@ -1,8 +1,11 @@
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import { auth } from '@/auth'
 import { getCommunityPostById, listCommentsForPost, listCommunityPosts } from '@/lib/community/queries'
 import { listOffersForPost, hasUserOfferedToRead } from '@/lib/community/reader-queries'
+import { toPostItemDTO } from '@/lib/community/dto'
+import { communityKeys } from '@/lib/community/query-keys'
 import { CommunityShell } from '@/components/community/community-shell'
 import { PostDetailModal } from '@/components/community/post-detail-modal'
 
@@ -36,15 +39,24 @@ export default async function PostDetailPage({
     redirect(`/login?callbackUrl=/community/${id}`)
   }
 
-  const [post, comments, boardPosts] = await Promise.all([
+  const [post, comments] = await Promise.all([
     getCommunityPostById(id),
     listCommentsForPost(id),
-    listCommunityPosts({}).then((r) => r.items),
   ])
 
   if (!post) {
     notFound()
   }
+
+  const queryClient = new QueryClient()
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: communityKeys.postsList(undefined, undefined),
+    queryFn: async () => {
+      const { items, nextCursor } = await listCommunityPosts({ limit: 20 })
+      return { items: items.map(toPostItemDTO), nextCursor }
+    },
+    initialPageParam: null,
+  })
 
   const isAdmin = (session.user as { role?: string }).role === 'admin'
   const isPostAuthorOrAdmin = post.authorId === session.user.id || isAdmin
@@ -58,18 +70,21 @@ export default async function PostDetailPage({
 
   return (
     <main className="flex-1 relative">
-      {/* Underlying Community Board */}
-      <CommunityShell view={{ kind: 'posts', posts: boardPosts }} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        {/* Underlying Community Board -- same unfiltered query key as
+            /community's default view, so cache is shared between routes. */}
+        <CommunityShell view={{ kind: 'feed' }} />
 
-      {/* Floating Post Detail Modal */}
-      <PostDetailModal
-        post={post}
-        comments={comments}
-        currentUserId={session.user.id}
-        isAdmin={isAdmin}
-        offers={offers}
-        hasOffered={hasOffered}
-      />
+        {/* Floating Post Detail Modal -- rewired to PostDetailContainer in Task 7 */}
+        <PostDetailModal
+          post={post}
+          comments={comments}
+          currentUserId={session.user.id}
+          isAdmin={isAdmin}
+          offers={offers}
+          hasOffered={hasOffered}
+        />
+      </HydrationBoundary>
     </main>
   )
 }

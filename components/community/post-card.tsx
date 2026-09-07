@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import type { CommunityPostItem } from '@/lib/community/types'
+import type { CommunityPostItemDTO } from '@/lib/community/dto'
 
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: string): string {
   const now = new Date()
   const diffMs = now.getTime() - new Date(date).getTime()
   const diffMinutes = Math.floor(diffMs / 60000)
@@ -33,7 +33,7 @@ export function PostCard({
   post,
   activeChannelId,
 }: {
-  post: CommunityPostItem
+  post: CommunityPostItemDTO & { isOptimistic?: boolean }
   activeChannelId?: string
 }) {
   const isReaderSOS = post.channel === 'reader_sos'
@@ -49,7 +49,9 @@ export function PostCard({
   return (
     <Link
       href={detailHref}
-      className="group relative block rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35 focus:outline-hidden"
+      className={`group relative block rounded-xl border border-ink-foreground/16 bg-ink-card p-5 transition-all hover:border-ink-foreground/35 focus:outline-hidden ${
+        post.isOptimistic ? 'pointer-events-none opacity-60' : ''
+      }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-foreground/55 mb-3">
         <div className="flex flex-wrap items-center gap-2">
