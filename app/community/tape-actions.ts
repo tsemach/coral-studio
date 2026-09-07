@@ -6,6 +6,7 @@ import { del } from '@vercel/blob'
 import { db } from '@/lib/database'
 import { tapePosts, tapeNotes } from '@/lib/database/schema'
 import { requireActiveUser } from '@/lib/community/auth'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 import type { TapeNoteTag } from '@/lib/community/tape-types'
 
 const VALID_TAGS: TapeNoteTag[] = [
@@ -22,12 +23,13 @@ export async function createTape(input: {
   durationSeconds: number | null
 }) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const title = input.title.trim()
   const description = input.description.trim()
 
   if (!title || !description || !input.videoPathname) {
-    return { error: 'Title, description, and a video are required' }
+    return { error: t.actions.createTape.missingFields }
   }
 
   const [createdTape] = await db
@@ -52,16 +54,17 @@ export async function addTapeNote(
   tag: TapeNoteTag | null
 ) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const trimmed = content?.trim()
   if (!trimmed) {
-    return { error: 'Note cannot be empty' }
+    return { error: t.actions.addTapeNote.empty }
   }
   if (!Number.isInteger(timestampSeconds) || timestampSeconds < 0) {
-    return { error: 'Invalid timestamp' }
+    return { error: t.actions.addTapeNote.invalidTimestamp }
   }
   if (tag !== null && !VALID_TAGS.includes(tag)) {
-    return { error: 'Invalid tag' }
+    return { error: t.actions.addTapeNote.invalidTag }
   }
 
   const [tape] = await db
@@ -71,7 +74,7 @@ export async function addTapeNote(
     .limit(1)
 
   if (!tape) {
-    return { error: 'Tape not found' }
+    return { error: t.actions.tapeNotFound }
   }
 
   const [note] = await db
@@ -92,6 +95,7 @@ export async function addTapeNote(
 
 export async function deleteTape(tapeId: string) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const [tape] = await db
     .select({ id: tapePosts.id, authorId: tapePosts.authorId, videoPathname: tapePosts.videoPathname })
@@ -100,11 +104,11 @@ export async function deleteTape(tapeId: string) {
     .limit(1)
 
   if (!tape) {
-    return { error: 'Tape not found' }
+    return { error: t.actions.tapeNotFound }
   }
 
   if (tape.authorId !== user.id && user.role !== 'admin') {
-    return { error: 'Unauthorized to delete this tape' }
+    return { error: t.actions.deleteTape.unauthorized }
   }
 
   await db.delete(tapePosts).where(eq(tapePosts.id, tapeId))

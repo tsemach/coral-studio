@@ -4,6 +4,7 @@ import '@livekit/components-styles'
 import { useEffect, useState } from 'react'
 import { LiveKitRoom, VideoConference, useLocalParticipant, useLocalParticipantPermissions } from '@livekit/components-react'
 import { addMeToLiveSession, getLiveToken } from '@/app/workshops/actions'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 // Floating over VideoConference rather than part of its own control bar --
 // VideoConference is LiveKit's stock component (chat, screen share, its own
@@ -14,6 +15,7 @@ import { addMeToLiveSession, getLiveToken } from '@/app/workshops/actions'
 // its own -- the effect below is what actually turns their camera/mic on in
 // response, since a permission grant alone doesn't start publishing.
 function AddMeButton({ workshopId }: { workshopId: string }) {
+  const { t } = useTranslation()
   const permissions = useLocalParticipantPermissions()
   const { localParticipant } = useLocalParticipant()
   const [pending, setPending] = useState(false)
@@ -40,7 +42,7 @@ function AddMeButton({ workshopId }: { workshopId: string }) {
       }}
       className="absolute bottom-24 left-1/2 z-10 -translate-x-1/2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg disabled:opacity-60"
     >
-      {pending ? 'Joining…' : 'Add me'}
+      {pending ? t.workshops.videoRoom.joining : t.workshops.videoRoom.addMe}
     </button>
   )
 }
@@ -50,6 +52,7 @@ function AddMeButton({ workshopId }: { workshopId: string }) {
 // as a prop -- it's short-lived and scoped to exactly this join, not
 // something the parent server render should be minting speculatively.
 export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string; onLeave: () => void }) {
+  const { t } = useTranslation()
   const [session, setSession] = useState<{ token: string; serverUrl: string; canPublish: boolean } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -60,12 +63,12 @@ export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string;
         if (!cancelled) setSession(result)
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Could not join the live session')
+        if (!cancelled) setError(err instanceof Error ? err.message : t.workshops.videoRoom.couldNotJoin)
       })
     return () => {
       cancelled = true
     }
-  }, [workshopId])
+  }, [workshopId, t.workshops.videoRoom.couldNotJoin])
 
   if (error) {
     return (
@@ -76,7 +79,7 @@ export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string;
           onClick={onLeave}
           className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 hover:text-ink-foreground"
         >
-          Back to workshop
+          {t.workshops.videoRoom.backToWorkshop}
         </button>
       </div>
     )
@@ -84,7 +87,9 @@ export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string;
 
   if (!session) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-ink-foreground/55">Connecting…</div>
+      <div className="flex flex-1 items-center justify-center text-sm text-ink-foreground/55">
+        {t.workshops.videoRoom.connecting}
+      </div>
     )
   }
 

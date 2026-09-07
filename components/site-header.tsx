@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { UserMenu } from '@/components/user-menu'
+import { LanguageToggle } from '@/components/i18n/language-toggle'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
   const { data: session, status } = useSession()
+  const { t } = useTranslation()
   const isLoggedIn = status === 'authenticated'
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin'
 
@@ -16,11 +19,11 @@ export function SiteHeader() {
   // (COR-17) is admin-only, so it's spliced in conditionally rather than
   // always present like the rest of the nav.
   const navLinks = [
-    { label: 'About', href: '/#about' },
-    { label: 'Workshops', href: isLoggedIn ? '/workshops' : '/#workshops' },
-    { label: 'Communities', href: isLoggedIn ? '/community' : '/#community' },
-    ...(isAdmin ? [{ label: 'Scripts', href: '/scripts' }] : []),
-    { label: 'Contact', href: '/#contact' },
+    { label: t.header.navAbout, href: '/#about' },
+    { label: t.header.navWorkshops, href: isLoggedIn ? '/workshops' : '/#workshops' },
+    { label: t.header.navCommunity, href: isLoggedIn ? '/community' : '/#community' },
+    ...(isAdmin ? [{ label: t.header.navScripts, href: '/scripts' }] : []),
+    { label: t.header.navContact, href: '/#contact' },
   ]
 
   return (
@@ -49,17 +52,21 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-3">
           {isLoggedIn ? (
-            <div className="md:absolute md:right-8 md:top-1/2 md:-translate-y-1/2">
+            <div className="flex items-center gap-3 md:absolute md:right-8 md:top-1/2 md:-translate-y-1/2">
+              <LanguageToggle />
               <UserMenu />
             </div>
           ) : (
             status !== 'loading' && (
-              <Link
-                href="/login"
-                className="hidden rounded-sm border border-foreground/25 px-5 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/50 hover:bg-foreground hover:text-background md:inline-block md:absolute md:right-[84px] md:top-1/2 md:-translate-y-1/2"
-              >
-                Log in
-              </Link>
+              <div className="flex items-center gap-3 md:absolute md:right-8 md:top-1/2 md:-translate-y-1/2">
+                <LanguageToggle />
+                <Link
+                  href="/login"
+                  className="hidden rounded-sm border border-foreground/25 px-5 py-2 text-sm font-medium text-foreground transition-colors hover:border-foreground/50 hover:bg-foreground hover:text-background md:inline-block"
+                >
+                  {t.header.login}
+                </Link>
+              </div>
             )
           )}
 
@@ -67,10 +74,10 @@ export function SiteHeader() {
             type="button"
             onClick={() => setOpen((v) => !v)}
             className="flex h-10 w-10 items-center justify-center rounded-sm border border-foreground/20 md:hidden"
-            aria-label="Toggle menu"
+            aria-label={t.header.toggleMenu}
             aria-expanded={open}
           >
-            <span className="sr-only">Menu</span>
+            <span className="sr-only">{t.header.menu}</span>
             <div className="flex flex-col gap-1.5">
               <span className="h-px w-5 bg-foreground" />
               <span className="h-px w-5 bg-foreground" />
@@ -104,7 +111,7 @@ export function SiteHeader() {
                   onClick={() => setOpen(false)}
                   className="mt-1 block rounded-sm bg-foreground px-2 py-3 text-center text-base font-medium text-background"
                 >
-                  Log in
+                  {t.header.login}
                 </Link>
               </li>
             )}

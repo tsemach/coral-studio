@@ -6,6 +6,7 @@ import { upload } from '@vercel/blob/client'
 import { createTape } from '@/app/community/tape-actions'
 import { TapeRecorder, type TapeRecorderHandle } from './tape-recorder'
 import { getVideoDuration } from './video-duration'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 // Mirrors the SCRIPTS_PREFIX convention in lib/workshops/scripts.ts, computed
 // client-side since onBeforeGenerateToken (app/community/tape-room/upload/route.ts)
@@ -13,6 +14,7 @@ import { getVideoDuration } from './video-duration'
 const TAPE_ROOM_PREFIX = `coral-studio-blob/${process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' ? 'prod' : 'dev'}/tape-room/`
 
 export function TapeFormDialog() {
+  const { t } = useTranslation()
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -45,11 +47,11 @@ export function TapeFormDialog() {
     setError(null)
 
     if (!title.trim() || !description.trim()) {
-      setError('Title and description are required.')
+      setError(t.community.tapeForm.requiredTitleDescription)
       return
     }
     if (!videoFile) {
-      setError('Attach a video by uploading a file or recording one.')
+      setError(t.community.tapeForm.requiredVideo)
       return
     }
 
@@ -81,7 +83,7 @@ export function TapeFormDialog() {
           }
         })
       } catch {
-        setError('Could not upload the video. Please try again.')
+        setError(t.community.tapeForm.uploadFailed)
       } finally {
         setIsUploading(false)
       }
@@ -95,7 +97,7 @@ export function TapeFormDialog() {
         onClick={open}
         className="inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 cursor-pointer"
       >
-        + New Tape
+        {t.community.tapeForm.trigger}
       </button>
 
       <dialog
@@ -115,10 +117,8 @@ export function TapeFormDialog() {
         >
           <div className="flex items-center justify-between pb-2">
             <div>
-              <p className="text-lg font-semibold text-ink-foreground">New tape</p>
-              <p className="mt-1 text-sm text-ink-foreground/60">
-                Upload a self-tape or record one right now for peer feedback.
-              </p>
+              <p className="text-lg font-semibold text-ink-foreground">{t.community.tapeForm.title}</p>
+              <p className="mt-1 text-sm text-ink-foreground/60">{t.community.tapeForm.subtitle}</p>
             </div>
             <button
               type="button"
@@ -127,7 +127,7 @@ export function TapeFormDialog() {
                 dialogRef.current?.close()
               }}
               className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer"
-              aria-label="Close dialog"
+              aria-label={t.community.tapeForm.closeDialog}
             >
               ×
             </button>
@@ -139,31 +139,31 @@ export function TapeFormDialog() {
             )}
 
             <label className="flex flex-col gap-1 text-sm">
-              Title
+              {t.community.tapeForm.titleLabel}
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Hedda Gabler monologue, take 3"
+                placeholder={t.community.tapeForm.titlePlaceholder}
                 className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
               />
             </label>
 
             <label className="flex flex-col gap-1 text-sm">
-              Description
+              {t.community.tapeForm.descriptionLabel}
               <textarea
                 required
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What's the scene, and what kind of feedback are you looking for?"
+                placeholder={t.community.tapeForm.descriptionPlaceholder}
                 className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm leading-relaxed text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
               />
             </label>
 
             <div className="flex flex-col gap-2 text-sm">
-              <span>Video</span>
+              <span>{t.community.tapeForm.videoLabel}</span>
 
               {videoFile ? (
                 <div className="flex items-center justify-between rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-xs text-ink-foreground/80">
@@ -173,7 +173,7 @@ export function TapeFormDialog() {
                     onClick={() => setVideoFile(null)}
                     className="text-ink-foreground/50 hover:text-ink-foreground cursor-pointer"
                   >
-                    Remove
+                    {t.community.tapeForm.remove}
                   </button>
                 </div>
               ) : (
@@ -187,7 +187,7 @@ export function TapeFormDialog() {
                     }}
                     className="w-full text-xs text-ink-foreground/55 file:mr-3 file:rounded-lg file:border-0 file:bg-ink-foreground/15 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-foreground hover:file:bg-ink-foreground/20 cursor-pointer"
                   />
-                  <p className="text-xs text-ink-foreground/45">or</p>
+                  <p className="text-xs text-ink-foreground/45">{t.community.tapeForm.or}</p>
                   <TapeRecorder ref={recorderRef} onRecorded={setVideoFile} />
                 </div>
               )}
@@ -202,14 +202,18 @@ export function TapeFormDialog() {
                 }}
                 className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground cursor-pointer"
               >
-                Cancel
+                {t.community.tapeForm.cancel}
               </button>
               <button
                 type="submit"
                 disabled={isPending || isUploading}
                 className="rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 disabled:opacity-50 cursor-pointer"
               >
-                {isUploading ? 'Uploading…' : isPending ? 'Publishing…' : 'Create'}
+                {isUploading
+                  ? t.community.tapeForm.uploading
+                  : isPending
+                  ? t.community.tapeForm.publishing
+                  : t.community.tapeForm.create}
               </button>
             </div>
           </form>

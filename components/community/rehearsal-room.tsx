@@ -4,8 +4,10 @@ import '@livekit/components-styles'
 import { useEffect, useState } from 'react'
 import { LiveKitRoom, VideoConference } from '@livekit/components-react'
 import { getRehearsalToken } from '@/app/community/rehearsal-actions'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function RehearsalRoom({ postId, onLeave }: { postId: string; onLeave: () => void }) {
+  const { t } = useTranslation()
   const [session, setSession] = useState<{ token: string; serverUrl: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,12 +23,12 @@ export function RehearsalRoom({ postId, onLeave }: { postId: string; onLeave: ()
         }
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Could not join the rehearsal room')
+        if (!cancelled) setError(err instanceof Error ? err.message : t.community.rehearsalRoom.couldNotJoin)
       })
     return () => {
       cancelled = true
     }
-  }, [postId])
+  }, [postId, t.community.rehearsalRoom.couldNotJoin])
 
   if (error) {
     return (
@@ -37,7 +39,7 @@ export function RehearsalRoom({ postId, onLeave }: { postId: string; onLeave: ()
           onClick={onLeave}
           className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 hover:text-ink-foreground cursor-pointer"
         >
-          Back to post
+          {t.community.rehearsalRoom.backToPost}
         </button>
       </div>
     )
@@ -46,7 +48,7 @@ export function RehearsalRoom({ postId, onLeave }: { postId: string; onLeave: ()
   if (!session) {
     return (
       <div className="flex items-center justify-center rounded-xl border border-ink-foreground/16 bg-ink p-6 text-sm text-ink-foreground/55">
-        Connecting…
+        {t.community.rehearsalRoom.connecting}
       </div>
     )
   }

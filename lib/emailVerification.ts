@@ -20,10 +20,12 @@ export async function createEmailVerification(email: string, origin: string): Pr
 // a stale/guessed token can't be retried. Confirming the email moves the
 // user from pending_email to pending_approval -- it does not finish
 // registration (COR-5 item 5: an admin still has to approve, PR-3).
+export type EmailVerificationError = 'invalid' | 'expired'
+
 export async function consumeEmailVerification(
   email: string,
   token: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<{ ok: true } | { ok: false; error: EmailVerificationError }> {
   const [row] = await db
     .select()
     .from(verificationTokens)
@@ -31,7 +33,7 @@ export async function consumeEmailVerification(
     .limit(1)
 
   if (!row) {
-    return { ok: false, error: 'This verification link is invalid or has already been used.' }
+    return { ok: false, error: 'invalid' }
   }
 
   await db
@@ -39,7 +41,7 @@ export async function consumeEmailVerification(
     .where(and(eq(verificationTokens.identifier, email), eq(verificationTokens.token, token)))
 
   if (row.expires.getTime() < Date.now()) {
-    return { ok: false, error: 'This verification link has expired. Please register again.' }
+    return { ok: false, error: 'expired' }
   }
 
   await db

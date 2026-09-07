@@ -2,6 +2,7 @@
 
 import { usePostDetail, usePostComments, usePostOffers } from '@/hooks/community/use-post-detail'
 import { PostDetailModal } from './post-detail-modal'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function PostDetailContainer({
   postId,
@@ -12,6 +13,7 @@ export function PostDetailContainer({
   currentUserId: string
   isAdmin: boolean
 }) {
+  const { t } = useTranslation()
   // Neither depends on the other's result -- both fire on the same tick.
   // This is real client-side parallelism: Route Handlers aren't subject to
   // Next's one-at-a-time Server Action dispatch queue (spec §2).
@@ -43,7 +45,7 @@ export function PostDetailContainer({
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
       >
         <div className="rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-sm text-ink-foreground">
-          Couldn't load this post.
+          {t.community.postDetail.couldNotLoad}
         </div>
       </div>
     )

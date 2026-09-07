@@ -1,14 +1,9 @@
 import Image from 'next/image'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
-const credits = [
-  { work: 'The Ark', note: 'Syfy series' },
-  { work: 'Shutafim', note: 'Comedy Central' },
-  { work: 'Block Boys Behind the Light', note: 'Netflix pilot' },
-  { work: 'Foreign Form', note: 'Feature film' },
-  { work: 'New Love', note: 'Madlenianum Opera & Theatre' },
-]
+export async function TeacherSection() {
+  const { teacher: t } = await getDictionary()
 
-export function TeacherSection() {
   return (
     <section id="teacher" className="scroll-mt-20 border-b border-border bg-card">
       <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-28">
@@ -26,43 +21,24 @@ export function TeacherSection() {
           </div>
 
           <div className="md:col-span-7">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-primary">
-              The teacher
-            </p>
+            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-primary">{t.eyebrow}</p>
             <h2 className="font-serif text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
-              Coral Mizrachi
+              {t.name}
             </h2>
-            <p className="mt-1 text-sm uppercase tracking-[0.2em] text-muted">
-              Actress &amp; Acting Coach
-            </p>
+            <p className="mt-1 text-sm uppercase tracking-[0.2em] text-muted">{t.role}</p>
 
-            <p className="mt-6 text-pretty leading-relaxed text-foreground/90">
-              Coral is an internationally working actress whose career spans
-              film, television and theatre, and a graduate of the American
-              Academy of Dramatic Arts in New York. She teaches in English and
-              works with a variety of techniques, with particular emphasis on
-              Uta Hagen and Sanford Meisner.
-            </p>
-            <p className="mt-4 text-pretty leading-relaxed text-muted">
-              Her experience across mediums gives her a practical understanding
-              of the demands placed on actors beyond the classroom — from
-              working with text and scene partners to approaching auditions and
-              performing for camera or stage.
-            </p>
+            <p className="mt-6 text-pretty leading-relaxed text-foreground/90">{t.body1}</p>
+            <p className="mt-4 text-pretty leading-relaxed text-muted">{t.body2}</p>
 
             <div className="mt-8">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted">
-                Selected credits
-              </p>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted">{t.creditsLabel}</p>
               <ul className="mt-4 divide-y divide-border border-t border-border">
-                {credits.map((c) => (
+                {t.credits.map((c) => (
                   <li
                     key={c.work}
                     className="flex items-baseline justify-between gap-4 py-3"
                   >
-                    <span className="font-serif text-lg font-medium">
-                      {c.work}
-                    </span>
+                    <span className="font-serif text-lg font-medium">{c.work}</span>
                     <span className="text-sm text-muted">{c.note}</span>
                   </li>
                 ))}

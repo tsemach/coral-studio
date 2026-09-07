@@ -6,17 +6,19 @@ import { auth } from '@/auth'
 import { db } from '@/lib/database'
 import { users } from '@/lib/database/schema'
 import { UsersView } from '@/components/admin/users-view'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 export const metadata: Metadata = {
   title: 'Settings — Glumački Studio',
 }
 
-const navItems = [{ label: 'Users' }] as const
-
 export default async function AdminSettingsPage() {
   const session = await auth()
   if (!session?.user) redirect('/login')
   if ((session.user as { role?: string }).role !== 'admin') redirect('/')
+
+  const { admin: t } = await getDictionary()
+  const navItems = [{ label: t.settingsPage.usersNavItem }] as const
 
   const [pending, registered] = await Promise.all([
     db
@@ -36,26 +38,35 @@ export default async function AdminSettingsPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/"
-          aria-label="Back to site"
+          aria-label={t.settingsPage.backToSite}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground"
         >
           ←
         </Link>
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">Admin</p>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight">Settings</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+            {t.settingsPage.eyebrow}
+          </p>
+          <h1 className="font-serif text-3xl font-semibold tracking-tight">
+            {t.settingsPage.title}
+          </h1>
         </div>
       </div>
 
       <div className="mt-8 border-t border-border" />
 
       <p className="mt-8 text-sm text-foreground/60">
-        Signed in as <span className="font-medium text-foreground">{session.user.email}</span>, role{' '}
-        <span className="font-medium text-foreground">Admin</span>
+        {t.settingsPage.signedInAs}{' '}
+        <span className="font-medium text-foreground">{session.user.email}</span>,{' '}
+        {t.settingsPage.roleLabel}{' '}
+        <span className="font-medium text-foreground">{t.settingsPage.roleAdmin}</span>
       </p>
 
       <div className="mt-6 flex flex-1 flex-col gap-6 md:flex-row md:items-stretch">
-        <nav aria-label="Settings" className="w-full shrink-0 self-start rounded-xl border border-border bg-card p-2 md:w-56">
+        <nav
+          aria-label={t.settingsPage.navLabel}
+          className="w-full shrink-0 self-start rounded-xl border border-border bg-card p-2 md:w-56"
+        >
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.label}>

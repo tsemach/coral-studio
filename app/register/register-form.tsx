@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { isValidEmail, isValidPasswordLength } from '@/lib/validation'
 import { OAuthButtons } from '@/components/oauth-buttons'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function RegisterForm() {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,15 +23,15 @@ export function RegisterForm() {
     // API route enforces the same rules server-side and is the actual
     // source of truth.
     if (!isValidEmail(email)) {
-      setError('Please enter a valid email address.')
+      setError(t.register.invalidEmailError)
       return
     }
     if (!isValidPasswordLength(password)) {
-      setError('Password must be between 6 and 48 characters long.')
+      setError(t.register.invalidPasswordError)
       return
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.')
+      setError(t.register.passwordMismatchError)
       return
     }
 
@@ -42,11 +44,11 @@ export function RegisterForm() {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Registration failed. Please try again.')
+        throw new Error(data.error || t.register.registrationFailedError)
       }
       setSubmitted(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setError(err instanceof Error ? err.message : t.register.genericError)
     } finally {
       setLoading(false)
     }
@@ -55,8 +57,7 @@ export function RegisterForm() {
   if (submitted) {
     return (
       <p className="mt-8 rounded-sm border border-ink-foreground/20 bg-ink-foreground/[0.04] px-4 py-4 text-sm text-ink-foreground/80">
-        Check <strong>{email}</strong> for a confirmation link. Once you confirm, your registration
-        is sent to the studio admins for approval before you can log in.
+        {t.register.checkEmailPrefix} <strong>{email}</strong> {t.register.checkEmailSuffix}
       </p>
     )
   }
@@ -75,7 +76,7 @@ export function RegisterForm() {
             htmlFor="name"
             className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
           >
-            Full name
+            {t.register.nameLabel}
           </label>
           <input
             id="name"
@@ -94,7 +95,7 @@ export function RegisterForm() {
             htmlFor="email"
             className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
           >
-            Email
+            {t.register.emailLabel}
           </label>
           <input
             id="email"
@@ -113,7 +114,7 @@ export function RegisterForm() {
             htmlFor="password"
             className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
           >
-            Password
+            {t.register.passwordLabel}
           </label>
           <input
             id="password"
@@ -132,7 +133,7 @@ export function RegisterForm() {
             htmlFor="confirm-password"
             className="block text-xs uppercase tracking-[0.18em] text-ink-foreground/60"
           >
-            Confirm password
+            {t.register.confirmPasswordLabel}
           </label>
           <input
             id="confirm-password"
@@ -151,7 +152,7 @@ export function RegisterForm() {
           disabled={loading}
           className="w-full rounded-sm bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-60"
         >
-          {loading ? 'Creating account…' : 'Create account'}
+          {loading ? t.register.submitLoading : t.register.submit}
         </button>
       </form>
 

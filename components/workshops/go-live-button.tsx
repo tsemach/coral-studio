@@ -2,6 +2,7 @@
 
 import { useWorkshopLive } from '@/components/workshops/workshop-live-area'
 import { useLiveStatus } from '@/hooks/workshops/use-live-status'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 // Opt-in per member (COR-18): this only starts the video view locally for
 // whoever clicks it. Other members keep seeing WorkshopMain until they press
@@ -11,6 +12,7 @@ export function GoLiveButton({ workshopId }: { workshopId: string }) {
   const { goLive } = useWorkshopLive()
   const { data } = useLiveStatus(workshopId)
   const live = Boolean(data?.live)
+  const { t } = useTranslation()
 
   return (
     <button
@@ -23,7 +25,7 @@ export function GoLiveButton({ workshopId }: { workshopId: string }) {
       }
     >
       {live && <span className="h-2 w-2 rounded-full bg-[#f0a8b4]" aria-hidden />}
-      {live ? 'Live · Join' : 'Go live'}
+      {live ? t.workshops.goLiveButton.liveJoin : t.workshops.goLiveButton.goLive}
     </button>
   )
 }

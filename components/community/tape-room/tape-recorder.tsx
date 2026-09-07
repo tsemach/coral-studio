@@ -1,6 +1,7 @@
 'use client'
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export type TapeRecorderHandle = { stopCamera: () => void }
 
@@ -12,6 +13,7 @@ function formatTime(totalSeconds: number): string {
 
 export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: File) => void }>(
   function TapeRecorder({ onRecorded }, ref) {
+    const { t } = useTranslation()
     const videoRef = useRef<HTMLVideoElement>(null)
     const streamRef = useRef<MediaStream | null>(null)
     const recorderRef = useRef<MediaRecorder | null>(null)
@@ -69,7 +71,7 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
         const activeDeviceId = stream.getVideoTracks()[0]?.getSettings().deviceId
         if (activeDeviceId) setSelectedDeviceId(activeDeviceId)
       } catch {
-        setError('Could not access your camera and microphone. Check your browser permissions.')
+        setError(t.community.tapeRecorder.permissionError)
       }
     }
 
@@ -156,7 +158,7 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
               onClick={() => openCamera()}
               className="rounded-lg border border-ink-foreground/20 bg-ink px-3 py-1.5 text-xs font-medium text-ink-foreground hover:bg-ink-card transition-colors cursor-pointer"
             >
-              Turn on camera
+              {t.community.tapeRecorder.turnOnCamera}
             </button>
           )}
           {isActive && !isRecording && (
@@ -165,7 +167,7 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
               onClick={startRecording}
               className="rounded-lg bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 transition-colors cursor-pointer"
             >
-              ● Start recording
+              {t.community.tapeRecorder.startRecording}
             </button>
           )}
           {isRecording && (
@@ -174,7 +176,7 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
               onClick={stopRecording}
               className="rounded-lg bg-ink-foreground/15 px-3 py-1.5 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/25 transition-colors cursor-pointer"
             >
-              ■ Stop recording
+              {t.community.tapeRecorder.stopRecording}
             </button>
           )}
           {isActive && !isRecording && (
@@ -183,7 +185,7 @@ export const TapeRecorder = forwardRef<TapeRecorderHandle, { onRecorded: (file: 
               onClick={stopCamera}
               className="rounded-lg px-3 py-1.5 text-xs font-medium text-ink-foreground/60 hover:text-ink-foreground transition-colors cursor-pointer"
             >
-              Cancel
+              {t.community.tapeRecorder.cancel}
             </button>
           )}
         </div>

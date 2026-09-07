@@ -1,6 +1,7 @@
 'use client'
 
 import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { DialogHandle } from '@/components/workshops/add-member-dialog'
 
 // COR-16: a fixed palette, not a free color input -- kept to shades bright
@@ -42,6 +43,7 @@ export const MarkPartDialog = forwardRef<
   { characters, colors, myPart, defaultSelected, onSelect, highlightColor, onHighlightColorChange },
   ref
 ) {
+  const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useImperativeHandle(ref, () => ({ open: () => dialogRef.current?.showModal() }))
@@ -60,16 +62,18 @@ export const MarkPartDialog = forwardRef<
       className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
     >
       <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-        <p className="text-lg font-semibold">Mark a part</p>
-        <p className="mt-1 text-sm text-ink-foreground/60">Choose which character's lines to highlight.</p>
+        <p className="text-lg font-semibold">{t.workshops.markPartDialog.title}</p>
+        <p className="mt-1 text-sm text-ink-foreground/60">{t.workshops.markPartDialog.subtitle}</p>
 
-        <p className="mt-4 text-xs font-medium uppercase tracking-[0.1em] text-ink-foreground/55">Highlight color</p>
+        <p className="mt-4 text-xs font-medium uppercase tracking-[0.1em] text-ink-foreground/55">
+          {t.workshops.markPartDialog.highlightColorLabel}
+        </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {MARK_COLORS.map((color) => (
             <button
               key={color}
               type="button"
-              aria-label={`Use ${color} highlight`}
+              aria-label={`${t.workshops.markPartDialog.useColorPrefix} ${color} ${t.workshops.markPartDialog.useColorSuffix}`}
               aria-pressed={color === highlightColor}
               onClick={() => onHighlightColorChange(color)}
               className={
@@ -94,7 +98,7 @@ export const MarkPartDialog = forwardRef<
               }
             >
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: colors[myPart] }} />
-              Mark for me
+              {t.workshops.markPartDialog.markForMe}
               <span className="text-ink-foreground/50">({myPart})</span>
             </button>
           )}
@@ -124,7 +128,7 @@ export const MarkPartDialog = forwardRef<
             onClick={() => dialogRef.current?.close()}
             className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
           >
-            Cancel
+            {t.workshops.markPartDialog.cancel}
           </button>
         </div>
       </div>

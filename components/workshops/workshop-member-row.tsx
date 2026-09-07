@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { removeMember, updateMember } from '@/app/workshops/actions'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { WorkshopMember } from '@/lib/workshops/queries'
 
 export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; member: WorkshopMember }) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [draftType, setDraftType] = useState<'actor' | 'viewer'>(member.type)
 
@@ -29,7 +31,7 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
                 : 'rounded-full border border-ink-foreground/16 px-2.5 py-0.5 text-xs font-medium text-ink-foreground/55'
             }
           >
-            {member.type === 'actor' ? 'Actor' : 'Viewer'}
+            {member.type === 'actor' ? t.workshops.memberRow.actor : t.workshops.memberRow.viewer}
           </span>
           <button
             type="button"
@@ -39,11 +41,11 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
             }}
             className="text-xs font-medium text-ink-foreground/45 hover:text-ink-foreground"
           >
-            {editing ? 'Close' : 'Edit'}
+            {editing ? t.workshops.memberRow.close : t.workshops.memberRow.edit}
           </button>
           <form action={removeMember.bind(null, workshopId, member.id)}>
             <button type="submit" className="text-xs font-medium text-ink-foreground/45 hover:text-[#f0a8b4]">
-              Remove
+              {t.workshops.memberRow.remove}
             </button>
           </form>
         </div>
@@ -63,18 +65,18 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
             onChange={(e) => setDraftType(e.target.value as 'actor' | 'viewer')}
             className="rounded-lg border border-ink-foreground/16 bg-ink-card px-2 py-1.5 text-xs text-ink-foreground"
           >
-            <option value="actor">Actor</option>
-            <option value="viewer">Viewer</option>
+            <option value="actor">{t.workshops.memberRow.actor}</option>
+            <option value="viewer">{t.workshops.memberRow.viewer}</option>
           </select>
           <input
             name="part"
             defaultValue={member.part ?? ''}
-            placeholder="Part (optional)"
+            placeholder={t.workshops.memberRow.partPlaceholder}
             disabled={draftType === 'viewer'}
             className="min-w-0 flex-1 rounded-lg border border-ink-foreground/16 bg-ink-card px-2 py-1.5 text-xs text-ink-foreground placeholder:text-ink-foreground/40 disabled:opacity-40"
           />
           <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-            Save
+            {t.workshops.memberRow.save}
           </button>
         </form>
       )}

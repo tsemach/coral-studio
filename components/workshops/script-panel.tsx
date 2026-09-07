@@ -8,6 +8,7 @@ import type { DialogHandle } from '@/components/workshops/add-member-dialog'
 import { DEFAULT_SCRIPT_FONT_SIZE, FontSizeControl } from '@/components/workshops/font-size-control'
 import { ScriptFlow } from '@/components/workshops/script-flow'
 import { assignCharacterColors, canSplitByCharacter, getSpeakingCharacters } from '@/lib/workshops/script-colors'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { WorkshopMember } from '@/lib/workshops/queries'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
 
@@ -29,6 +30,7 @@ export function ScriptPanel({
   expanded: boolean
   onToggleExpanded: () => void
 }) {
+  const { t } = useTranslation()
   // TEMP: null means "no drag yet -- render at 2/3 of the row via w-2/3
   // (a CSS percentage, not a guessed pixel default)." Becomes an explicit
   // px number on the first drag and stays that way after.
@@ -116,7 +118,7 @@ export function ScriptPanel({
         <div
           role="separator"
           aria-orientation="vertical"
-          aria-label="Resize script panel"
+          aria-label={t.workshops.scriptPanel.resizeLabel}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -129,8 +131,12 @@ export function ScriptPanel({
 
       <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Script</p>
-          <p className="mt-0.5 truncate text-[15px] font-semibold">{script ? script.title : 'No script attached'}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">
+            {t.workshops.scriptPanel.scriptLabel}
+          </p>
+          <p className="mt-0.5 truncate text-[15px] font-semibold">
+            {script ? script.title : t.workshops.scriptPanel.noScriptAttached}
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <FontSizeControl fontSize={fontSize} onChange={setFontSize} disabled={!script} />
@@ -139,8 +145,14 @@ export function ScriptPanel({
             onClick={() => setBoldMarked((v) => !v)}
             disabled={!markedCharacter}
             aria-pressed={boldMarked}
-            aria-label={boldMarked ? 'Unbold marked lines' : 'Bold marked lines'}
-            title={markedCharacter ? (boldMarked ? 'Unbold marked lines' : 'Bold marked lines') : 'Mark a part first'}
+            aria-label={boldMarked ? t.workshops.scriptPanel.unboldMarkedLines : t.workshops.scriptPanel.boldMarkedLines}
+            title={
+              markedCharacter
+                ? boldMarked
+                  ? t.workshops.scriptPanel.unboldMarkedLines
+                  : t.workshops.scriptPanel.boldMarkedLines
+                : t.workshops.scriptPanel.markAPartFirst
+            }
             className={
               boldMarked
                 ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
@@ -156,8 +168,14 @@ export function ScriptPanel({
             type="button"
             onClick={() => (markedCharacter ? setMarkedCharacter(null) : markDialogRef.current?.open())}
             disabled={!canMark}
-            aria-label={markedCharacter ? 'Erase part mark' : 'Mark a part'}
-            title={markedCharacter ? 'Erase part mark' : canMark ? 'Mark a part' : 'Attach a script with speaking characters to mark a part'}
+            aria-label={markedCharacter ? t.workshops.scriptPanel.erasePartMark : t.workshops.scriptPanel.markAPart}
+            title={
+              markedCharacter
+                ? t.workshops.scriptPanel.erasePartMark
+                : canMark
+                  ? t.workshops.scriptPanel.markAPart
+                  : t.workshops.scriptPanel.attachScriptToMark
+            }
             className={
               markedCharacter
                 ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
@@ -194,13 +212,13 @@ export function ScriptPanel({
             type="button"
             onClick={() => setSplitByCharacter((v) => !v)}
             disabled={!canSplit}
-            aria-label={splitByCharacter ? 'Show script as one column' : 'Split script by character'}
+            aria-label={splitByCharacter ? t.workshops.scriptPanel.showAsOneColumn : t.workshops.scriptPanel.splitByCharacter}
             title={
               canSplit
                 ? splitByCharacter
-                  ? 'Show script as one column'
-                  : 'Split script by character'
-                : 'Needs 2-3 speaking characters to split'
+                  ? t.workshops.scriptPanel.showAsOneColumn
+                  : t.workshops.scriptPanel.splitByCharacter
+                : t.workshops.scriptPanel.needsCharactersToSplit
             }
             className={
               splitByCharacter
@@ -216,8 +234,8 @@ export function ScriptPanel({
           <button
             type="button"
             onClick={onToggleExpanded}
-            aria-label={expanded ? 'Show group details' : 'Expand script panel'}
-            title={expanded ? 'Show group details' : 'Expand script panel'}
+            aria-label={expanded ? t.workshops.scriptPanel.showGroupDetails : t.workshops.scriptPanel.expandPanel}
+            title={expanded ? t.workshops.scriptPanel.showGroupDetails : t.workshops.scriptPanel.expandPanel}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -252,10 +270,10 @@ export function ScriptPanel({
             boldMarked={boldMarked}
           />
         ) : availableScripts.length === 0 ? (
-          <p className="text-sm text-ink-foreground/55">No scripts are available to attach yet.</p>
+          <p className="text-sm text-ink-foreground/55">{t.workshops.scriptPanel.noScriptsAvailable}</p>
         ) : (
           <form action={setWorkshopScript.bind(null, workshopId)} className="flex flex-col gap-3">
-            <p className="text-sm text-ink-foreground/55">Attach a script to render it here.</p>
+            <p className="text-sm text-ink-foreground/55">{t.workshops.scriptPanel.attachHint}</p>
             <select
               name="scriptSlug"
               defaultValue=""
@@ -263,7 +281,7 @@ export function ScriptPanel({
               className="rounded-lg border border-ink-foreground/16 bg-ink-card px-3 py-2 text-sm text-ink-foreground"
             >
               <option value="" disabled>
-                Choose a script
+                {t.workshops.scriptPanel.chooseScript}
               </option>
               {availableScripts.map((available) => (
                 <option key={available.slug} value={available.slug}>
@@ -275,7 +293,7 @@ export function ScriptPanel({
               type="submit"
               className="self-start rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
             >
-              Attach
+              {t.workshops.scriptPanel.attach}
             </button>
           </form>
         )}

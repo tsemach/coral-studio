@@ -1,18 +1,25 @@
+'use client'
+
 import Link from 'next/link'
+import { useTranslation } from '@/components/i18n/language-provider'
+import type { Dictionary } from '@/lib/i18n/dictionaries/en'
 import type { CommunityPostItemDTO } from '@/lib/community/dto'
 
-function formatRelativeTime(date: string): string {
+function formatRelativeTime(date: string, t: Dictionary['community']['time']): string {
   const now = new Date()
   const diffMs = now.getTime() - new Date(date).getTime()
   const diffMinutes = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMinutes / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMinutes < 1) return 'Just now'
-  if (diffMinutes < 60) return `${diffMinutes}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMinutes < 1) return t.justNow
+  if (diffMinutes < 60) return t.minutesAgo.replace('{n}', String(diffMinutes))
+  if (diffHours < 24) {
+    const template = diffHours === 1 ? t.hoursAgoOne : diffHours <= 4 ? t.hoursAgoFew : t.hoursAgoMany
+    return template.replace('{n}', String(diffHours))
+  }
+  if (diffDays === 1) return t.yesterday
+  if (diffDays < 7) return t.daysAgo.replace('{n}', String(diffDays))
   return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
@@ -29,6 +36,33 @@ function getChannelLabel(channel: string): string {
   }
 }
 
+function getCastingTypeLabel(
+  castingType: string,
+  t: Dictionary['community']['postForm']['castingTypes']
+): string {
+  switch (castingType) {
+    case 'student_film':
+      return t.studentFilm
+    case 'theatre':
+      return t.theatre
+    case 'feature':
+      return t.feature
+    case 'commercial':
+      return t.commercial
+    case 'crew_rec':
+      return t.crewRec
+    default:
+      return castingType
+  }
+}
+
+function getRehearsalFormatLabel(
+  format: string,
+  t: Dictionary['community']['postForm']
+): string {
+  return format === 'studio' ? t.atStudio : format === 'online' ? t.online : format
+}
+
 export function PostCard({
   post,
   activeChannelId,
@@ -36,6 +70,7 @@ export function PostCard({
   post: CommunityPostItemDTO & { isOptimistic?: boolean }
   activeChannelId?: string
 }) {
+  const { t } = useTranslation()
   const isReaderSOS = post.channel === 'reader_sos'
   const isCallboard = post.channel === 'callboard'
   // Carries the tab the viewer was on into the detail URL, so closing the
@@ -61,7 +96,7 @@ export function PostCard({
 
           {post.isPinned && (
             <span className="inline-flex items-center rounded-md bg-accent/20 px-2 py-0.5 text-[0.65rem] font-bold text-amber-200 border border-amber-400/30 tracking-wide uppercase">
-              Pinned
+              {t.community.postCard.pinned}
             </span>
           )}
 
@@ -85,21 +120,21 @@ export function PostCard({
                 }`}
               />
               {post.readerStatus === 'seeking'
-                ? 'Seeking Reader'
+                ? t.community.postCard.seekingReader
                 : post.readerStatus === 'matched'
-                ? 'Reader Matched'
-                : 'Closed'}
+                ? t.community.postCard.readerMatched
+                : t.community.postCard.closed}
             </span>
           )}
 
           {isCallboard && post.castingType && (
             <span className="inline-flex items-center rounded-md bg-blue-500/15 px-2 py-0.5 text-[0.7rem] font-medium text-blue-300 border border-blue-500/40 capitalize">
-              {post.castingType.replace('_', ' ')}
+              {getCastingTypeLabel(post.castingType, t.community.postForm.castingTypes)}
             </span>
           )}
         </div>
 
-        <time className="text-ink-foreground/45">{formatRelativeTime(post.createdAt)}</time>
+        <time className="text-ink-foreground/45">{formatRelativeTime(post.createdAt, t.community.time)}</time>
       </div>
 
       <div>
@@ -123,7 +158,7 @@ export function PostCard({
             )}
             {post.rehearsalFormat && (
               <span className="capitalize text-ink-foreground/60 font-medium">
-                📍 {post.rehearsalFormat}
+                📍 {getRehearsalFormatLabel(post.rehearsalFormat, t.community.postForm)}
               </span>
             )}
             {post.sceneDetails && (
@@ -137,7 +172,8 @@ export function PostCard({
         {isCallboard && post.deadlineAt && (
           <div className="mt-2 flex items-center gap-2 text-xs text-ink-foreground/80 bg-ink/70 rounded-lg px-3 py-1.5 border border-ink-foreground/12">
             <span className="font-medium text-accent">
-              ⏳ Deadline: {new Date(post.deadlineAt).toLocaleDateString('en-GB', {
+              ⏳ {t.community.postCard.deadline}{' '}
+              {new Date(post.deadlineAt).toLocaleDateString('en-GB', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric',
@@ -156,10 +192,12 @@ export function PostCard({
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-ink-foreground/15 text-xs font-semibold text-ink-foreground">
             {post.authorName ? post.authorName.charAt(0).toUpperCase() : '?'}
           </div>
-          <span className="font-medium text-ink-foreground/90">{post.authorName || 'Anonymous Member'}</span>
+          <span className="font-medium text-ink-foreground/90">
+            {post.authorName || t.community.common.anonymousMember}
+          </span>
           {post.authorRole === 'admin' && (
             <span className="rounded-md bg-blue-500/15 px-1.5 py-0.2 text-[0.65rem] font-medium text-blue-300 border border-blue-500/40 uppercase tracking-wide">
-              Studio Admin
+              {t.community.postCard.studioAdmin}
             </span>
           )}
         </div>
@@ -179,7 +217,9 @@ export function PostCard({
                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
               />
             </svg>
-            <span>{post.commentsCount} {post.commentsCount === 1 ? 'reply' : 'replies'}</span>
+            <span>
+              {post.commentsCount} {post.commentsCount === 1 ? t.community.postCard.reply : t.community.postCard.replies}
+            </span>
           </span>
         </div>
       </div>

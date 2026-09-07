@@ -1,4 +1,7 @@
+'use client'
+
 import { approveUser, rejectUser } from '@/app/admin/users/actions'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 type PendingUser = {
   id: string
@@ -8,8 +11,10 @@ type PendingUser = {
 }
 
 export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
+  const { t } = useTranslation()
+
   if (pending.length === 0) {
-    return <p className="text-sm text-foreground/60">No registrations are waiting for approval.</p>
+    return <p className="text-sm text-foreground/60">{t.admin.pendingUsersPanel.empty}</p>
   }
 
   return (
@@ -30,7 +35,7 @@ export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
                 type="submit"
                 className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
               >
-                Approve
+                {t.admin.pendingUsersPanel.approve}
               </button>
             </form>
             <form action={rejectUser.bind(null, user.id)}>
@@ -38,7 +43,7 @@ export function PendingUsersPanel({ pending }: { pending: PendingUser[] }) {
                 type="submit"
                 className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground/70 transition-colors hover:text-foreground"
               >
-                Reject
+                {t.admin.pendingUsersPanel.reject}
               </button>
             </form>
           </div>

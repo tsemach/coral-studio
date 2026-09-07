@@ -1,4 +1,7 @@
+'use client'
+
 import { DeleteUserButton } from '@/components/admin/delete-user-button'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 type RegisteredUser = {
   id: string
@@ -14,8 +17,10 @@ export function RegisteredUsersPanel({
   users: RegisteredUser[]
   currentUserId: string
 }) {
+  const { t } = useTranslation()
+
   if (users.length === 0) {
-    return <p className="text-sm text-foreground/60">No registered users yet.</p>
+    return <p className="text-sm text-foreground/60">{t.admin.registeredUsersPanel.empty}</p>
   }
 
   return (
@@ -37,7 +42,7 @@ export function RegisteredUsersPanel({
                   : 'shrink-0 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-foreground/60'
               }
             >
-              {user.role === 'admin' ? 'Admin' : 'User'}
+              {user.role === 'admin' ? t.admin.registeredUsersPanel.roleAdmin : t.admin.registeredUsersPanel.roleUser}
             </span>
           </div>
 

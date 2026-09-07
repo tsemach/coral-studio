@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function UserMenu() {
   const { data: session, status } = useSession()
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [imageFailed, setImageFailed] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -35,7 +37,7 @@ export function UserMenu() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-foreground/20 bg-card text-sm font-semibold text-foreground transition-colors hover:border-foreground/40"
-        aria-label="Account menu"
+        aria-label={t.userMenu.accountMenu}
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -68,7 +70,7 @@ export function UserMenu() {
               onClick={() => setOpen(false)}
               className="block px-4 py-2.5 text-sm text-foreground/85 hover:bg-background"
             >
-              Settings
+              {t.userMenu.settings}
             </Link>
           )}
           <button
@@ -80,7 +82,7 @@ export function UserMenu() {
             }}
             className="block w-full px-4 py-2.5 text-left text-sm text-foreground/85 hover:bg-background"
           >
-            Log out
+            {t.userMenu.logout}
           </button>
         </div>
       )}

@@ -10,21 +10,26 @@ import { CommentComposer } from './comment-composer'
 import { MarkdownContent } from './markdown-content'
 import { RehearsalRoom } from './rehearsal-room'
 import { SidesViewer } from './sides-viewer'
+import { useTranslation } from '@/components/i18n/language-provider'
+import type { Dictionary } from '@/lib/i18n/dictionaries/en'
 import type { CommunityPostDetailDTO, CommentWithAuthorDTO, ReaderOfferItemDTO } from '@/lib/community/dto'
 import type { ReaderStatus } from '@/lib/community/types'
 
-function formatRelativeTime(date: string): string {
+function formatRelativeTime(date: string, t: Dictionary['community']['time']): string {
   const now = new Date()
   const diffMs = now.getTime() - new Date(date).getTime()
   const diffMinutes = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMinutes / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMinutes < 1) return 'Just now'
-  if (diffMinutes < 60) return `${diffMinutes}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMinutes < 1) return t.justNow
+  if (diffMinutes < 60) return t.minutesAgo.replace('{n}', String(diffMinutes))
+  if (diffHours < 24) {
+    const template = diffHours === 1 ? t.hoursAgoOne : diffHours <= 4 ? t.hoursAgoFew : t.hoursAgoMany
+    return template.replace('{n}', String(diffHours))
+  }
+  if (diffDays === 1) return t.yesterday
+  if (diffDays < 7) return t.daysAgo.replace('{n}', String(diffDays))
   return new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
@@ -39,6 +44,30 @@ function getChannelLabel(channel: string): string {
     default:
       return '#general'
   }
+}
+
+function getCastingTypeLabel(
+  castingType: string,
+  t: Dictionary['community']['postForm']['castingTypes']
+): string {
+  switch (castingType) {
+    case 'student_film':
+      return t.studentFilm
+    case 'theatre':
+      return t.theatre
+    case 'feature':
+      return t.feature
+    case 'commercial':
+      return t.commercial
+    case 'crew_rec':
+      return t.crewRec
+    default:
+      return castingType
+  }
+}
+
+function getRehearsalFormatLabel(format: string, t: Dictionary['community']['postForm']): string {
+  return format === 'studio' ? t.atStudio : format === 'online' ? t.online : format
 }
 
 export function PostDetailModal({
@@ -56,6 +85,7 @@ export function PostDetailModal({
   offers: ReaderOfferItemDTO[]
   hasOffered: boolean
 }) {
+  const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
   const updateStatus = useUpdateReaderStatus(post.id)
@@ -162,7 +192,7 @@ export function PostDetailModal({
               {getChannelLabel(post.channel)}
             </span>
             <span className="text-ink-foreground/30 text-xs">•</span>
-            <time className="text-xs text-ink-foreground/45">{formatRelativeTime(post.createdAt)}</time>
+            <time className="text-xs text-ink-foreground/45">{formatRelativeTime(post.createdAt, t.community.time)}</time>
           </div>
 
           <div className="flex items-center gap-1">
@@ -171,7 +201,7 @@ export function PostDetailModal({
                 type="button"
                 onClick={toggleFullscreen}
                 className="text-ink-foreground/45 hover:text-ink-foreground p-1 cursor-pointer transition-colors"
-                aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                aria-label={isFullscreen ? t.community.postDetail.exitFullscreen : t.community.postDetail.enterFullscreen}
               >
                 {isFullscreen ? (
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +219,7 @@ export function PostDetailModal({
               type="button"
               onClick={handleClose}
               className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer transition-colors"
-              aria-label="Close modal"
+              aria-label={t.community.postDetail.closeModal}
             >
               ×
             </button>
@@ -213,7 +243,7 @@ export function PostDetailModal({
             <div className="flex flex-wrap items-center gap-2 mb-2.5">
               {post.isPinned && (
                 <span className="rounded-md bg-accent/20 px-2 py-0.5 text-[0.65rem] font-bold text-amber-200 border border-amber-400/30 tracking-wide uppercase">
-                  Pinned
+                  {t.community.postCard.pinned}
                 </span>
               )}
 
@@ -237,16 +267,16 @@ export function PostDetailModal({
                     }`}
                   />
                   {post.readerStatus === 'seeking'
-                    ? 'Seeking Reader'
+                    ? t.community.postCard.seekingReader
                     : post.readerStatus === 'matched'
-                    ? 'Reader Matched'
-                    : 'Closed'}
+                    ? t.community.postCard.readerMatched
+                    : t.community.postCard.closed}
                 </span>
               )}
 
               {isCallboard && post.castingType && (
                 <span className="rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-300 border border-blue-500/40 capitalize">
-                  {post.castingType.replace('_', ' ')}
+                  {getCastingTypeLabel(post.castingType, t.community.postForm.castingTypes)}
                 </span>
               )}
             </div>
@@ -263,14 +293,19 @@ export function PostDetailModal({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-xs text-ink-foreground">{post.authorName || 'Anonymous Member'}</span>
+                    <span className="font-medium text-xs text-ink-foreground">
+                      {post.authorName || t.community.common.anonymousMember}
+                    </span>
                     {post.authorRole === 'admin' && (
                       <span className="rounded-md bg-blue-500/15 px-1.5 py-0.2 text-[0.65rem] font-medium text-blue-300 border border-blue-500/40 uppercase">
-                        Admin
+                        {t.community.postDetail.admin}
                       </span>
                     )}
                   </div>
-                  <p className="text-[0.7rem] text-ink-foreground/50">Posted on {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <p className="text-[0.7rem] text-ink-foreground/50">
+                    {t.community.postDetail.postedOn}{' '}
+                    {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
                 </div>
               </div>
 
@@ -282,12 +317,12 @@ export function PostDetailModal({
           {isReaderSOS && (post.rehearsalAt || post.sceneDetails || post.rehearsalFormat) && (
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2.5 text-xs">
               <div className="font-semibold text-amber-200 uppercase tracking-wider text-[0.7rem]">
-                Reader SOS Session Details
+                {t.community.postDetail.readerSosDetails}
               </div>
               <div className="grid sm:grid-cols-2 gap-2 text-ink-foreground">
                 {post.rehearsalAt && (
                   <div>
-                    <span className="text-ink-foreground/60">Requested Time:</span>{' '}
+                    <span className="text-ink-foreground/60">{t.community.postDetail.requestedTime}</span>{' '}
                     <strong className="font-semibold text-ink-foreground">
                       {new Date(post.rehearsalAt).toLocaleDateString('en-GB', {
                         weekday: 'short',
@@ -301,13 +336,15 @@ export function PostDetailModal({
                 )}
                 {post.rehearsalFormat && (
                   <div>
-                    <span className="text-ink-foreground/60">Meeting Format:</span>{' '}
-                    <strong className="capitalize text-ink-foreground">{post.rehearsalFormat}</strong>
+                    <span className="text-ink-foreground/60">{t.community.postDetail.meetingFormat}</span>{' '}
+                    <strong className="capitalize text-ink-foreground">
+                      {getRehearsalFormatLabel(post.rehearsalFormat, t.community.postForm)}
+                    </strong>
                   </div>
                 )}
                 {post.sceneDetails && (
                   <div className="sm:col-span-2">
-                    <span className="text-ink-foreground/60">Scene & Character:</span>{' '}
+                    <span className="text-ink-foreground/60">{t.community.postDetail.sceneCharacter}</span>{' '}
                     <span className="text-ink-foreground">{post.sceneDetails}</span>
                   </div>
                 )}
@@ -315,7 +352,7 @@ export function PostDetailModal({
 
               {canManage && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20 flex flex-wrap items-center gap-2">
-                  <span className="text-ink-foreground/60 font-medium">Change status to:</span>
+                  <span className="text-ink-foreground/60 font-medium">{t.community.postDetail.changeStatusTo}</span>
                   {post.readerStatus !== 'seeking' && (
                     <button
                       type="button"
@@ -323,7 +360,7 @@ export function PostDetailModal({
                       onClick={() => handleStatusChange('seeking')}
                       className="rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-500 transition-colors cursor-pointer"
                     >
-                      ↺ Reopen as Seeking
+                      {t.community.postDetail.reopenSeeking}
                     </button>
                   )}
                   {post.readerStatus !== 'closed' && (
@@ -333,7 +370,7 @@ export function PostDetailModal({
                       onClick={() => handleStatusChange('closed')}
                       className="rounded-lg border border-ink-foreground/20 bg-ink px-2.5 py-1 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors cursor-pointer"
                     >
-                      Close Request
+                      {t.community.postDetail.closeRequest}
                     </button>
                   )}
                 </div>
@@ -347,7 +384,7 @@ export function PostDetailModal({
                     onClick={() => offerToReadMutation.mutate()}
                     className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                   >
-                    I can read this
+                    {t.community.postDetail.iCanRead}
                   </button>
                   {offerToReadMutation.isError && (
                     <p className="mt-1 text-[0.65rem] text-red-300">{offerToReadMutation.error.message}</p>
@@ -357,15 +394,19 @@ export function PostDetailModal({
 
               {canManage && offers.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-amber-500/20 space-y-1.5">
-                  <span className="text-ink-foreground/60 font-medium block">Offers to read:</span>
+                  <span className="text-ink-foreground/60 font-medium block">{t.community.postDetail.offersToRead}</span>
                   {offers.map((offer) => (
                     <div key={offer.id} className="flex items-center justify-between gap-2 text-ink-foreground">
                       <span>
-                        {offer.userName || 'Anonymous Member'}
-                        <span className="text-ink-foreground/45"> — {offer.sessionsRead} {offer.sessionsRead === 1 ? 'session' : 'sessions'} read</span>
+                        {offer.userName || t.community.common.anonymousMember}
+                        <span className="text-ink-foreground/45">
+                          {' '}
+                          — {offer.sessionsRead}{' '}
+                          {offer.sessionsRead === 1 ? t.community.postDetail.sessionRead : t.community.postDetail.sessionsRead}
+                        </span>
                         {offer.userId === post.matchedUserId && (
                           <span className="ml-1 rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald-200">
-                            Current
+                            {t.community.postDetail.current}
                           </span>
                         )}
                       </span>
@@ -376,7 +417,7 @@ export function PostDetailModal({
                           onClick={() => confirmReaderMutation.mutate(offer.userId)}
                           className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                         >
-                          Confirm as reader
+                          {t.community.postDetail.confirmAsReader}
                         </button>
                         {confirmReaderMutation.isError && (
                           <p className="mt-1 text-[0.65rem] text-red-300">{confirmReaderMutation.error.message}</p>
@@ -394,7 +435,7 @@ export function PostDetailModal({
                     onClick={() => setInRoom(true)}
                     className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                   >
-                    🎥 Open Rehearsal Room
+                    {t.community.postDetail.openRehearsalRoom}
                   </button>
                 </div>
               )}
@@ -404,7 +445,7 @@ export function PostDetailModal({
           {/* Specialized Callboard Box */}
           {isCallboard && post.deadlineAt && (
             <div className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-3 text-xs flex items-center justify-between">
-              <span className="text-blue-300 font-medium">Submission Deadline:</span>
+              <span className="text-blue-300 font-medium">{t.community.postDetail.submissionDeadline}</span>
               <strong className="text-accent font-bold">
                 {new Date(post.deadlineAt).toLocaleDateString('en-GB', {
                   day: 'numeric',
@@ -422,7 +463,7 @@ export function PostDetailModal({
           {post.attachments && post.attachments.length > 0 && (
             <div className="border-t border-ink-foreground/16 pt-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-foreground/55 mb-2.5">
-                Attachments ({post.attachments.length})
+                {t.community.postDetail.attachments} ({post.attachments.length})
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {post.attachments.map((att) => {
@@ -454,7 +495,7 @@ export function PostDetailModal({
                           <span className="text-lg">📄</span>
                           <div className="truncate">
                             <span className="font-medium text-ink-foreground block truncate">{att.filename}</span>
-                            <span className="text-ink-foreground/45 text-[0.65rem]">Download document</span>
+                            <span className="text-ink-foreground/45 text-[0.65rem]">{t.community.postDetail.downloadDocument}</span>
                           </div>
                         </a>
                       )}
@@ -468,13 +509,11 @@ export function PostDetailModal({
           {/* Discussion Thread */}
           <section className="border-t border-ink-foreground/16 pt-4 space-y-4">
             <h2 className="text-base font-semibold tracking-tight text-ink-foreground">
-              Discussion ({comments.length})
+              {t.community.postDetail.discussion} ({comments.length})
             </h2>
 
             {comments.length === 0 ? (
-              <p className="text-xs text-ink-foreground/50 py-2">
-                No replies yet. Be the first to leave a note or offer to read!
-              </p>
+              <p className="text-xs text-ink-foreground/50 py-2">{t.community.postDetail.noReplies}</p>
             ) : (
               <div className="space-y-3 divide-y divide-ink-foreground/12">
                 {comments.map((comment) => (
@@ -485,16 +524,16 @@ export function PostDetailModal({
                           {comment.authorName ? comment.authorName.charAt(0).toUpperCase() : '?'}
                         </div>
                         <span className="font-medium text-ink-foreground text-xs">
-                          {comment.authorName || 'Anonymous Member'}
+                          {comment.authorName || t.community.common.anonymousMember}
                         </span>
                         {comment.authorRole === 'admin' && (
                           <span className="rounded-md bg-blue-500/15 px-1 py-0.2 text-[0.6rem] font-medium text-blue-300 border border-blue-500/40 uppercase">
-                            Admin
+                            {t.community.postDetail.admin}
                           </span>
                         )}
                       </div>
                       <time className="text-ink-foreground/45 text-[0.65rem]">
-                        {formatRelativeTime(comment.createdAt)}
+                        {formatRelativeTime(comment.createdAt, t.community.time)}
                       </time>
                     </div>
 
@@ -522,7 +561,7 @@ export function PostDetailModal({
             onClick={handleClose}
             className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground cursor-pointer"
           >
-            Close
+            {t.community.postDetail.close}
           </button>
         </div>
       </div>

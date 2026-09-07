@@ -10,6 +10,7 @@ import {
   communityAttachments,
 } from '@/lib/database/schema'
 import { requireActiveUser } from '@/lib/community/auth'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 import type {
   CommunityChannel,
   ReaderStatus,
@@ -32,18 +33,19 @@ function isAllowedAttachment(file: File): boolean {
 
 export async function createCommunityPost(formData: FormData) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const channel = formData.get('channel') as CommunityChannel
   const title = (formData.get('title') as string)?.trim()
   const content = (formData.get('content') as string)?.trim()
 
   if (!channel || !title || !content) {
-    return { error: 'Channel, title, and content are required' }
+    return { error: t.actions.createPost.missingFields }
   }
 
   const validChannels: CommunityChannel[] = ['reader_sos', 'callboard', 'craft_chat', 'general']
   if (!validChannels.includes(channel)) {
-    return { error: 'Invalid community channel' }
+    return { error: t.actions.createPost.invalidChannel }
   }
 
   let rehearsalAt: Date | null = null
@@ -136,10 +138,11 @@ export async function createCommunityPost(formData: FormData) {
 
 export async function updateReaderStatus(postId: string, status: ReaderStatus) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const validStatuses: ReaderStatus[] = ['seeking', 'matched', 'closed']
   if (!validStatuses.includes(status)) {
-    return { error: 'Invalid status' }
+    return { error: t.actions.updateReaderStatus.invalidStatus }
   }
 
   const [post] = await db
@@ -149,11 +152,11 @@ export async function updateReaderStatus(postId: string, status: ReaderStatus) {
     .limit(1)
 
   if (!post) {
-    return { error: 'Post not found' }
+    return { error: t.actions.postNotFound }
   }
 
   if (post.authorId !== user.id && user.role !== 'admin') {
-    return { error: 'Unauthorized to update this post' }
+    return { error: t.actions.updateReaderStatus.unauthorized }
   }
 
   // Reopening or closing a request invalidates whoever was previously
@@ -178,10 +181,11 @@ export async function updateReaderStatus(postId: string, status: ReaderStatus) {
 
 export async function addCommunityComment(postId: string, content: string) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const trimmed = content?.trim()
   if (!trimmed) {
-    return { error: 'Comment cannot be empty' }
+    return { error: t.actions.addComment.empty }
   }
 
   const [post] = await db
@@ -191,7 +195,7 @@ export async function addCommunityComment(postId: string, content: string) {
     .limit(1)
 
   if (!post) {
-    return { error: 'Post not found' }
+    return { error: t.actions.postNotFound }
   }
 
   const [comment] = await db
@@ -210,6 +214,7 @@ export async function addCommunityComment(postId: string, content: string) {
 
 export async function deleteCommunityPost(postId: string) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const [post] = await db
     .select({ id: communityPosts.id, authorId: communityPosts.authorId })
@@ -218,11 +223,11 @@ export async function deleteCommunityPost(postId: string) {
     .limit(1)
 
   if (!post) {
-    return { error: 'Post not found' }
+    return { error: t.actions.postNotFound }
   }
 
   if (post.authorId !== user.id && user.role !== 'admin') {
-    return { error: 'Unauthorized to delete this post' }
+    return { error: t.actions.deleteCommunityPost.unauthorized }
   }
 
   await db.delete(communityPosts).where(eq(communityPosts.id, postId))

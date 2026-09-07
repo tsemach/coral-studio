@@ -1,13 +1,18 @@
+'use client'
+
 import { CancelRehearsalButton } from '@/components/workshops/cancel-rehearsal-button'
 import { WorkshopMemberRow } from '@/components/workshops/workshop-member-row'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { WorkshopDetail } from '@/lib/workshops/queries'
 
-function formatRehearsalDisplay(date: Date | null) {
-  if (!date) return 'No rehearsal scheduled'
-  return new Intl.DateTimeFormat('en', { dateStyle: 'long', timeStyle: 'short' }).format(date)
-}
-
 export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail }) {
+  const { t } = useTranslation()
+
+  function formatRehearsalDisplay(date: Date | null) {
+    if (!date) return t.workshops.detailsPanel.noRehearsalScheduled
+    return new Intl.DateTimeFormat('en', { dateStyle: 'long', timeStyle: 'short' }).format(date)
+  }
+
   // min-w matches script-panel.tsx's own MIN_WIDTH -- without it, flexbox
   // would let this shrink to nothing as the script panel is dragged wider
   // (its default min-width:auto has no floor of its own). overflow-y-auto
@@ -17,9 +22,11 @@ export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail })
   return (
     <div className="min-h-0 min-w-[280px] flex-1 overflow-y-auto rounded-2xl border border-ink-foreground/16 bg-ink-card p-6">
       <div>
-        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Group</p>
+        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">
+          {t.workshops.detailsPanel.groupLabel}
+        </p>
         {workshop.members.length === 0 ? (
-          <p className="text-sm text-ink-foreground/55">No members yet.</p>
+          <p className="text-sm text-ink-foreground/55">{t.workshops.detailsPanel.noMembers}</p>
         ) : (
           <div className="flex flex-col gap-2.5">
             {workshop.members.map((member) => (
@@ -30,7 +37,9 @@ export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail })
       </div>
 
       <div className="mt-6">
-        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Rehearsal</p>
+        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">
+          {t.workshops.detailsPanel.rehearsalLabel}
+        </p>
         <div className="relative rounded-xl border border-ink-foreground/16 bg-ink px-4 py-3 pr-9">
           {workshop.rehearsalAt && (
             <div className="absolute right-2 top-2">
@@ -40,7 +49,7 @@ export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail })
           <p className="text-sm text-ink-foreground">{formatRehearsalDisplay(workshop.rehearsalAt)}</p>
           {workshop.rehearsalAt && (
             <p className="mt-1 text-xs text-ink-foreground/55">
-              {workshop.location === 'online' ? 'Online' : 'Studio'}
+              {workshop.location === 'online' ? t.workshops.detailsPanel.online : t.workshops.detailsPanel.studio}
               {workshop.meetingUrl ? (
                 <>
                   {' · '}
@@ -52,9 +61,7 @@ export function WorkshopDetailsPanel({ workshop }: { workshop: WorkshopDetail })
             </p>
           )}
         </div>
-        <p className="mt-2 text-xs text-ink-foreground/45">
-          Set from &ldquo;Schedule Rehearsal&rdquo; in the top bar or the workshop&apos;s menu.
-        </p>
+        <p className="mt-2 text-xs text-ink-foreground/45">{t.workshops.detailsPanel.setFromHint}</p>
       </div>
     </div>
   )

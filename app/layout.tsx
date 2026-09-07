@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Fraunces } from 'next/font/google'
 import { AuthSessionProvider } from '@/components/auth-session-provider'
 import { QueryProvider } from '@/components/query-provider'
+import { LanguageProvider } from '@/components/i18n/language-provider'
+import { getLocale } from '@/lib/i18n/get-dictionary'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -33,20 +35,24 @@ export const viewport: Viewport = {
   themeColor: '#17110e',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getLocale()
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`bg-background ${geistSans.variable} ${fraunces.variable}`}
     >
       <body className="font-sans antialiased">
-        <AuthSessionProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </AuthSessionProvider>
+        <LanguageProvider initialLocale={locale}>
+          <AuthSessionProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </AuthSessionProvider>
+        </LanguageProvider>
       </body>
     </html>
   )
