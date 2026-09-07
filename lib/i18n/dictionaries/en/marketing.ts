@@ -33,6 +33,7 @@ export interface MarketingDictionary {
     body2: string
     body3: string
     quote: string
+    highlights: { title: string; body: string; href: string }[]
   }
   disciplines: {
     eyebrow: string
@@ -209,6 +210,18 @@ export const marketing: MarketingDictionary = {
       'The studio is open to beginners and working actors aged 18 and over. Classes are conducted in English, making it a space where international and local actors can train together.',
     quote:
       'A high standard of professional practice, and an environment in which actors feel comfortable enough to take creative risks.',
+    highlights: [
+      {
+        title: 'Special workshops',
+        body: 'Guest teachers and coaches join for concentrated sessions that expand the toolbox beyond the weekly class.',
+        href: '/#workshops',
+      },
+      {
+        title: 'A working community',
+        body: 'Training alongside beginners and working actors builds a supportive network that continues outside the room.',
+        href: '/#community',
+      },
+    ],
   },
   disciplines: {
     eyebrow: 'What we work on',

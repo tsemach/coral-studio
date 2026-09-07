@@ -40,6 +40,18 @@ export const marketing: MarketingDictionary = {
       'Studio je otvoren za početnike i profesionalne glumce starije od 18 godina. Časovi se održavaju na engleskom jeziku, što ga čini prostorom u kome međunarodni i domaći glumci mogu da rade zajedno.',
     quote:
       'Visok standard profesionalne prakse i okruženje u kome se glumci osećaju dovoljno slobodno da preuzmu kreativne rizike.',
+    highlights: [
+      {
+        title: 'Posebne radionice',
+        body: 'Gostujući predavači i treneri vode koncentrisane sesije koje proširuju alatku van redovnog nedeljnog časa.',
+        href: '/#workshops',
+      },
+      {
+        title: 'Zajednica koja radi zajedno',
+        body: 'Rad uz početnike i profesionalne glumce gradi podržavajuću mrežu koja se nastavlja i van učionice.',
+        href: '/#community',
+      },
+    ],
   },
   disciplines: {
     eyebrow: 'Na čemu radimo',
