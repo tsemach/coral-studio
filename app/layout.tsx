@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Fraunces } from 'next/font/google'
 import { AuthSessionProvider } from '@/components/auth-session-provider'
+import { QueryProvider } from '@/components/query-provider'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -43,7 +44,9 @@ export default function RootLayout({
       className={`bg-background ${geistSans.variable} ${fraunces.variable}`}
     >
       <body className="font-sans antialiased">
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <AuthSessionProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   )
