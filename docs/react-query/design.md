@@ -1,6 +1,6 @@
 # React Query across Coral Studio
 
-Status: draft, awaiting review.
+Status: Foundation + Community implemented; Workshops/Admin/Scripts pending.
 
 ## 1. Goal & scope
 
