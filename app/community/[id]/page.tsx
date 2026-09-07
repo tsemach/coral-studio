@@ -4,10 +4,10 @@ import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query
 import { auth } from '@/auth'
 import { getCommunityPostById, listCommentsForPost, listCommunityPosts } from '@/lib/community/queries'
 import { listOffersForPost, hasUserOfferedToRead } from '@/lib/community/reader-queries'
-import { toPostItemDTO } from '@/lib/community/dto'
+import { toPostItemDTO, toPostDetailDTO, toCommentDTO, toOfferDTO } from '@/lib/community/dto'
 import { communityKeys } from '@/lib/community/query-keys'
 import { CommunityShell } from '@/components/community/community-shell'
-import { PostDetailModal } from '@/components/community/post-detail-modal'
+import { PostDetailContainer } from '@/components/community/post-detail-container'
 
 export async function generateMetadata({
   params,
@@ -39,14 +39,22 @@ export default async function PostDetailPage({
     redirect(`/login?callbackUrl=/community/${id}`)
   }
 
-  const [post, comments] = await Promise.all([
-    getCommunityPostById(id),
-    listCommentsForPost(id),
-  ])
+  const post = await getCommunityPostById(id)
 
   if (!post) {
     notFound()
   }
+
+  const isAdmin = (session.user as { role?: string }).role === 'admin'
+  const isPostAuthorOrAdmin = post.authorId === session.user.id || isAdmin
+
+  const [comments, offers, hasOffered] = await Promise.all([
+    listCommentsForPost(id),
+    post.channel === 'reader_sos' && isPostAuthorOrAdmin ? listOffersForPost(id) : Promise.resolve([]),
+    post.channel === 'reader_sos' && !isPostAuthorOrAdmin
+      ? hasUserOfferedToRead(id, session.user.id)
+      : Promise.resolve(false),
+  ])
 
   const queryClient = new QueryClient()
   await queryClient.prefetchInfiniteQuery({
@@ -57,16 +65,11 @@ export default async function PostDetailPage({
     },
     initialPageParam: null,
   })
-
-  const isAdmin = (session.user as { role?: string }).role === 'admin'
-  const isPostAuthorOrAdmin = post.authorId === session.user.id || isAdmin
-
-  const offers = post.channel === 'reader_sos' && isPostAuthorOrAdmin
-    ? await listOffersForPost(id)
-    : []
-  const hasOffered = post.channel === 'reader_sos' && !isPostAuthorOrAdmin
-    ? await hasUserOfferedToRead(id, session.user.id)
-    : false
+  queryClient.setQueryData(communityKeys.postDetail(id), toPostDetailDTO(post))
+  queryClient.setQueryData(communityKeys.comments(id), comments.map(toCommentDTO))
+  if (post.channel === 'reader_sos') {
+    queryClient.setQueryData(communityKeys.offers(id), { offers: offers.map(toOfferDTO), hasOffered })
+  }
 
   return (
     <main className="flex-1 relative">
@@ -75,15 +78,9 @@ export default async function PostDetailPage({
             /community's default view, so cache is shared between routes. */}
         <CommunityShell view={{ kind: 'feed' }} />
 
-        {/* Floating Post Detail Modal -- rewired to PostDetailContainer in Task 7 */}
-        <PostDetailModal
-          post={post}
-          comments={comments}
-          currentUserId={session.user.id}
-          isAdmin={isAdmin}
-          offers={offers}
-          hasOffered={hasOffered}
-        />
+        {/* Floating Post Detail Modal -- parallel post+comments queries,
+            dependent offers query, all seeded from the server above. */}
+        <PostDetailContainer postId={id} currentUserId={session.user.id} isAdmin={isAdmin} />
       </HydrationBoundary>
     </main>
   )
