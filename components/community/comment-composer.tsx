@@ -1,36 +1,23 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { addCommunityComment } from '@/app/community/actions'
+import { useState } from 'react'
+import { useAddComment } from '@/hooks/community/use-add-comment'
 
 export function CommentComposer({ postId }: { postId: string }) {
-  const router = useRouter()
   const [content, setContent] = useState('')
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const mutation = useAddComment(postId)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!content.trim()) return
-    setError(null)
-
-    startTransition(async () => {
-      const res = await addCommunityComment(postId, content)
-      if (res?.error) {
-        setError(res.error)
-      } else {
-        setContent('')
-        router.refresh()
-      }
-    })
+    mutation.mutate(content, { onSuccess: () => setContent('') })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {error && (
+      {mutation.isError && (
         <div className="rounded-xl bg-red-500/15 border border-red-500/30 p-2 text-xs text-red-200">
-          {error}
+          {mutation.error.message}
         </div>
       )}
 
@@ -52,10 +39,10 @@ export function CommentComposer({ postId }: { postId: string }) {
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isPending || !content.trim()}
+          disabled={mutation.isPending || !content.trim()}
           className="rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white shadow-xs hover:bg-blue-500/65 disabled:opacity-50 transition-all cursor-pointer"
         >
-          {isPending ? 'Posting...' : 'Reply'}
+          {mutation.isPending ? 'Posting...' : 'Reply'}
         </button>
       </div>
     </form>

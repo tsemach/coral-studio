@@ -1,20 +1,14 @@
 'use client'
 
-import { useRef, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { deleteCommunityPost } from '@/app/community/actions'
+import { useRef } from 'react'
+import { useDeletePost } from '@/hooks/community/use-delete-post'
 
 export function DeletePostDialog({ postId }: { postId: string }) {
-  const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const [isPending, startTransition] = useTransition()
+  const mutation = useDeletePost()
 
   const handleDelete = () => {
-    startTransition(async () => {
-      await deleteCommunityPost(postId)
-      dialogRef.current?.close()
-      router.push('/community')
-    })
+    mutation.mutate(postId, { onSuccess: () => dialogRef.current?.close() })
   }
 
   return (
@@ -50,11 +44,11 @@ export function DeletePostDialog({ postId }: { postId: string }) {
             </button>
             <button
               type="button"
-              disabled={isPending}
+              disabled={mutation.isPending}
               onClick={handleDelete}
               className="rounded-xl bg-red-800 hover:bg-red-700 px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50 cursor-pointer"
             >
-              {isPending ? 'Deleting…' : 'Delete'}
+              {mutation.isPending ? 'Deleting…' : 'Delete'}
             </button>
           </div>
         </div>

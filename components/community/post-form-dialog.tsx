@@ -1,9 +1,9 @@
 'use client'
 
-import { forwardRef, useImperativeHandle, useRef, useState, useTransition } from 'react'
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createCommunityPost } from '@/app/community/actions'
-import type { CommunityChannel, CastingType, RehearsalFormat } from '@/lib/community/types'
+import { useCreatePost } from '@/hooks/community/use-create-post'
+import type { CommunityChannel, CastingType, RehearsalFormat, ReaderStatus } from '@/lib/community/types'
 
 export type DialogHandle = { open: () => void }
 
@@ -12,16 +12,18 @@ interface PostFormDialogProps {
   triggerLabel?: string
   triggerClassName?: string
   initialChannel?: CommunityChannel
+  feedChannel?: CommunityChannel
+  feedStatus?: ReaderStatus
 }
 
 export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(function PostFormDialog(
-  { hideTrigger = false, triggerLabel = '+ New Post', triggerClassName, initialChannel = 'reader_sos' },
+  { hideTrigger = false, triggerLabel = '+ New Post', triggerClassName, initialChannel = 'reader_sos', feedChannel, feedStatus },
   ref
 ) {
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const mutation = useCreatePost(feedChannel, feedStatus)
 
   const [channel, setChannel] = useState<CommunityChannel>(initialChannel)
   const [title, setTitle] = useState('')
@@ -84,18 +86,12 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
       formData.append('attachments', file)
     }
 
-    startTransition(async () => {
-      const res = await createCommunityPost(formData)
-      if (res?.error) {
-        setError(res.error)
-      } else {
+    mutation.mutate(formData, {
+      onError: (err) => setError(err.message),
+      onSuccess: (res) => {
         dialogRef.current?.close()
-        if (res?.postId) {
-          router.push(`/community/${res.postId}`)
-        } else {
-          router.refresh()
-        }
-      }
+        if (res?.postId) router.push(`/community/${res.postId}`)
+      },
     })
   }
 
@@ -337,10 +333,10 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
               </button>
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={mutation.isPending}
                 className="rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 disabled:opacity-50 cursor-pointer"
               >
-                {isPending ? 'Publishing…' : 'Create'}
+                {mutation.isPending ? 'Publishing…' : 'Create'}
               </button>
             </div>
           </form>
