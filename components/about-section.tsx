@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 export async function AboutSection() {
@@ -24,6 +25,22 @@ export async function AboutSection() {
               {t.quote}
             </blockquote>
           </div>
+        </div>
+
+        <div className="mt-14 grid gap-px overflow-hidden rounded-sm border border-border bg-border sm:grid-cols-2">
+          {t.highlights.map((item) => (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="group flex flex-col bg-card p-7 transition-colors hover:bg-background"
+            >
+              <span className="h-px w-8 bg-accent" />
+              <h3 className="mt-5 font-serif text-xl font-semibold tracking-tight">
+                {item.title}
+              </h3>
+              <p className="mt-3 text-pretty text-sm leading-relaxed text-muted">{item.body}</p>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
