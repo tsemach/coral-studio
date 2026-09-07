@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCreatePost } from '@/hooks/community/use-create-post'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { CommunityChannel, CastingType, RehearsalFormat, ReaderStatus } from '@/lib/community/types'
 
 export type DialogHandle = { open: () => void }
@@ -17,9 +18,10 @@ interface PostFormDialogProps {
 }
 
 export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(function PostFormDialog(
-  { hideTrigger = false, triggerLabel = '+ New Post', triggerClassName, initialChannel = 'reader_sos', feedChannel, feedStatus },
+  { hideTrigger = false, triggerLabel, triggerClassName, initialChannel = 'reader_sos', feedChannel, feedStatus },
   ref
 ) {
+  const { t } = useTranslation()
   const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +64,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
     setError(null)
 
     if (!title.trim() || !content.trim()) {
-      setError('Title and content cannot be empty.')
+      setError(t.community.postForm.requiredError)
       return
     }
 
@@ -106,7 +108,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
             'inline-flex items-center gap-2 rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-xs transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 cursor-pointer'
           }
         >
-          {triggerLabel}
+          {triggerLabel ?? t.community.postForm.trigger}
         </button>
       )}
 
@@ -121,16 +123,14 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
         <div className="w-full rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground shadow-2xl max-h-[88vh] overflow-y-auto">
           <div className="flex items-center justify-between pb-2">
             <div>
-              <p className="text-lg font-semibold text-ink-foreground">New post</p>
-              <p className="mt-1 text-sm text-ink-foreground/60">
-                Share an audition opportunity, request a scene partner, or discuss acting technique.
-              </p>
+              <p className="text-lg font-semibold text-ink-foreground">{t.community.postForm.title}</p>
+              <p className="mt-1 text-sm text-ink-foreground/60">{t.community.postForm.subtitle}</p>
             </div>
             <button
               type="button"
               onClick={() => dialogRef.current?.close()}
               className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer"
-              aria-label="Close dialog"
+              aria-label={t.community.postForm.closeDialog}
             >
               ×
             </button>
@@ -145,13 +145,13 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
 
             {/* Channel Selection */}
             <div className="flex flex-col gap-1 text-sm">
-              <span>Channel</span>
+              <span>{t.community.postForm.channelLabel}</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'reader_sos', label: '#reader-sos', desc: 'Need a reader' },
-                  { id: 'callboard', label: '#the-callboard', desc: 'Castings & Gigs' },
-                  { id: 'craft_chat', label: '#craft-chat', desc: 'Scene technique' },
-                  { id: 'general', label: '#general', desc: 'Studio talk' },
+                  { id: 'reader_sos', label: '#reader-sos', desc: t.community.postForm.channels.readerSos.desc },
+                  { id: 'callboard', label: '#the-callboard', desc: t.community.postForm.channels.callboard.desc },
+                  { id: 'craft_chat', label: '#craft-chat', desc: t.community.postForm.channels.craftChat.desc },
+                  { id: 'general', label: '#general', desc: t.community.postForm.channels.general.desc },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -175,12 +175,12 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-3">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-200">
                   <span>🎭</span>
-                  <span>Reader Request Specifics</span>
+                  <span>{t.community.postForm.readerSpecifics}</span>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
                   <label className="flex flex-col gap-1 text-xs text-ink-foreground/80">
-                    When do you need lines read?
+                    {t.community.postForm.whenNeedLines}
                     <input
                       type="datetime-local"
                       value={rehearsalAt}
@@ -190,7 +190,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                   </label>
 
                   <div className="flex flex-col gap-1 text-xs text-ink-foreground/80">
-                    Format
+                    {t.community.postForm.format}
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -201,7 +201,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                             : 'bg-ink border-ink-foreground/16 text-ink-foreground/75 hover:bg-ink-card'
                         }`}
                       >
-                        At Studio
+                        {t.community.postForm.atStudio}
                       </button>
                       <button
                         type="button"
@@ -212,17 +212,17 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                             : 'bg-ink border-ink-foreground/16 text-ink-foreground/75 hover:bg-ink-card'
                         }`}
                       >
-                        Online
+                        {t.community.postForm.online}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 <label className="flex flex-col gap-1 text-xs text-ink-foreground/80">
-                  Scene Details & Characters
+                  {t.community.postForm.sceneDetailsLabel}
                   <input
                     type="text"
-                    placeholder="e.g. 2 pages, dramatic scene opposite Sarah"
+                    placeholder={t.community.postForm.sceneDetailsPlaceholder}
                     value={sceneDetails}
                     onChange={(e) => setSceneDetails(e.target.value)}
                     className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-1.5 text-xs text-ink-foreground placeholder:text-ink-foreground/40 focus:outline-none"
@@ -236,27 +236,27 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
               <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3.5 space-y-3">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-300">
                   <span>📢</span>
-                  <span>Audition & Casting Details</span>
+                  <span>{t.community.postForm.auditionDetails}</span>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-3">
                   <label className="flex flex-col gap-1 text-xs text-ink-foreground/80">
-                    Opportunity Type
+                    {t.community.postForm.opportunityType}
                     <select
                       value={castingType}
                       onChange={(e) => setCastingType(e.target.value as CastingType)}
                       className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-1.5 text-xs text-ink-foreground focus:outline-none"
                     >
-                      <option value="student_film">Student Film</option>
-                      <option value="theatre">Theatre Production</option>
-                      <option value="feature">Feature / Indie Film</option>
-                      <option value="commercial">Commercial / VO</option>
-                      <option value="crew_rec">Recommendation</option>
+                      <option value="student_film">{t.community.postForm.castingTypes.studentFilm}</option>
+                      <option value="theatre">{t.community.postForm.castingTypes.theatre}</option>
+                      <option value="feature">{t.community.postForm.castingTypes.feature}</option>
+                      <option value="commercial">{t.community.postForm.castingTypes.commercial}</option>
+                      <option value="crew_rec">{t.community.postForm.castingTypes.crewRec}</option>
                     </select>
                   </label>
 
                   <label className="flex flex-col gap-1 text-xs text-ink-foreground/80">
-                    Submission Deadline
+                    {t.community.postForm.submissionDeadline}
                     <input
                       type="date"
                       value={deadlineAt}
@@ -270,7 +270,7 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
 
             {/* Title */}
             <label className="flex flex-col gap-1 text-sm">
-              Title
+              {t.community.postForm.titleLabel}
               <input
                 type="text"
                 required
@@ -278,10 +278,10 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={
                   channel === 'reader_sos'
-                    ? 'e.g. Need a reader tonight for 20 mins'
+                    ? t.community.postForm.titlePlaceholderReaderSos
                     : channel === 'callboard'
-                    ? 'e.g. Casting Female Lead for FDU Short'
-                    : 'What would you like to discuss or share?'
+                    ? t.community.postForm.titlePlaceholderCallboard
+                    : t.community.postForm.titlePlaceholderGeneral
                 }
                 className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
               />
@@ -289,13 +289,13 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
 
             {/* Content */}
             <label className="flex flex-col gap-1 text-sm">
-              Content
+              {t.community.postForm.contentLabel}
               <textarea
                 required
                 rows={4}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Provide context, character notes, audition sides, or questions..."
+                placeholder={t.community.postForm.contentPlaceholder}
                 className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm leading-relaxed text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
               />
             </label>
@@ -303,8 +303,8 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
             {/* Attachments */}
             <label className="flex flex-col gap-1 text-sm">
               <span className="flex items-center justify-between">
-                <span>Attachments</span>
-                <span className="text-xs text-ink-foreground/45">(optional)</span>
+                <span>{t.community.postForm.attachmentsLabel}</span>
+                <span className="text-xs text-ink-foreground/45">{t.community.postForm.optional}</span>
               </span>
               <input
                 type="file"
@@ -317,7 +317,10 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
               />
               {files.length > 0 && (
                 <span className="text-xs text-ink-foreground/60">
-                  {files.length} file{files.length === 1 ? '' : 's'} selected ({files.map((f) => f.name).join(', ')})
+                  {(files.length === 1
+                    ? t.community.postForm.filesSelectedOne
+                    : t.community.postForm.filesSelectedMany.replace('{count}', String(files.length))
+                  ).replace('{names}', files.map((f) => f.name).join(', '))}
                 </span>
               )}
             </label>
@@ -329,14 +332,14 @@ export const PostFormDialog = forwardRef<DialogHandle, PostFormDialogProps>(func
                 onClick={() => dialogRef.current?.close()}
                 className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground cursor-pointer"
               >
-                Cancel
+                {t.community.postForm.cancel}
               </button>
               <button
                 type="submit"
                 disabled={mutation.isPending}
                 className="rounded-xl border border-blue-400/50 bg-blue-500/50 px-4 py-2 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-blue-500/65 disabled:opacity-50 cursor-pointer"
               >
-                {mutation.isPending ? 'Publishing…' : 'Create'}
+                {mutation.isPending ? t.community.postForm.publishing : t.community.postForm.create}
               </button>
             </div>
           </form>

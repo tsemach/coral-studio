@@ -7,6 +7,7 @@ import { MARK_COLORS, MarkPartDialog } from '@/components/workshops/mark-part-di
 import { ScriptFlow } from '@/components/workshops/script-flow'
 import { assignCharacterColors, canSplitByCharacter, getSpeakingCharacters } from '@/lib/workshops/script-colors'
 import type { Script } from '@/lib/workshops/scripts'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 // The middle "Script area" from the COR-17 sketch. Reuses ScriptFlow
 // directly, including the split-by-character toggle (script-panel.tsx's
@@ -21,6 +22,7 @@ import type { Script } from '@/lib/workshops/scripts'
 // functions) so the preview matches what /workshops shows, per COR-17's
 // "exactly as in the workshops" requirement.
 export function ScriptPreviewPanel({ script }: { script: Script | null }) {
+  const { t } = useTranslation()
   const [splitByCharacter, setSplitByCharacter] = useState(false)
   const [fontSize, setFontSize] = useState(DEFAULT_SCRIPT_FONT_SIZE)
   const [markedCharacter, setMarkedCharacter] = useState<string | null>(null)
@@ -49,9 +51,11 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink">
       <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">Script</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">
+            {t.scripts.preview.label}
+          </p>
           <p className="mt-0.5 truncate text-[15px] font-semibold text-ink-foreground">
-            {script ? script.title : 'No script selected'}
+            {script ? script.title : t.scripts.preview.noScriptSelected}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -61,8 +65,14 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
             onClick={() => setBoldMarked((v) => !v)}
             disabled={!markedCharacter}
             aria-pressed={boldMarked}
-            aria-label={boldMarked ? 'Unbold marked lines' : 'Bold marked lines'}
-            title={markedCharacter ? (boldMarked ? 'Unbold marked lines' : 'Bold marked lines') : 'Mark a part first'}
+            aria-label={boldMarked ? t.scripts.preview.unboldMarkedLines : t.scripts.preview.boldMarkedLines}
+            title={
+              markedCharacter
+                ? boldMarked
+                  ? t.scripts.preview.unboldMarkedLines
+                  : t.scripts.preview.boldMarkedLines
+                : t.scripts.preview.markAPartFirst
+            }
             className={
               boldMarked
                 ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
@@ -78,8 +88,14 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
             type="button"
             onClick={() => (markedCharacter ? setMarkedCharacter(null) : markDialogRef.current?.open())}
             disabled={!canMark}
-            aria-label={markedCharacter ? 'Erase part mark' : 'Mark a part'}
-            title={markedCharacter ? 'Erase part mark' : canMark ? 'Mark a part' : 'Attach a script with speaking characters to mark a part'}
+            aria-label={markedCharacter ? t.scripts.preview.erasePartMark : t.scripts.preview.markAPart}
+            title={
+              markedCharacter
+                ? t.scripts.preview.erasePartMark
+                : canMark
+                  ? t.scripts.preview.markAPart
+                  : t.scripts.preview.attachScriptTooltip
+            }
             className={
               markedCharacter
                 ? 'flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary disabled:pointer-events-none disabled:opacity-30'
@@ -116,13 +132,15 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
             type="button"
             onClick={() => setSplitByCharacter((v) => !v)}
             disabled={!canSplit}
-            aria-label={splitByCharacter ? 'Show script as one column' : 'Split script by character'}
+            aria-label={
+              splitByCharacter ? t.scripts.preview.showAsOneColumn : t.scripts.preview.splitByCharacter
+            }
             title={
               canSplit
                 ? splitByCharacter
-                  ? 'Show script as one column'
-                  : 'Split script by character'
-                : 'Needs 2-3 speaking characters to split'
+                  ? t.scripts.preview.showAsOneColumn
+                  : t.scripts.preview.splitByCharacter
+                : t.scripts.preview.needsCharactersTooltip
             }
             className={
               splitByCharacter
@@ -151,7 +169,7 @@ export function ScriptPreviewPanel({ script }: { script: Script | null }) {
             boldMarked={boldMarked}
           />
         ) : (
-          <p className="text-sm text-ink-foreground/55">Select a script from the list on the left.</p>
+          <p className="text-sm text-ink-foreground/55">{t.scripts.preview.selectPrompt}</p>
         )}
       </div>
     </div>

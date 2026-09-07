@@ -6,9 +6,11 @@ import { db } from '@/lib/database'
 import { communityPosts, readerOffers, rehearsalSessions } from '@/lib/database/schema'
 import { requireActiveUser } from '@/lib/community/auth'
 import { mintRehearsalToken, getLiveKitServerUrl } from '@/lib/community/rehearsal-live'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 export async function offerToRead(postId: string) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const [post] = await db
     .select({
@@ -22,13 +24,13 @@ export async function offerToRead(postId: string) {
     .limit(1)
 
   if (!post) {
-    return { error: 'Post not found' }
+    return { error: t.actions.postNotFound }
   }
   if (post.channel !== 'reader_sos' || post.readerStatus !== 'seeking') {
-    return { error: 'This post is not open for offers' }
+    return { error: t.actions.offerToRead.notOpen }
   }
   if (post.authorId === user.id) {
-    return { error: "You can't offer to read your own post" }
+    return { error: t.actions.offerToRead.ownPost }
   }
 
   await db.insert(readerOffers).values({ postId, userId: user.id }).onConflictDoNothing()
@@ -39,6 +41,7 @@ export async function offerToRead(postId: string) {
 
 export async function confirmReader(postId: string, userId: string) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const [post] = await db
     .select({ id: communityPosts.id, authorId: communityPosts.authorId })
@@ -47,10 +50,10 @@ export async function confirmReader(postId: string, userId: string) {
     .limit(1)
 
   if (!post) {
-    return { error: 'Post not found' }
+    return { error: t.actions.postNotFound }
   }
   if (post.authorId !== user.id && user.role !== 'admin') {
-    return { error: 'Unauthorized to confirm a reader for this post' }
+    return { error: t.actions.confirmReader.unauthorized }
   }
 
   const [offer] = await db
@@ -60,7 +63,7 @@ export async function confirmReader(postId: string, userId: string) {
     .limit(1)
 
   if (!offer) {
-    return { error: "This member hasn't offered to read this post" }
+    return { error: t.actions.confirmReader.noOffer }
   }
 
   await db
@@ -75,6 +78,7 @@ export async function confirmReader(postId: string, userId: string) {
 
 export async function getRehearsalToken(postId: string) {
   const user = await requireActiveUser()
+  const { community: t } = await getDictionary()
 
   const [post] = await db
     .select({
@@ -89,10 +93,10 @@ export async function getRehearsalToken(postId: string) {
     .limit(1)
 
   if (!post || post.channel !== 'reader_sos' || post.readerStatus !== 'matched' || !post.matchedUserId) {
-    return { error: 'This rehearsal room is not available' }
+    return { error: t.actions.rehearsalToken.notAvailable }
   }
   if (user.id !== post.authorId && user.id !== post.matchedUserId) {
-    return { error: 'Unauthorized to join this rehearsal room' }
+    return { error: t.actions.rehearsalToken.unauthorized }
   }
 
   const token = await mintRehearsalToken(postId, user.id, user.name ?? 'Member')

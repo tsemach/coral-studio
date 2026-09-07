@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 import type { ReaderStatus } from '@/lib/community/types'
 
 const CHANNELS: { id: string; label: string; description: string; badge?: string }[] = [
@@ -10,13 +11,15 @@ const CHANNELS: { id: string; label: string; description: string; badge?: string
   { id: 'tape_room', label: 'Tape Room', description: 'Self-tapes and rehearsal clips with timecoded notes' },
 ]
 
-export function ChannelTabs({
+export async function ChannelTabs({
   activeChannel = 'all',
   activeStatus = null,
 }: {
   activeChannel?: string
   activeStatus?: ReaderStatus | null
 }) {
+  const { community: t } = await getDictionary()
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 border-b border-ink-foreground/16 pb-3">
@@ -47,7 +50,7 @@ export function ChannelTabs({
 
       {activeChannel === 'reader_sos' && (
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-ink-foreground/55 font-medium">Filter status:</span>
+          <span className="text-ink-foreground/55 font-medium">{t.filterStatus.label}</span>
           <Link
             href="/community?channel=reader_sos"
             className={`rounded-lg px-2.5 py-1 transition-colors ${
@@ -56,7 +59,7 @@ export function ChannelTabs({
                 : 'text-ink-foreground/55 hover:text-ink-foreground'
             }`}
           >
-            All Requests
+            {t.filterStatus.all}
           </Link>
           <Link
             href="/community?channel=reader_sos&status=seeking"
@@ -66,7 +69,7 @@ export function ChannelTabs({
                 : 'text-ink-foreground/55 hover:text-ink-foreground'
             }`}
           >
-            Seeking Reader Only
+            {t.filterStatus.seeking}
           </Link>
           <Link
             href="/community?channel=reader_sos&status=matched"
@@ -76,7 +79,7 @@ export function ChannelTabs({
                 : 'text-ink-foreground/55 hover:text-ink-foreground'
             }`}
           >
-            Matched
+            {t.filterStatus.matched}
           </Link>
         </div>
       )}

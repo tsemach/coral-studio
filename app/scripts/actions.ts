@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/auth'
 import { addScript, deleteScript } from '@/lib/workshops/scripts'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 // Render-time gating on the page is not a security boundary -- a Server
 // Action is directly POSTable, so every action here re-checks admin the
@@ -16,10 +17,11 @@ async function requireAdmin() {
 
 export async function uploadScript(formData: FormData): Promise<{ error: string } | void> {
   await requireAdmin()
+  const { scripts: t } = await getDictionary()
 
   const file = formData.get('file')
   if (!(file instanceof File) || file.size === 0) {
-    return { error: 'Choose a JSON file to upload.' }
+    return { error: t.addDialog.chooseFileError }
   }
 
   // addScript()'s underlying Blob put() call is not wrapped in try/catch --
@@ -29,7 +31,7 @@ export async function uploadScript(formData: FormData): Promise<{ error: string 
   try {
     result = await addScript(file)
   } catch {
-    return { error: 'Something went wrong uploading the script. Try again.' }
+    return { error: t.addDialog.uploadFailedError }
   }
   if ('error' in result) return result
 

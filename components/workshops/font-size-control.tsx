@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslation } from '@/components/i18n/language-provider'
+
 export const DEFAULT_SCRIPT_FONT_SIZE = 13.5
 const MIN_SCRIPT_FONT_SIZE = 10
 const MAX_SCRIPT_FONT_SIZE = 20
@@ -20,6 +22,7 @@ export function FontSizeControl({
   onChange: (size: number) => void
   disabled?: boolean
 }) {
+  const { t } = useTranslation()
   const canIncrease = !disabled && fontSize < MAX_SCRIPT_FONT_SIZE
   const canDecrease = !disabled && fontSize > MIN_SCRIPT_FONT_SIZE
 
@@ -29,8 +32,8 @@ export function FontSizeControl({
         type="button"
         onClick={() => onChange(Math.min(MAX_SCRIPT_FONT_SIZE, fontSize + SCRIPT_FONT_SIZE_STEP))}
         disabled={!canIncrease}
-        aria-label="Increase script font size"
-        title="Increase font size"
+        aria-label={t.workshops.scriptPanel.increaseFontSize}
+        title={t.workshops.scriptPanel.increaseFontSize}
         className="flex h-8 w-6 items-center justify-center rounded-l-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
@@ -42,8 +45,8 @@ export function FontSizeControl({
         type="button"
         onClick={() => onChange(Math.max(MIN_SCRIPT_FONT_SIZE, fontSize - SCRIPT_FONT_SIZE_STEP))}
         disabled={!canDecrease}
-        aria-label="Decrease script font size"
-        title="Decrease font size"
+        aria-label={t.workshops.scriptPanel.decreaseFontSize}
+        title={t.workshops.scriptPanel.decreaseFontSize}
         className="flex h-8 w-6 items-center justify-center rounded-r-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground disabled:pointer-events-none disabled:opacity-30"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">

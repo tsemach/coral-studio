@@ -4,19 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DeleteTapeDialog } from './delete-tape-dialog'
 import { NoteComposer } from './note-composer'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { TapeItem, TapeNoteItem, TapeNoteTag } from '@/lib/community/tape-types'
 
 function formatTimestamp(seconds: number): string {
   const minutes = Math.floor(seconds / 60)
   const remaining = seconds % 60
   return `${minutes}:${String(remaining).padStart(2, '0')}`
-}
-
-const TAG_LABELS: Record<TapeNoteTag, string> = {
-  objective_action: 'Objective & Action',
-  truthfulness_listening: 'Truthfulness & Listening',
-  vocal_physicality: 'Vocal & Physicality',
-  framing_eyeline: 'Framing & Eyeline',
 }
 
 export function TapeDetailModal({
@@ -30,6 +24,13 @@ export function TapeDetailModal({
   currentUserId: string
   isAdmin: boolean
 }) {
+  const { t } = useTranslation()
+  const TAG_LABELS: Record<TapeNoteTag, string> = {
+    objective_action: t.community.tapeNoteTags.objectiveAction,
+    truthfulness_listening: t.community.tapeNoteTags.truthfulnessListening,
+    vocal_physicality: t.community.tapeNoteTags.vocalPhysicality,
+    framing_eyeline: t.community.tapeNoteTags.framingEyeline,
+  }
   const router = useRouter()
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isAddingNote, setIsAddingNote] = useState(false)
@@ -85,7 +86,7 @@ export function TapeDetailModal({
             type="button"
             onClick={handleClose}
             className="text-ink-foreground/45 hover:text-ink-foreground text-xl leading-none p-1 cursor-pointer transition-colors"
-            aria-label="Close modal"
+            aria-label={t.community.tapeDetail.closeModal}
           >
             ×
           </button>
@@ -102,7 +103,9 @@ export function TapeDetailModal({
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-foreground/15 text-sm font-semibold text-ink-foreground">
                   {tape.authorName ? tape.authorName.charAt(0).toUpperCase() : '?'}
                 </div>
-                <span className="font-medium text-xs text-ink-foreground">{tape.authorName || 'Anonymous Member'}</span>
+                <span className="font-medium text-xs text-ink-foreground">
+                  {tape.authorName || t.community.common.anonymousMember}
+                </span>
               </div>
 
               {canManage && <DeleteTapeDialog tapeId={tape.id} />}
@@ -118,7 +121,7 @@ export function TapeDetailModal({
           <section className="border-t border-ink-foreground/16 pt-4 space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold tracking-tight text-ink-foreground">
-                Notes ({notes.length})
+                {t.community.tapeDetail.notes} ({notes.length})
               </h2>
               {!isAddingNote && (
                 <button
@@ -126,7 +129,7 @@ export function TapeDetailModal({
                   onClick={openNoteComposer}
                   className="rounded-lg border border-ink-foreground/20 px-3 py-1.5 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors cursor-pointer"
                 >
-                  Add a note here
+                  {t.community.tapeDetail.addNoteHere}
                 </button>
               )}
             </div>
@@ -136,7 +139,7 @@ export function TapeDetailModal({
             )}
 
             {notes.length === 0 ? (
-              <p className="text-xs text-ink-foreground/50 py-2">No notes yet. Be the first to leave feedback.</p>
+              <p className="text-xs text-ink-foreground/50 py-2">{t.community.tapeDetail.noNotesYet}</p>
             ) : (
               <div className="space-y-3 divide-y divide-ink-foreground/12">
                 {notes.map((note) => (
@@ -149,7 +152,7 @@ export function TapeDetailModal({
                       >
                         {formatTimestamp(note.timestampSeconds)}
                       </button>
-                      <span className="font-medium text-ink-foreground">{note.authorName || 'Anonymous Member'}</span>
+                      <span className="font-medium text-ink-foreground">{note.authorName || t.community.common.anonymousMember}</span>
                       {note.tag && (
                         <span className="rounded-md bg-primary/20 px-1.5 py-0.5 text-[0.65rem] font-medium text-primary-foreground">
                           {TAG_LABELS[note.tag]}
@@ -170,7 +173,7 @@ export function TapeDetailModal({
             onClick={handleClose}
             className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground cursor-pointer"
           >
-            Close
+            {t.community.tapeDetail.close}
           </button>
         </div>
       </div>

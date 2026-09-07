@@ -5,8 +5,10 @@ import { AddScriptDialog } from '@/components/scripts/add-script-dialog'
 import { PromptPanel } from '@/components/scripts/prompt-panel'
 import { ScriptPreviewPanel } from '@/components/scripts/script-preview-panel'
 import type { Script } from '@/lib/workshops/scripts'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function ScriptsPanels({ script, promptMarkdown }: { script: Script | null; promptMarkdown: string }) {
+  const { t } = useTranslation()
   const [promptOpen, setPromptOpen] = useState(false)
 
   return (
@@ -17,7 +19,7 @@ export function ScriptsPanels({ script, promptMarkdown }: { script: Script | nul
           onClick={() => setPromptOpen((v) => !v)}
           className="inline-flex items-center gap-2 rounded-xl border border-ink-foreground/16 px-4 py-2.5 text-sm font-semibold text-ink-foreground transition-colors hover:border-ink-foreground/30"
         >
-          Prompt
+          {t.scripts.panels.prompt}
         </button>
         <AddScriptDialog />
       </div>

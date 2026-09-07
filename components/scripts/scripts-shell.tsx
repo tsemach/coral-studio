@@ -3,12 +3,13 @@ import { UserMenu } from '@/components/user-menu'
 import { ScriptsPanels } from '@/components/scripts/scripts-panels'
 import { ScriptsSidebarList } from '@/components/scripts/scripts-sidebar-list'
 import type { Script, ScriptSummary } from '@/lib/workshops/scripts'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 // Server Component, structurally copied from workshop-shell.tsx -- same
 // h-screen + overflow-hidden reasoning: without a real height ceiling here,
 // the flex-1 panels below never become a bounded box for overflow-y-auto to
 // scroll against.
-export function ScriptsShell({
+export async function ScriptsShell({
   scripts,
   selected,
   promptMarkdown,
@@ -17,20 +18,24 @@ export function ScriptsShell({
   selected: Script | null
   promptMarkdown: string
 }) {
+  const { scripts: t } = await getDictionary()
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-ink text-ink-foreground">
       <div className="flex items-center justify-between border-b border-ink-foreground/16 px-8 py-[18px]">
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            aria-label="Back to site"
+            aria-label={t.shell.backToSite}
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-ink-foreground/16 text-ink-foreground/55 transition-colors hover:border-ink-foreground/30 hover:text-ink-foreground"
           >
             ←
           </Link>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">Admin</p>
-            <p className="mt-0.5 text-[21px] font-semibold tracking-tight">Scripts</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">
+              {t.shell.adminLabel}
+            </p>
+            <p className="mt-0.5 text-[21px] font-semibold tracking-tight">{t.shell.title}</p>
           </div>
         </div>
 

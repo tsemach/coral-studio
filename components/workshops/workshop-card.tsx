@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import { WorkshopCardMenu } from '@/components/workshops/workshop-card-menu'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { AddableUser } from '@/lib/workshops/queries'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
 
@@ -31,6 +34,7 @@ export function WorkshopCard({
   activeUsers: AddableUser[]
   availableScripts: ScriptSummary[]
 }) {
+  const { t } = useTranslation()
   const date = formatCardDate(rehearsalAt)
 
   return (
@@ -47,7 +51,7 @@ export function WorkshopCard({
       <Link href={`/workshops/${id}`} className="block pr-7">
         <p className="truncate text-[15px] font-semibold text-ink-foreground">{title}</p>
         <p className="mt-1 text-xs text-ink-foreground/55">
-          {memberCount} {memberCount === 1 ? 'member' : 'members'}
+          {t.workshops.card.memberCount(memberCount)}
           {date ? ` · ${date}` : ''}
         </p>
       </Link>

@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { createWorkshop, updateWorkshop } from '@/app/workshops/actions'
 import { UserPicker } from '@/components/workshops/user-picker'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { AddableUser } from '@/lib/workshops/queries'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
 
@@ -30,6 +31,7 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
   props,
   ref
 ) {
+  const { t } = useTranslation()
   const { availableUsers, availableScripts, hideTrigger } = props
   const isEdit = props.mode === 'edit'
   const workshopId = props.mode === 'edit' ? props.workshopId : null
@@ -91,7 +93,7 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
         await createWorkshop(formData)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : t.workshops.addMemberDialog.genericError)
     }
   }
 
@@ -105,8 +107,8 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
         <button
           type="button"
           onClick={open}
-          aria-label="New workshop"
-          title="New workshop"
+          aria-label={t.workshops.formDialog.newWorkshopLabel}
+          title={t.workshops.formDialog.newWorkshopLabel}
           className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground transition-transform hover:-translate-y-0.5"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -128,33 +130,31 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
         className="m-auto max-w-md border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-md rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-          <p className="text-lg font-semibold">{isEdit ? 'Edit workshop' : 'New workshop'}</p>
+          <p className="text-lg font-semibold">{isEdit ? t.workshops.formDialog.editTitle : t.workshops.formDialog.createTitle}</p>
           <p className="mt-1 text-sm text-ink-foreground/60">
-            {isEdit
-              ? 'Update the title or script, or add more people to the group.'
-              : 'Only a title is required -- attach a script and add people now, or come back later.'}
+            {isEdit ? t.workshops.formDialog.editSubtitle : t.workshops.formDialog.createSubtitle}
           </p>
 
           <form action={handleSubmit} className="mt-5 flex flex-col gap-4">
             <label className="flex flex-col gap-1 text-sm">
-              Title
+              {t.workshops.formDialog.titleLabel}
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Untitled workshop"
+                placeholder={t.workshops.formDialog.titlePlaceholder}
                 className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
               />
             </label>
 
             <label className="flex flex-col gap-1 text-sm">
-              Script <span className="text-ink-foreground/45">(optional)</span>
+              {t.workshops.formDialog.scriptLabel} <span className="text-ink-foreground/45">{t.workshops.formDialog.optional}</span>
               <select
                 value={scriptSlug}
                 onChange={(e) => setScriptSlug(e.target.value)}
                 className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
               >
-                <option value="">No script</option>
+                <option value="">{t.workshops.formDialog.noScript}</option>
                 {availableScripts.map((script) => (
                   <option key={script.slug} value={script.slug}>
                     {script.title}
@@ -165,8 +165,13 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
 
             <div className="flex flex-col gap-2 text-sm">
               <label className="flex flex-col gap-1">
-                Add people <span className="text-ink-foreground/45">(optional)</span>
-                <UserPicker availableUsers={remainingUsers} selected={null} onSelect={handlePick} placeholder="Add a person…" />
+                {t.workshops.formDialog.addPeopleLabel} <span className="text-ink-foreground/45">{t.workshops.formDialog.optional}</span>
+                <UserPicker
+                  availableUsers={remainingUsers}
+                  selected={null}
+                  onSelect={handlePick}
+                  placeholder={t.workshops.formDialog.addPersonPlaceholder}
+                />
               </label>
 
               {members.length > 0 && (
@@ -182,20 +187,20 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
                         onChange={(e) => updateMemberType(member.userId, e.target.value as 'actor' | 'viewer')}
                         className="rounded-md border border-ink-foreground/16 bg-ink-card px-1.5 py-1 text-xs text-ink-foreground"
                       >
-                        <option value="actor">Actor</option>
-                        <option value="viewer">Viewer</option>
+                        <option value="actor">{t.workshops.formDialog.actorOption}</option>
+                        <option value="viewer">{t.workshops.formDialog.viewerOption}</option>
                       </select>
                       <input
                         value={member.part}
                         onChange={(e) => updateMemberPart(member.userId, e.target.value)}
-                        placeholder="Part"
+                        placeholder={t.workshops.formDialog.partPlaceholder}
                         disabled={member.type === 'viewer'}
                         className="w-20 rounded-md border border-ink-foreground/16 bg-ink-card px-1.5 py-1 text-xs text-ink-foreground placeholder:text-ink-foreground/40 disabled:opacity-40"
                       />
                       <button
                         type="button"
                         onClick={() => removeMember(member.userId)}
-                        aria-label={`Remove ${member.name || member.email}`}
+                        aria-label={`${t.workshops.formDialog.removeLabel} ${member.name || member.email}`}
                         className="text-ink-foreground/45 hover:text-[#f0a8b4]"
                       >
                         ×
@@ -214,10 +219,10 @@ export const WorkshopFormDialog = forwardRef<DialogHandle, WorkshopFormDialogPro
                 onClick={() => dialogRef.current?.close()}
                 className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
               >
-                Cancel
+                {t.workshops.formDialog.cancel}
               </button>
               <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-                {isEdit ? 'Save' : 'Create'}
+                {isEdit ? t.workshops.formDialog.save : t.workshops.formDialog.create}
               </button>
             </div>
           </form>

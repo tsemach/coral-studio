@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { AddableUser } from '@/lib/workshops/queries'
 
 // Reusable typeable-and-pickable user field. A native input[list]+<datalist>
@@ -19,7 +20,7 @@ export function UserPicker({
   selected,
   onSelect,
   name,
-  placeholder = 'Select a user…',
+  placeholder,
 }: {
   availableUsers: AddableUser[]
   selected: AddableUser | null
@@ -27,6 +28,8 @@ export function UserPicker({
   name?: string
   placeholder?: string
 }) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t.workshops.userPicker.defaultPlaceholder
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
@@ -89,7 +92,7 @@ export function UserPicker({
             }
           }}
           disabled={isEmpty}
-          placeholder={isEmpty ? 'No other active users available' : placeholder}
+          placeholder={isEmpty ? t.workshops.userPicker.noOthersAvailable : resolvedPlaceholder}
           className="w-full cursor-pointer rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 pr-8 text-sm text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none disabled:cursor-default disabled:opacity-45"
         />
         <svg
@@ -114,7 +117,7 @@ export function UserPicker({
       {open && (
         <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 max-h-56 overflow-y-auto rounded-lg border border-ink-foreground/16 bg-ink-card py-1 shadow-lg">
           {filtered.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-ink-foreground/45">No matches</p>
+            <p className="px-3 py-2 text-sm text-ink-foreground/45">{t.workshops.userPicker.noMatches}</p>
           ) : (
             filtered.map((user) => (
               <button

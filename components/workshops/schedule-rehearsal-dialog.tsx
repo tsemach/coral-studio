@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react'
 import { setRehearsalDate } from '@/app/workshops/actions'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { DialogHandle } from '@/components/workshops/add-member-dialog'
 
 function formatRehearsalInputValue(date: Date | null) {
@@ -17,6 +18,7 @@ export const ScheduleRehearsalDialog = forwardRef<
   DialogHandle,
   { workshopId: string; rehearsalAt: Date | null; location: 'studio' | 'online' | null; hideTrigger?: boolean }
 >(function ScheduleRehearsalDialog({ workshopId, rehearsalAt, location, hideTrigger }, ref) {
+  const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const { data: session } = useSession()
   const pathname = usePathname()
@@ -36,7 +38,7 @@ export const ScheduleRehearsalDialog = forwardRef<
           onClick={open}
           className="inline-flex items-center gap-2 rounded-xl border border-ink-foreground/16 px-4 py-2.5 text-sm font-semibold text-ink-foreground transition-colors hover:border-ink-foreground/30"
         >
-          Schedule Rehearsal
+          {t.workshops.scheduleRehearsalDialog.trigger}
         </button>
       )}
 
@@ -58,8 +60,8 @@ export const ScheduleRehearsalDialog = forwardRef<
         className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-          <p className="text-lg font-semibold">Schedule rehearsal</p>
-          <p className="mt-1 text-sm text-ink-foreground/60">Set when this workshop&apos;s group next meets.</p>
+          <p className="text-lg font-semibold">{t.workshops.scheduleRehearsalDialog.title}</p>
+          <p className="mt-1 text-sm text-ink-foreground/60">{t.workshops.scheduleRehearsalDialog.subtitle}</p>
 
           <form
             action={async (formData) => {
@@ -94,13 +96,13 @@ export const ScheduleRehearsalDialog = forwardRef<
               defaultValue={location ?? 'studio'}
               className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
             >
-              <option value="studio">Studio</option>
-              <option value="online">Online</option>
+              <option value="studio">{t.workshops.scheduleRehearsalDialog.studioOption}</option>
+              <option value="online">{t.workshops.scheduleRehearsalDialog.onlineOption}</option>
             </select>
 
             <label className="flex items-center gap-2 text-sm text-ink-foreground/80">
               <input type="checkbox" name="syncCalendar" defaultChecked className="h-4 w-4 rounded border-ink-foreground/30 bg-ink" />
-              Set google calendar
+              {t.workshops.scheduleRehearsalDialog.syncCalendarLabel}
             </label>
 
             <div className="mt-2 flex justify-end gap-2">
@@ -109,10 +111,10 @@ export const ScheduleRehearsalDialog = forwardRef<
                 onClick={() => dialogRef.current?.close()}
                 className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
               >
-                Cancel
+                {t.workshops.scheduleRehearsalDialog.cancel}
               </button>
               <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-                Save
+                {t.workshops.scheduleRehearsalDialog.save}
               </button>
             </div>
           </form>

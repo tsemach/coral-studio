@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { WorkshopFormDialog } from '@/components/workshops/workshop-form-dialog'
 import { WorkshopCard } from '@/components/workshops/workshop-card'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { AddableUser, WorkshopListItem } from '@/lib/workshops/queries'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
 
@@ -21,6 +22,7 @@ export function WorkshopSidebarList({
   activeUsers: AddableUser[]
   availableScripts: ScriptSummary[]
 }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [width, setWidth] = useState(DEFAULT_WIDTH)
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
@@ -75,7 +77,7 @@ export function WorkshopSidebarList({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search workshops"
+            placeholder={t.workshops.sidebar.searchPlaceholder}
             className="h-[38px] w-full rounded-[10px] border border-ink-foreground/16 bg-ink pl-[34px] pr-3 text-[13.5px] text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
           />
         </div>
@@ -84,7 +86,11 @@ export function WorkshopSidebarList({
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {filtered.length === 0 ? (
-          <p className="px-1 text-sm text-ink-foreground/55">No workshops match &ldquo;{query}&rdquo;.</p>
+          <p className="px-1 text-sm text-ink-foreground/55">
+            {t.workshops.sidebar.noMatchPrefix}
+            {query}
+            {t.workshops.sidebar.noMatchSuffix}
+          </p>
         ) : (
           filtered.map((workshop) => (
             <WorkshopCard
@@ -111,7 +117,7 @@ export function WorkshopSidebarList({
       <div
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize workshop list"
+        aria-label={t.workshops.sidebar.resizeLabel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

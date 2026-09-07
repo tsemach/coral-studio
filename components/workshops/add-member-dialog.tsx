@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { addMember } from '@/app/workshops/actions'
 import { UserPicker } from '@/components/workshops/user-picker'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { AddableUser } from '@/lib/workshops/queries'
 
 export type DialogHandle = { open: () => void }
@@ -17,6 +18,7 @@ export const AddMemberDialog = forwardRef<
   DialogHandle,
   { workshopId: string; availableUsers: AddableUser[]; hideTrigger?: boolean }
 >(function AddMemberDialog({ workshopId, availableUsers, hideTrigger }, ref) {
+    const { t } = useTranslation()
     const dialogRef = useRef<HTMLDialogElement>(null)
     const [error, setError] = useState<string | null>(null)
     const [selectedUser, setSelectedUser] = useState<AddableUser | null>(null)
@@ -37,7 +39,7 @@ export const AddMemberDialog = forwardRef<
         await addMember(workshopId, formData)
         dialogRef.current?.close()
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong')
+        setError(err instanceof Error ? err.message : t.workshops.addMemberDialog.genericError)
       }
     }
 
@@ -49,7 +51,7 @@ export const AddMemberDialog = forwardRef<
             onClick={open}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:-translate-y-0.5"
           >
-            + Add user
+            + {t.workshops.addMemberDialog.trigger}
           </button>
         )}
 
@@ -66,32 +68,30 @@ export const AddMemberDialog = forwardRef<
           className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
         >
           <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-            <p className="text-lg font-semibold">Add a member</p>
-            <p className="mt-1 text-sm text-ink-foreground/60">
-              Type a name or email, or pick from the list, to add an existing active user.
-            </p>
+            <p className="text-lg font-semibold">{t.workshops.addMemberDialog.title}</p>
+            <p className="mt-1 text-sm text-ink-foreground/60">{t.workshops.addMemberDialog.subtitle}</p>
 
             <form action={handleSubmit} className="mt-5 flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-sm">
-                User
+                {t.workshops.addMemberDialog.userLabel}
                 <UserPicker availableUsers={availableUsers} selected={selectedUser} onSelect={setSelectedUser} name="email" />
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
-                Type
+                {t.workshops.addMemberDialog.typeLabel}
                 <select
                   name="type"
                   value={type}
                   onChange={(e) => setType(e.target.value as 'actor' | 'viewer')}
                   className="rounded-lg border border-ink-foreground/16 bg-ink px-3 py-2 text-sm text-ink-foreground focus:outline-none"
                 >
-                  <option value="actor">Actor</option>
-                  <option value="viewer">Viewer</option>
+                  <option value="actor">{t.workshops.formDialog.actorOption}</option>
+                  <option value="viewer">{t.workshops.formDialog.viewerOption}</option>
                 </select>
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
-                Part <span className="text-ink-foreground/45">(optional)</span>
+                {t.workshops.addMemberDialog.partLabel} <span className="text-ink-foreground/45">{t.workshops.formDialog.optional}</span>
                 <input
                   type="text"
                   name="part"
@@ -108,14 +108,14 @@ export const AddMemberDialog = forwardRef<
                   onClick={() => dialogRef.current?.close()}
                   className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
                 >
-                  Cancel
+                  {t.workshops.addMemberDialog.cancel}
                 </button>
                 <button
                   type="submit"
                   disabled={availableUsers.length === 0 || !selectedUser}
                   className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:pointer-events-none disabled:opacity-40"
                 >
-                  Add
+                  {t.workshops.addMemberDialog.add}
                 </button>
               </div>
             </form>

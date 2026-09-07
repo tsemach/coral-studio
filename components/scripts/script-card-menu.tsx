@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { removeScript } from '@/app/scripts/actions'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function ScriptCardMenu({ slug, title }: { slug: string; title: string }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
@@ -36,7 +38,7 @@ export function ScriptCardMenu({ slug, title }: { slug: string; title: string })
           e.stopPropagation()
           setOpen((v) => !v)
         }}
-        aria-label="Script options"
+        aria-label={t.scripts.cardMenu.optionsLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-ink-foreground/55 hover:bg-ink hover:text-ink-foreground"
@@ -62,7 +64,7 @@ export function ScriptCardMenu({ slug, title }: { slug: string; title: string })
             }}
             className="block w-full px-4 py-2 text-left text-[13.5px] font-medium text-[#f0a8b4] hover:bg-ink"
           >
-            Delete
+            {t.scripts.cardMenu.delete}
           </button>
         </div>
       )}
@@ -75,10 +77,11 @@ export function ScriptCardMenu({ slug, title }: { slug: string; title: string })
         className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-          <p className="text-lg font-semibold">Delete script?</p>
+          <p className="text-lg font-semibold">{t.scripts.cardMenu.deleteDialogTitle}</p>
           <p className="mt-2 text-sm text-ink-foreground/60">
-            Delete <span className="font-medium text-ink-foreground">{title}</span>? Any workshop
-            with it attached will show &ldquo;no script attached&rdquo; afterward. This cannot be undone.
+            {t.scripts.cardMenu.deleteDialogBodyPrefix}
+            <span className="font-medium text-ink-foreground">{title}</span>
+            {t.scripts.cardMenu.deleteDialogBodySuffix}
           </p>
           <div className="mt-6 flex justify-end gap-2">
             <button
@@ -86,14 +89,14 @@ export function ScriptCardMenu({ slug, title }: { slug: string; title: string })
               onClick={() => deleteDialogRef.current?.close()}
               className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
             >
-              Cancel
+              {t.scripts.cardMenu.cancel}
             </button>
             <button
               type="button"
               onClick={handleDelete}
               className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
             >
-              Delete
+              {t.scripts.cardMenu.delete}
             </button>
           </div>
         </div>

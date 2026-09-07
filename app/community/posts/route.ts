@@ -2,11 +2,15 @@ import { auth } from '@/auth'
 import { listCommunityPosts } from '@/lib/community/queries'
 import { decodeCursor } from '@/lib/community/pagination'
 import { toPostItemDTO } from '@/lib/community/dto'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 import type { CommunityChannel, ReaderStatus } from '@/lib/community/types'
 
 export async function GET(request: Request) {
   const session = await auth()
-  if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) {
+    const { community: t } = await getDictionary()
+    return Response.json({ error: t.api.unauthorized }, { status: 401 })
+  }
 
   const { searchParams } = new URL(request.url)
   const channel = (searchParams.get('channel') as CommunityChannel) || undefined

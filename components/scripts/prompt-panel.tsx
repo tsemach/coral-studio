@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 // Renders lib/scripts/ai-prompt.ts's AI_PROMPT_MARKDOWN as-is (COR-17: "read
 // a static markdown prompt and present as markdown"). Copy button copies the raw
@@ -14,6 +15,7 @@ import ReactMarkdown from 'react-markdown'
 // markdown's children are styled directly via arbitrary-variant selectors
 // instead of the `prose` plugin classes.
 export function PromptPanel({ markdown, onClose }: { markdown: string; onClose: () => void }) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
   async function handleCopy() {
@@ -26,7 +28,7 @@ export function PromptPanel({ markdown, onClose }: { markdown: string; onClose: 
     <div className="flex min-h-0 w-[420px] shrink-0 flex-col overflow-hidden rounded-2xl border border-ink-foreground/12 bg-ink">
       <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-4">
         <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">
-          AI conversion prompt
+          {t.scripts.promptPanel.heading}
         </p>
         <div className="flex items-center gap-2">
           <button
@@ -34,12 +36,12 @@ export function PromptPanel({ markdown, onClose }: { markdown: string; onClose: 
             onClick={handleCopy}
             className="rounded-lg border border-ink-foreground/16 px-3 py-1.5 text-xs font-semibold text-ink-foreground transition-colors hover:border-ink-foreground/30"
           >
-            {copied ? 'Copied' : 'Copy'}
+            {copied ? t.scripts.promptPanel.copied : t.scripts.promptPanel.copy}
           </button>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close prompt"
+            aria-label={t.scripts.promptPanel.closeLabel}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-foreground/55 hover:bg-ink-card hover:text-ink-foreground"
           >
             ✕

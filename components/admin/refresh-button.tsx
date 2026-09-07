@@ -2,15 +2,17 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 export function RefreshButton() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [isPending, startTransition] = useTransition()
 
   return (
     <button
       type="button"
-      aria-label="Refresh pending users"
+      aria-label={t.admin.refreshButton.ariaLabel}
       disabled={isPending}
       onClick={() => startTransition(() => router.refresh())}
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border text-foreground/60 transition-colors hover:border-foreground/40 hover:text-foreground disabled:opacity-50"

@@ -11,6 +11,7 @@ import { listAvailableScripts } from '@/lib/workshops/scripts'
 import { isValidEmail } from '@/lib/validation'
 import { deleteRehearsalEvent, getValidAccessToken, upsertRehearsalEvent } from '@/lib/google/calendar'
 import { getLiveKitServerUrl, mintLiveToken, promoteParticipant } from '@/lib/workshops/live'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 // Render-time gating on the page is not a security boundary -- a Server
 // Action is directly POSTable, so every action re-checks the caller is a
@@ -79,7 +80,8 @@ async function resolveScriptSlug(raw: string): Promise<string | null> {
 
   const available = await listAvailableScripts()
   if (!available.some((script) => script.slug === scriptSlug)) {
-    throw new Error('Unknown script')
+    const { workshops: t } = await getDictionary()
+    throw new Error(t.errors.unknownScript)
   }
   return scriptSlug
 }
@@ -180,7 +182,9 @@ export async function addMember(workshopId: string, formData: FormData) {
   const type = formData.get('type') === 'viewer' ? 'viewer' : 'actor'
   const part = String(formData.get('part') ?? '').trim() || null
 
-  if (!isValidEmail(email)) throw new Error('Enter a valid email address')
+  const { workshops: t } = await getDictionary()
+
+  if (!isValidEmail(email)) throw new Error(t.errors.invalidEmail)
 
   const [target] = await db
     .select({ id: users.id })
@@ -188,7 +192,7 @@ export async function addMember(workshopId: string, formData: FormData) {
     .where(and(eq(users.email, email), eq(users.status, 'active')))
     .limit(1)
 
-  if (!target) throw new Error('No active user found with that email')
+  if (!target) throw new Error(t.errors.noActiveUserFound)
 
   await db.insert(workshopMembers).values({ workshopId, userId: target.id, type, part }).onConflictDoNothing()
 
@@ -416,7 +420,8 @@ export async function deleteWorkshop(workshopId: string) {
   await requireMember(workshopId)
 
   if ((await memberCountOf(workshopId)) > 1) {
-    throw new Error('Leave the workshop instead -- delete only works once you are the last member')
+    const { workshops: t } = await getDictionary()
+    throw new Error(t.errors.deleteInsteadOfLeave)
   }
 
   await db.delete(workshops).where(eq(workshops.id, workshopId))

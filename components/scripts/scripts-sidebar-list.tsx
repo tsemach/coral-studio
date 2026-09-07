@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { AddScriptDialog } from '@/components/scripts/add-script-dialog'
 import { ScriptCardMenu } from '@/components/scripts/script-card-menu'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
+import { useTranslation } from '@/components/i18n/language-provider'
 
 // No resize handle, unlike workshop-sidebar-list.tsx -- not in the COR-17
 // sketch and not asked for; a fixed width keeps this smaller and avoids
@@ -12,6 +13,7 @@ import type { ScriptSummary } from '@/lib/workshops/scripts'
 const WIDTH = 320
 
 export function ScriptsSidebarList({ scripts, selectedSlug }: { scripts: ScriptSummary[]; selectedSlug: string | null }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
@@ -42,7 +44,7 @@ export function ScriptsSidebarList({ scripts, selectedSlug }: { scripts: ScriptS
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search scripts"
+            placeholder={t.scripts.sidebar.searchPlaceholder}
             className="h-[38px] w-full rounded-[10px] border border-ink-foreground/16 bg-ink pl-[34px] pr-3 text-[13.5px] text-ink-foreground placeholder:text-ink-foreground/45 focus:outline-none"
           />
         </div>
@@ -52,7 +54,15 @@ export function ScriptsSidebarList({ scripts, selectedSlug }: { scripts: ScriptS
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {filtered.length === 0 ? (
           <p className="px-1 text-sm text-ink-foreground/55">
-            {scripts.length === 0 ? 'No scripts uploaded yet.' : `No scripts match "${query}".`}
+            {scripts.length === 0 ? (
+              t.scripts.sidebar.empty
+            ) : (
+              <>
+                {t.scripts.sidebar.noMatchPrefix}
+                {query}
+                {t.scripts.sidebar.noMatchSuffix}
+              </>
+            )}
           </p>
         ) : (
           filtered.map((script) => (

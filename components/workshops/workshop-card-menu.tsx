@@ -5,6 +5,7 @@ import { deleteWorkshop, leaveWorkshop } from '@/app/workshops/actions'
 import { AddMemberDialog, type DialogHandle } from '@/components/workshops/add-member-dialog'
 import { ScheduleRehearsalDialog } from '@/components/workshops/schedule-rehearsal-dialog'
 import { WorkshopFormDialog } from '@/components/workshops/workshop-form-dialog'
+import { useTranslation } from '@/components/i18n/language-provider'
 import type { AddableUser } from '@/lib/workshops/queries'
 import type { ScriptSummary } from '@/lib/workshops/scripts'
 
@@ -31,6 +32,7 @@ export function WorkshopCardMenu({
   activeUsers: AddableUser[]
   availableScripts: ScriptSummary[]
 }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   // Neither Add user nor Edit's "add people" list should offer someone
   // who's already in this workshop's group -- picking them would just be a
@@ -62,7 +64,7 @@ export function WorkshopCardMenu({
           e.stopPropagation()
           setOpen((v) => !v)
         }}
-        aria-label="Workshop options"
+        aria-label={t.workshops.cardMenu.optionsLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full text-ink-foreground/55 hover:bg-ink hover:text-ink-foreground"
@@ -88,7 +90,7 @@ export function WorkshopCardMenu({
             }}
             className={menuItemClass}
           >
-            Edit
+            {t.workshops.cardMenu.edit}
           </button>
 
           <button
@@ -99,7 +101,7 @@ export function WorkshopCardMenu({
             }}
             className={menuItemClass}
           >
-            Add user
+            {t.workshops.cardMenu.addUser}
           </button>
 
           <button
@@ -110,13 +112,13 @@ export function WorkshopCardMenu({
             }}
             className={menuItemClass}
           >
-            Schedule Rehearsal
+            {t.workshops.cardMenu.scheduleRehearsal}
           </button>
 
           {memberCount > 1 ? (
             <form action={leaveWorkshop.bind(null, workshopId)}>
               <button type="submit" className={menuItemClass}>
-                Leave workshop
+                {t.workshops.cardMenu.leaveWorkshop}
               </button>
             </form>
           ) : (
@@ -130,7 +132,7 @@ export function WorkshopCardMenu({
                 }}
                 className="block w-full px-4 py-2 text-left text-[13.5px] font-medium text-[#f0a8b4] hover:bg-ink"
               >
-                Delete
+                {t.workshops.cardMenu.delete}
               </button>
             </>
           )}
@@ -167,10 +169,11 @@ export function WorkshopCardMenu({
         className="m-auto max-w-sm border-0 bg-transparent p-0 backdrop:bg-black/50"
       >
         <div className="w-full max-w-sm rounded-xl border border-ink-foreground/16 bg-ink-card p-6 text-ink-foreground">
-          <p className="text-lg font-semibold">Delete workshop?</p>
+          <p className="text-lg font-semibold">{t.workshops.cardMenu.deleteDialogTitle}</p>
           <p className="mt-2 text-sm text-ink-foreground/60">
-            Delete <span className="font-medium text-ink-foreground">{title}</span>? This permanently removes it and
-            cannot be undone.
+            {t.workshops.cardMenu.deleteDialogBodyPrefix}
+            <span className="font-medium text-ink-foreground">{title}</span>
+            {t.workshops.cardMenu.deleteDialogBodySuffix}
           </p>
           <div className="mt-6 flex justify-end gap-2">
             <button
@@ -178,11 +181,11 @@ export function WorkshopCardMenu({
               onClick={() => deleteDialogRef.current?.close()}
               className="rounded-xl border border-ink-foreground/16 px-4 py-2 text-sm font-semibold text-ink-foreground/70 transition-colors hover:text-ink-foreground"
             >
-              Cancel
+              {t.workshops.cardMenu.cancel}
             </button>
             <form action={deleteWorkshop.bind(null, workshopId)}>
               <button type="submit" className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-                Delete
+                {t.workshops.cardMenu.delete}
               </button>
             </form>
           </div>
