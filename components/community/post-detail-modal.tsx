@@ -76,6 +76,10 @@ export function PostDetailModal({
     // PostCard's detailHref) so closing lands back on that tab instead of
     // always resetting to "All Channels".
     const originChannel = searchParams.get('channel')
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+      return
+    }
     router.push(originChannel ? `/community?channel=${originChannel}` : '/community')
   }
 
@@ -345,6 +349,9 @@ export function PostDetailModal({
                   >
                     I can read this
                   </button>
+                  {offerToReadMutation.isError && (
+                    <p className="mt-1 text-[0.65rem] text-red-300">{offerToReadMutation.error.message}</p>
+                  )}
                 </div>
               )}
 
@@ -362,14 +369,19 @@ export function PostDetailModal({
                           </span>
                         )}
                       </span>
-                      <button
-                        type="button"
-                        disabled={confirmReaderMutation.isPending}
-                        onClick={() => confirmReaderMutation.mutate(offer.userId)}
-                        className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
-                      >
-                        Confirm as reader
-                      </button>
+                      <div className="flex flex-col items-end">
+                        <button
+                          type="button"
+                          disabled={confirmReaderMutation.isPending}
+                          onClick={() => confirmReaderMutation.mutate(offer.userId)}
+                          className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+                        >
+                          Confirm as reader
+                        </button>
+                        {confirmReaderMutation.isError && (
+                          <p className="mt-1 text-[0.65rem] text-red-300">{confirmReaderMutation.error.message}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

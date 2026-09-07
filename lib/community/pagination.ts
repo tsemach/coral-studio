@@ -10,7 +10,15 @@ export function encodeCursor(cursor: PostsCursor): string {
 export function decodeCursor(raw: string | null): PostsCursor | null {
   if (!raw) return null
   try {
-    return JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')) as PostsCursor
+    const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'))
+    if (
+      typeof parsed?.id !== 'string' ||
+      typeof parsed?.createdAt !== 'string' ||
+      Number.isNaN(Date.parse(parsed.createdAt))
+    ) {
+      return null
+    }
+    return parsed as PostsCursor
   } catch {
     return null
   }

@@ -34,6 +34,12 @@ export function DeletePostDialog({ postId }: { postId: string }) {
             Are you sure you want to delete this post? This action cannot be undone.
           </p>
 
+          {mutation.isError && (
+            <p className="mt-3 rounded-lg bg-red-500/15 border border-red-500/30 p-2.5 text-xs text-red-200">
+              {mutation.error.message}
+            </p>
+          )}
+
           <div className="mt-5 flex justify-end gap-2">
             <button
               type="button"

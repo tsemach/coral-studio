@@ -12,7 +12,8 @@ export async function GET(request: Request) {
   const channel = (searchParams.get('channel') as CommunityChannel) || undefined
   const status = (searchParams.get('status') as ReaderStatus) || undefined
   const cursor = decodeCursor(searchParams.get('cursor'))
-  const limit = Number(searchParams.get('limit')) || 20
+  const rawLimit = Number(searchParams.get('limit'))
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 50) : 20
 
   const { items, nextCursor } = await listCommunityPosts({ channel, status, cursor, limit })
   return Response.json({ items: items.map(toPostItemDTO), nextCursor })

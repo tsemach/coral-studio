@@ -21,11 +21,12 @@ export function useCreatePost(channel: CommunityChannel | undefined, status: Rea
     onMutate: async (formData) => {
       await queryClient.cancelQueries({ queryKey })
       const previous = queryClient.getQueryData<InfiniteData<PostsPage>>(queryKey)
+      const submittedChannel = (formData.get('channel') as CommunityChannel) ?? 'general'
 
-      if (session?.user && previous) {
+      if (session?.user && previous && submittedChannel === (channel ?? submittedChannel)) {
         const optimistic: PostsPage['items'][number] = {
           id: `optimistic-${Date.now()}`,
-          channel: (formData.get('channel') as CommunityChannel) ?? 'general',
+          channel: submittedChannel,
           title: String(formData.get('title') ?? ''),
           content: String(formData.get('content') ?? ''),
           authorId: session.user.id as string,
