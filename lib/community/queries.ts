@@ -1,5 +1,5 @@
 import { cache } from 'react'
-import { and, desc, eq, inArray, count } from 'drizzle-orm'
+import { and, desc, eq, inArray, count, or, lt } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { db } from '@/lib/database'
 import {
@@ -15,19 +15,34 @@ import type {
   CommunityPostDetail,
   CommentWithAuthor,
 } from './types'
+import type { PostsCursor } from './pagination'
 
 const matchedUser = alias(users, 'matched_user')
 
-export async function listCommunityPosts(
-  channel?: CommunityChannel,
+export async function listCommunityPosts(options: {
+  channel?: CommunityChannel
   status?: ReaderStatus
-): Promise<CommunityPostItem[]> {
+  cursor?: PostsCursor | null
+  limit?: number
+} = {}): Promise<{ items: CommunityPostItem[]; nextCursor: PostsCursor | null }> {
+  const { channel, status, cursor, limit = 20 } = options
   const conditions = []
   if (channel) {
     conditions.push(eq(communityPosts.channel, channel))
   }
   if (status) {
     conditions.push(eq(communityPosts.readerStatus, status))
+  }
+  if (cursor) {
+    // Paginated pages exclude pinned posts -- they were already shown,
+    // unpaginated, on the first page (see below).
+    conditions.push(eq(communityPosts.isPinned, false))
+    conditions.push(
+      or(
+        lt(communityPosts.createdAt, new Date(cursor.createdAt)),
+        and(eq(communityPosts.createdAt, new Date(cursor.createdAt)), lt(communityPosts.id, cursor.id))
+      )
+    )
   }
 
   const query = db
@@ -56,13 +71,16 @@ export async function listCommunityPosts(
     .innerJoin(users, eq(communityPosts.authorId, users.id))
     .leftJoin(matchedUser, eq(communityPosts.matchedUserId, matchedUser.id))
 
-  const rows = conditions.length > 0
-    ? await query.where(and(...conditions)).orderBy(desc(communityPosts.isPinned), desc(communityPosts.createdAt))
-    : await query.orderBy(desc(communityPosts.isPinned), desc(communityPosts.createdAt))
+  const rows = await (conditions.length > 0 ? query.where(and(...conditions)) : query)
+    .orderBy(desc(communityPosts.isPinned), desc(communityPosts.createdAt), desc(communityPosts.id))
+    .limit(limit + 1)
 
-  if (rows.length === 0) return []
+  const hasMore = rows.length > limit
+  const pageRows = hasMore ? rows.slice(0, limit) : rows
 
-  const postIds = rows.map((r) => r.id)
+  if (pageRows.length === 0) return { items: [], nextCursor: null }
+
+  const postIds = pageRows.map((r) => r.id)
   const commentCounts = await db
     .select({
       postId: communityComments.postId,
@@ -77,7 +95,7 @@ export async function listCommunityPosts(
     commentCountMap.set(c.postId, Number(c.count))
   }
 
-  return rows.map((row) => ({
+  const items = pageRows.map((row) => ({
     id: row.id,
     channel: row.channel as CommunityChannel,
     title: row.title,
@@ -99,6 +117,12 @@ export async function listCommunityPosts(
     updatedAt: row.updatedAt,
     commentsCount: commentCountMap.get(row.id) ?? 0,
   }))
+
+  const last = pageRows[pageRows.length - 1]
+  const nextCursor: PostsCursor | null =
+    hasMore && last ? { createdAt: last.createdAt.toISOString(), id: last.id } : null
+
+  return { items, nextCursor }
 }
 
 export const getCommunityPostById = cache(async (id: string): Promise<CommunityPostDetail | null> => {

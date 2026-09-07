@@ -1,18 +1,19 @@
 'use client'
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { updateReaderStatus } from '@/app/community/actions'
-import { offerToRead, confirmReader } from '@/app/community/rehearsal-actions'
+import { useUpdateReaderStatus } from '@/hooks/community/use-update-reader-status'
+import { useOfferToRead, useConfirmReader } from '@/hooks/community/use-reader-offers'
 import { DeletePostDialog } from './delete-post-dialog'
 import { CommentComposer } from './comment-composer'
 import { MarkdownContent } from './markdown-content'
 import { RehearsalRoom } from './rehearsal-room'
 import { SidesViewer } from './sides-viewer'
-import type { CommunityPostDetail, CommentWithAuthor, ReaderStatus, ReaderOfferItem } from '@/lib/community/types'
+import type { CommunityPostDetailDTO, CommentWithAuthorDTO, ReaderOfferItemDTO } from '@/lib/community/dto'
+import type { ReaderStatus } from '@/lib/community/types'
 
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: string): string {
   const now = new Date()
   const diffMs = now.getTime() - new Date(date).getTime()
   const diffMinutes = Math.floor(diffMs / 60000)
@@ -48,17 +49,18 @@ export function PostDetailModal({
   offers,
   hasOffered,
 }: {
-  post: CommunityPostDetail
-  comments: CommentWithAuthor[]
+  post: CommunityPostDetailDTO
+  comments: CommentWithAuthorDTO[]
   currentUserId: string
   isAdmin: boolean
-  offers: ReaderOfferItem[]
+  offers: ReaderOfferItemDTO[]
   hasOffered: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
-  const [isOfferPending, startOfferTransition] = useTransition()
+  const updateStatus = useUpdateReaderStatus(post.id)
+  const offerToReadMutation = useOfferToRead(post.id)
+  const confirmReaderMutation = useConfirmReader(post.id)
   const [inRoom, setInRoom] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -74,6 +76,10 @@ export function PostDetailModal({
     // PostCard's detailHref) so closing lands back on that tab instead of
     // always resetting to "All Channels".
     const originChannel = searchParams.get('channel')
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+      return
+    }
     router.push(originChannel ? `/community?channel=${originChannel}` : '/community')
   }
 
@@ -127,10 +133,7 @@ export function PostDetailModal({
   }, [])
 
   const handleStatusChange = (status: ReaderStatus) => {
-    startTransition(async () => {
-      await updateReaderStatus(post.id, status)
-      router.refresh()
-    })
+    updateStatus.mutate(status)
   }
 
   return (
@@ -316,7 +319,7 @@ export function PostDetailModal({
                   {post.readerStatus !== 'seeking' && (
                     <button
                       type="button"
-                      disabled={isPending}
+                      disabled={updateStatus.isPending}
                       onClick={() => handleStatusChange('seeking')}
                       className="rounded-lg bg-amber-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-amber-500 transition-colors cursor-pointer"
                     >
@@ -326,7 +329,7 @@ export function PostDetailModal({
                   {post.readerStatus !== 'closed' && (
                     <button
                       type="button"
-                      disabled={isPending}
+                      disabled={updateStatus.isPending}
                       onClick={() => handleStatusChange('closed')}
                       className="rounded-lg border border-ink-foreground/20 bg-ink px-2.5 py-1 text-xs font-medium text-ink-foreground hover:bg-ink-foreground/5 transition-colors cursor-pointer"
                     >
@@ -340,17 +343,15 @@ export function PostDetailModal({
                 <div className="mt-3 pt-3 border-t border-amber-500/20">
                   <button
                     type="button"
-                    disabled={isOfferPending}
-                    onClick={() =>
-                      startOfferTransition(async () => {
-                        await offerToRead(post.id)
-                        router.refresh()
-                      })
-                    }
+                    disabled={offerToReadMutation.isPending}
+                    onClick={() => offerToReadMutation.mutate()}
                     className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                   >
                     I can read this
                   </button>
+                  {offerToReadMutation.isError && (
+                    <p className="mt-1 text-[0.65rem] text-red-300">{offerToReadMutation.error.message}</p>
+                  )}
                 </div>
               )}
 
@@ -368,19 +369,19 @@ export function PostDetailModal({
                           </span>
                         )}
                       </span>
-                      <button
-                        type="button"
-                        disabled={isPending}
-                        onClick={() =>
-                          startTransition(async () => {
-                            await confirmReader(post.id, offer.userId)
-                            router.refresh()
-                          })
-                        }
-                        className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
-                      >
-                        Confirm as reader
-                      </button>
+                      <div className="flex flex-col items-end">
+                        <button
+                          type="button"
+                          disabled={confirmReaderMutation.isPending}
+                          onClick={() => confirmReaderMutation.mutate(offer.userId)}
+                          className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 transition-colors cursor-pointer"
+                        >
+                          Confirm as reader
+                        </button>
+                        {confirmReaderMutation.isError && (
+                          <p className="mt-1 text-[0.65rem] text-red-300">{confirmReaderMutation.error.message}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

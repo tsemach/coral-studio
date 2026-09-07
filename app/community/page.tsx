@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation'
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import { auth } from '@/auth'
 import { listCommunityPosts } from '@/lib/community/queries'
 import { listTapes } from '@/lib/community/tape-queries'
+import { toPostItemDTO } from '@/lib/community/dto'
+import { communityKeys } from '@/lib/community/query-keys'
 import { CommunityShell } from '@/components/community/community-shell'
 import type { CommunityChannel, ReaderStatus } from '@/lib/community/types'
 
@@ -30,16 +33,27 @@ export default async function CommunityPage({
 
   const channel = rawChannel as CommunityChannel | undefined
   const activeChannel = channel && channel !== ('all' as unknown) ? channel : undefined
-  const posts = await listCommunityPosts(activeChannel, status)
+
+  const queryClient = new QueryClient()
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: communityKeys.postsList(activeChannel, status),
+    queryFn: async () => {
+      const { items, nextCursor } = await listCommunityPosts({ channel: activeChannel, status, limit: 20 })
+      return { items: items.map(toPostItemDTO), nextCursor }
+    },
+    initialPageParam: null,
+  })
 
   return (
     <main className="flex-1">
-      <CommunityShell
-        view={{ kind: 'posts', posts }}
-        activeChannel={activeChannel}
-        activeChannelId={rawChannel ?? 'all'}
-        activeStatus={status ?? null}
-      />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <CommunityShell
+          view={{ kind: 'feed' }}
+          activeChannel={activeChannel}
+          activeChannelId={rawChannel ?? 'all'}
+          activeStatus={status ?? null}
+        />
+      </HydrationBoundary>
     </main>
   )
 }

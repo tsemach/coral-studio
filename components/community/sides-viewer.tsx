@@ -1,6 +1,6 @@
-import type { CommunityAttachmentItem } from '@/lib/community/types'
+import type { CommunityAttachmentItemDTO } from '@/lib/community/dto'
 
-export function SidesViewer({ attachment }: { attachment: CommunityAttachmentItem }) {
+export function SidesViewer({ attachment }: { attachment: CommunityAttachmentItemDTO }) {
   const isImage = attachment.fileType.startsWith('image/')
   const isPdf = attachment.fileType === 'application/pdf'
 

@@ -1,20 +1,14 @@
 'use client'
 
-import { useRef, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { deleteCommunityPost } from '@/app/community/actions'
+import { useRef } from 'react'
+import { useDeletePost } from '@/hooks/community/use-delete-post'
 
 export function DeletePostDialog({ postId }: { postId: string }) {
-  const router = useRouter()
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const [isPending, startTransition] = useTransition()
+  const mutation = useDeletePost()
 
   const handleDelete = () => {
-    startTransition(async () => {
-      await deleteCommunityPost(postId)
-      dialogRef.current?.close()
-      router.push('/community')
-    })
+    mutation.mutate(postId, { onSuccess: () => dialogRef.current?.close() })
   }
 
   return (
@@ -40,6 +34,12 @@ export function DeletePostDialog({ postId }: { postId: string }) {
             Are you sure you want to delete this post? This action cannot be undone.
           </p>
 
+          {mutation.isError && (
+            <p className="mt-3 rounded-lg bg-red-500/15 border border-red-500/30 p-2.5 text-xs text-red-200">
+              {mutation.error.message}
+            </p>
+          )}
+
           <div className="mt-5 flex justify-end gap-2">
             <button
               type="button"
@@ -50,11 +50,11 @@ export function DeletePostDialog({ postId }: { postId: string }) {
             </button>
             <button
               type="button"
-              disabled={isPending}
+              disabled={mutation.isPending}
               onClick={handleDelete}
               className="rounded-xl bg-red-800 hover:bg-red-700 px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50 cursor-pointer"
             >
-              {isPending ? 'Deleting…' : 'Delete'}
+              {mutation.isPending ? 'Deleting…' : 'Delete'}
             </button>
           </div>
         </div>
