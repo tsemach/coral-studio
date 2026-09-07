@@ -39,4 +39,9 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* Reserve the scrollbar's width always, so centered (mx-auto) content
+     doesn't shift sideways when a page's content height crosses the
+     threshold that toggles the scrollbar on/off (e.g. switching between
+     community channels with different post counts). */
+  scrollbar-gutter: stable;
 }
