@@ -1223,8 +1223,6 @@ This builds on Task 6 Step 6's version of the file (which already added the
 board):
 
 ```diff
--import { getCommunityPostById, listCommunityPosts } from '@/lib/community/queries'
-+import { getCommunityPostById, listCommentsForPost, listCommunityPosts } from '@/lib/community/queries'
 +import { listOffersForPost, hasUserOfferedToRead } from '@/lib/community/reader-queries'
 +import { toPostDetailDTO, toCommentDTO, toOfferDTO } from '@/lib/community/dto'
  import { CommunityShell } from '@/components/community/community-shell'
