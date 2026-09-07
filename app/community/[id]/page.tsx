@@ -39,7 +39,7 @@ export default async function PostDetailPage({
   const [post, comments, boardPosts] = await Promise.all([
     getCommunityPostById(id),
     listCommentsForPost(id),
-    listCommunityPosts(),
+    listCommunityPosts({}).then((r) => r.items),
   ])
 
   if (!post) {

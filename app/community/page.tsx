@@ -30,7 +30,7 @@ export default async function CommunityPage({
 
   const channel = rawChannel as CommunityChannel | undefined
   const activeChannel = channel && channel !== ('all' as unknown) ? channel : undefined
-  const posts = await listCommunityPosts(activeChannel, status)
+  const { items: posts } = await listCommunityPosts({ channel: activeChannel, status })
 
   return (
     <main className="flex-1">
