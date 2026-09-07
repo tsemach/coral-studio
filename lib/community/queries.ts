@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { and, desc, eq, inArray, count } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { db } from '@/lib/database'
@@ -100,7 +101,7 @@ export async function listCommunityPosts(
   }))
 }
 
-export async function getCommunityPostById(id: string): Promise<CommunityPostDetail | null> {
+export const getCommunityPostById = cache(async (id: string): Promise<CommunityPostDetail | null> => {
   const rows = await db
     .select({
       id: communityPosts.id,
@@ -184,7 +185,7 @@ export async function getCommunityPostById(id: string): Promise<CommunityPostDet
       createdAt: a.createdAt,
     })),
   }
-}
+})
 
 export async function listCommentsForPost(postId: string): Promise<CommentWithAuthor[]> {
   const rows = await db

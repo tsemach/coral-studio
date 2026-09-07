@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { desc, eq, inArray, count } from 'drizzle-orm'
 import { db } from '@/lib/database'
 import { tapePosts, tapeNotes, users } from '@/lib/database/schema'
@@ -39,7 +40,7 @@ export async function listTapes(): Promise<TapeItem[]> {
   return rows.map((row) => ({ ...row, notesCount: noteCountMap.get(row.id) ?? 0 }))
 }
 
-export async function getTapeById(id: string): Promise<TapeItem | null> {
+export const getTapeById = cache(async (id: string): Promise<TapeItem | null> => {
   const rows = await db
     .select(TAPE_COLUMNS)
     .from(tapePosts)
@@ -56,7 +57,7 @@ export async function getTapeById(id: string): Promise<TapeItem | null> {
     .where(eq(tapeNotes.tapeId, id))
 
   return { ...row, notesCount: Number(countResult?.count ?? 0) }
-}
+})
 
 export async function listNotesForTape(tapeId: string): Promise<TapeNoteItem[]> {
   const rows = await db
