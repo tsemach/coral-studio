@@ -1,4 +1,4 @@
-export interface Dictionary {
+export interface MarketingDictionary {
   header: {
     navAbout: string
     navWorkshops: string
@@ -96,7 +96,7 @@ export interface Dictionary {
     creditsLabel: string
     credits: { work: string; note: string }[]
   }
-  community: {
+  communitySection: {
     eyebrow: string
     title: string
     body1: string
@@ -169,7 +169,7 @@ export interface Dictionary {
   }
 }
 
-export const en: Dictionary = {
+export const marketing: MarketingDictionary = {
   header: {
     navAbout: 'About',
     navWorkshops: 'Workshops',
@@ -312,7 +312,7 @@ export const en: Dictionary = {
       { work: 'New Love', note: 'Madlenianum Opera & Theatre' },
     ],
   },
-  community: {
+  communitySection: {
     eyebrow: 'Community',
     title: 'Serious training. Supportive community.',
     body1:

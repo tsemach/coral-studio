@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 export async function CommunitySection() {
-  const { community: t } = await getDictionary()
+  const { communitySection: t } = await getDictionary()
 
   return (
     <section id="community" className="scroll-mt-20 border-b border-border">

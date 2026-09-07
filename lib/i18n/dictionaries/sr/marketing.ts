@@ -1,6 +1,6 @@
-import type { Dictionary } from './en'
+import type { MarketingDictionary } from '../en/marketing'
 
-export const sr: Dictionary = {
+export const marketing: MarketingDictionary = {
   header: {
     navAbout: 'O nama',
     navWorkshops: 'Radionice',
@@ -143,7 +143,7 @@ export const sr: Dictionary = {
       { work: 'New Love', note: 'Madlenianum opera i teatar' },
     ],
   },
-  community: {
+  communitySection: {
     eyebrow: 'Zajednica',
     title: 'Ozbiljna obuka. Podržavajuća zajednica.',
     body1:
