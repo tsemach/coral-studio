@@ -1004,18 +1004,26 @@ export function useConfirmReader(postId: string) {
 
 ## 12. Query example — workshop go-live polling
 
-Kept from the original bounded proposal, unchanged in shape.
+Kept from the original bounded proposal, unchanged in shape. Implemented
+ahead of the rest of the Workshops section (§13) — `lib/workshops/query-keys.ts`
+doesn't exist yet in the Foundation + Community branch, so this hook uses an
+inline key rather than `workshopKeys.liveStatus(workshopId)`. **Whoever
+implements §13 must migrate this hook onto the real `workshopKeys` factory**
+— its key (`['workshops', workshopId, 'live']`, plural root) differs from
+this inline one (`['workshop', workshopId, 'live']`, singular), so a naive
+addition of the factory without updating this file would silently split the
+cache in two.
+
 `hooks/workshops/use-live-status.ts` (new):
 
 ```ts
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { workshopKeys } from '@/lib/community/query-keys'
 
 export function useLiveStatus(workshopId: string) {
   return useQuery({
-    queryKey: workshopKeys.liveStatus(workshopId),
+    queryKey: ['workshop', workshopId, 'live'] as const,
     queryFn: async () => {
       const res = await fetch(`/workshops/${workshopId}/live-status`, { cache: 'no-store' })
       if (!res.ok) throw new Error('Failed to fetch live status')
