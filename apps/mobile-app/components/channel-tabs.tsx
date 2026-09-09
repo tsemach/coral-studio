@@ -28,8 +28,8 @@ export function ChannelTabs({ active, onChange }: { active: CommunityChannelId; 
 }
 
 const styles = StyleSheet.create({
-  container: { borderBottomWidth: 1, borderColor: colors.hairline, backgroundColor: colors.ink },
-  content: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, gap: spacing.sm },
+  container: { flexGrow: 0, flexShrink: 0, height: 52, borderBottomWidth: 1, borderColor: colors.hairline, backgroundColor: colors.ink },
+  content: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, gap: spacing.sm, alignItems: 'center' },
   tab: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
