@@ -2,6 +2,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
+import { ScriptViewer } from '../../../components/script-viewer'
 
 const LIVE_POLL_INTERVAL_MS = 8000
 
@@ -47,6 +48,7 @@ export default function WorkshopDetailScreen() {
         )}
         style={styles.memberList}
       />
+      {workshop.scriptSlug ? <ScriptViewer slug={workshop.scriptSlug} /> : null}
     </View>
   )
 }
