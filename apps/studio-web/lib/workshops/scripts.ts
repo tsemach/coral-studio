@@ -1,17 +1,8 @@
 import { del, get, list, put } from '@vercel/blob'
+import { isScriptShape } from '@coral-studio/types'
+import type { Script, ScriptSummary } from '@coral-studio/types'
 
-export type ScriptFlowEntry =
-  | { type: 'action'; text: string }
-  | { type: 'dialogue'; character: string; line: string }
-
-export type Script = {
-  slug: string
-  title: string
-  scene: string
-  script_flow: ScriptFlowEntry[]
-}
-
-export type ScriptSummary = { slug: string; title: string; scene: string }
+export type { Script, ScriptSummary } from '@coral-studio/types'
 
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN
 
@@ -31,25 +22,6 @@ function pathnameFor(slug: string): string {
 // origin, same regex the filesystem version used to keep the path safe.
 function isValidSlug(slug: string): boolean {
   return /^[a-zA-Z0-9._-]+$/.test(slug)
-}
-
-export function isScriptFlowEntry(value: unknown): value is ScriptFlowEntry {
-  if (typeof value !== 'object' || value === null) return false
-  const entry = value as Record<string, unknown>
-  if (entry.type === 'action') return typeof entry.text === 'string'
-  if (entry.type === 'dialogue') return typeof entry.character === 'string' && typeof entry.line === 'string'
-  return false
-}
-
-export function isScriptShape(value: unknown): value is Omit<Script, 'slug'> {
-  if (typeof value !== 'object' || value === null) return false
-  const script = value as Record<string, unknown>
-  return (
-    typeof script.title === 'string' &&
-    typeof script.scene === 'string' &&
-    Array.isArray(script.script_flow) &&
-    script.script_flow.every(isScriptFlowEntry)
-  )
 }
 
 // Shared by listAvailableScripts() and listScriptsWithContent() -- one
