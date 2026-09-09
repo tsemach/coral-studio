@@ -23,7 +23,7 @@ export function PostCard({ post, onPress }: { post: CommunityPostItemDTO; onPres
 }
 
 const styles = StyleSheet.create({
-  card: { padding: spacing.md, borderBottomWidth: 1, borderColor: colors.hairline, backgroundColor: colors.ink },
+  card: { padding: spacing.md, borderBottomWidth: 1, borderColor: colors.hairline, backgroundColor: colors.inkCard },
   cardPressed: { opacity: 0.8 },
   channel: { fontSize: 11, color: colors.parchmentMuted, textTransform: 'uppercase', marginBottom: 2 },
   title: { fontSize: 16, fontWeight: '600', color: colors.parchment },

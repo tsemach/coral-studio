@@ -16,7 +16,7 @@ export function TapeCard({ tape, onPress }: { tape: TapeItemDTO; onPress: () => 
 }
 
 const styles = StyleSheet.create({
-  card: { padding: spacing.md, borderBottomWidth: 1, borderColor: colors.hairline, backgroundColor: colors.ink },
+  card: { padding: spacing.md, borderBottomWidth: 1, borderColor: colors.hairline, backgroundColor: colors.inkCard },
   cardPressed: { opacity: 0.8 },
   title: { fontSize: 16, fontWeight: '600', color: colors.parchment },
   author: { color: colors.parchmentMuted, marginTop: 2 },
