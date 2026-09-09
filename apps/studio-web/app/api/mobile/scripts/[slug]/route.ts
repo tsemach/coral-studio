@@ -1,8 +1,11 @@
 import { getMobileUser, isAdminUser } from '@/lib/mobile-auth'
 import { getScript } from '@/lib/workshops/scripts'
 import { listWorkshopsForUser } from '@/lib/workshops/queries'
+import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
-export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+export const OPTIONS = mobileCorsPreflight
+
+export const GET = withMobileCors(async (request: Request, { params }: { params: Promise<{ slug: string }> }) => {
   const user = await getMobileUser(request)
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -20,4 +23,4 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   if (!script) return Response.json({ error: 'Not found' }, { status: 404 })
 
   return Response.json(script)
-}
+})

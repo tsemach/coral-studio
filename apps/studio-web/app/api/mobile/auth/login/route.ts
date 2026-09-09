@@ -1,7 +1,10 @@
 import { verifyCredentials } from '@/lib/verifyCredentials'
 import { signMobileToken } from '@/lib/mobile-auth'
+import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
-export async function POST(request: Request) {
+export const OPTIONS = mobileCorsPreflight
+
+export const POST = withMobileCors(async (request: Request) => {
   const body = await request.json().catch(() => null)
   const email = typeof body?.email === 'string' ? body.email : null
   const password = typeof body?.password === 'string' ? body.password : null
@@ -20,4 +23,4 @@ export async function POST(request: Request) {
     token,
     user: { id: result.user.id, name: result.user.name, email: result.user.email, image: result.user.image },
   })
-}
+})

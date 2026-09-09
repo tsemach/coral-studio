@@ -16,6 +16,7 @@ export default function LoginScreen() {
     try {
       await signIn(email, password)
     } catch (err) {
+      console.error('Sign-in failed:', err)
       setError(err instanceof ApiError ? err.message : 'Something went wrong.')
     } finally {
       setSubmitting(false)
