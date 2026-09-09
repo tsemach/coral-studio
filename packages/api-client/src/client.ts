@@ -1,4 +1,15 @@
-import type { Script, WorkshopDetailDTO, WorkshopListItemDTO } from '@coral-studio/types'
+import type {
+  CommunityChannel,
+  CommunityPostDetailDTO,
+  CommunityPostItemDTO,
+  CommentWithAuthorDTO,
+  ReaderOfferItemDTO,
+  ReaderStatus,
+  Script,
+  TapeItemDTO,
+  WorkshopDetailDTO,
+  WorkshopListItemDTO,
+} from '@coral-studio/types'
 import { ApiError } from './errors'
 
 export type ApiClientConfig = {
@@ -13,6 +24,9 @@ export type LoginResult = {
 }
 
 export type WorkshopLiveStatus = { live: boolean }
+
+export type CommunityPostsPage = { items: CommunityPostItemDTO[]; nextCursor: string | null }
+export type OffersResult = { offers: ReaderOfferItemDTO[]; hasOffered: boolean }
 
 export function createApiClient(config: ApiClientConfig) {
   async function request<T>(
@@ -64,6 +78,35 @@ export function createApiClient(config: ApiClientConfig) {
     },
     getScript(slug: string): Promise<Script> {
       return request<Script>(`/api/mobile/scripts/${slug}`)
+    },
+    getCommunityPosts(params: { channel?: CommunityChannel; status?: ReaderStatus; cursor?: string | null } = {}): Promise<CommunityPostsPage> {
+      const search = new URLSearchParams()
+      if (params.channel) search.set('channel', params.channel)
+      if (params.status) search.set('status', params.status)
+      if (params.cursor) search.set('cursor', params.cursor)
+      const query = search.toString()
+      return request<CommunityPostsPage>(`/api/mobile/community/posts${query ? `?${query}` : ''}`)
+    },
+    getCommunityPost(id: string): Promise<CommunityPostDetailDTO> {
+      return request<CommunityPostDetailDTO>(`/api/mobile/community/posts/${id}`)
+    },
+    getComments(postId: string): Promise<CommentWithAuthorDTO[]> {
+      return request<CommentWithAuthorDTO[]>(`/api/mobile/community/posts/${postId}/comments`)
+    },
+    addComment(postId: string, content: string): Promise<CommentWithAuthorDTO> {
+      return request<CommentWithAuthorDTO>(`/api/mobile/community/posts/${postId}/comments`, {
+        method: 'POST',
+        body: { content },
+      })
+    },
+    getOffers(postId: string): Promise<OffersResult> {
+      return request<OffersResult>(`/api/mobile/community/posts/${postId}/offers`)
+    },
+    getTapes(): Promise<TapeItemDTO[]> {
+      return request<TapeItemDTO[]>('/api/mobile/community/tapes')
+    },
+    getTapeVideoUrl(tapeId: string): Promise<{ url: string }> {
+      return request<{ url: string }>(`/api/mobile/community/tapes/${tapeId}/video`)
     },
   }
 }

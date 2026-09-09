@@ -77,3 +77,53 @@ test('login does not require or send a token', async () => {
   assert.equal(result.token, 'x')
   assert.equal(capturedHeaders?.Authorization, undefined)
 })
+
+test('getCommunityPosts builds the query string from channel/status/cursor', async () => {
+  let capturedUrl: string | undefined
+  globalThis.fetch = (async (input) => {
+    capturedUrl = String(input)
+    return { ok: true, status: 200, json: async () => ({ items: [], nextCursor: null }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.getCommunityPosts({ channel: 'reader_sos', status: 'seeking', cursor: 'abc' })
+
+  assert.equal(capturedUrl, 'https://example.test/api/mobile/community/posts?channel=reader_sos&status=seeking&cursor=abc')
+})
+
+test('getCommunityPosts omits the query string when called with no params', async () => {
+  let capturedUrl: string | undefined
+  globalThis.fetch = (async (input) => {
+    capturedUrl = String(input)
+    return { ok: true, status: 200, json: async () => ({ items: [], nextCursor: null }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.getCommunityPosts()
+
+  assert.equal(capturedUrl, 'https://example.test/api/mobile/community/posts')
+})
+
+test('addComment POSTs the content as JSON', async () => {
+  let capturedBody: string | undefined
+  let capturedMethod: string | undefined
+  globalThis.fetch = (async (_input, init) => {
+    capturedBody = init?.body as string
+    capturedMethod = init?.method
+    return {
+      ok: true,
+      status: 201,
+      json: async () => ({ id: 'c1', postId: 'p1', authorId: 'u1', authorName: 'A', authorImage: null, authorRole: 'user', content: 'hi', createdAt: '2026-01-01T00:00:00.000Z' }),
+    } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  const result = await client.addComment('p1', 'hi')
+
+  assert.equal(capturedMethod, 'POST')
+  assert.equal(capturedBody, JSON.stringify({ content: 'hi' }))
+  assert.equal(result.id, 'c1')
+})
