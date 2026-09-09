@@ -14,7 +14,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="workshops" options={{ title: 'Workshops', headerShown: false }} />
-      <Tabs.Screen name="community" options={{ title: 'Community' }} />
+      <Tabs.Screen name="community" options={{ title: 'Community', headerShown: false }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
     </Tabs>
   )
