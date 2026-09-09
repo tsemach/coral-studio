@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
+    "@coral-studio/types": "workspace:*",
     "@livekit/components-react": "^2.9.24",
     "@livekit/components-styles": "^1.2.0",
     "@tanstack/react-query": "^5.102.8",
