@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native'
 import type { WorkshopListItemDTO } from '@coral-studio/types'
-import { colors, fonts, radius, spacing } from '../lib/theme'
+import { colors, radius, spacing } from '../lib/theme'
 
 export function WorkshopCard({ workshop, onPress }: { workshop: WorkshopListItemDTO; onPress: () => void }) {
   return (
@@ -27,6 +27,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   cardPressed: { opacity: 0.8 },
-  title: { fontFamily: fonts.serif, fontSize: 18, color: colors.parchment },
+  title: { fontSize: 16, fontWeight: '600', color: colors.parchment },
   meta: { color: colors.parchmentMuted, marginTop: spacing.xs, fontSize: 13 },
 })

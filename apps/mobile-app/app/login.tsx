@@ -74,7 +74,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink, justifyContent: 'center', padding: spacing.lg },
   header: { marginBottom: spacing.xl, alignItems: 'center' },
-  title: { fontFamily: fonts.serif, fontSize: 30, color: colors.parchment, textAlign: 'center' },
+  title: { fontFamily: fonts.wordmark, fontSize: 30, color: colors.parchment, textAlign: 'center' },
   subtitle: { marginTop: spacing.xs, fontSize: 15, color: colors.parchmentMuted, textAlign: 'center' },
   form: { gap: spacing.md },
   field: { gap: spacing.xs },

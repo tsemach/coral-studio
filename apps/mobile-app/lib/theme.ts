@@ -13,8 +13,14 @@ export const colors = {
   accent: '#c08a2d',
 } as const
 
+// Fraunces is reserved for the wordmark/auth moment only, mirroring
+// studio-web exactly: `font-serif` there never appears inside the actual
+// app (workshops, community, admin) -- only on the marketing site and the
+// login/register pages' heading + site-header wordmark. Everywhere else on
+// web uses the plain sans body font at various weights, so mobile's in-app
+// screens do the same (system font, no fontFamily override needed).
 export const fonts = {
-  serif: 'Fraunces_600SemiBold',
+  wordmark: 'Fraunces_600SemiBold',
 } as const
 
 export const spacing = {

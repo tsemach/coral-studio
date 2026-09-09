@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
 import { ScriptViewer } from '../../../components/script-viewer'
-import { colors, fonts, spacing } from '../../../lib/theme'
+import { colors, spacing } from '../../../lib/theme'
 
 const LIVE_POLL_INTERVAL_MS = 8000
 
@@ -80,12 +80,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink, padding: spacing.md, gap: spacing.sm },
   message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' },
-  title: { fontFamily: fonts.serif, fontSize: 22, color: colors.parchment },
+  title: { fontSize: 20, fontWeight: '700', color: colors.parchment },
   liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent },
   liveText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
   meta: { color: colors.parchmentMuted, fontSize: 14 },
-  sectionTitle: { fontFamily: fonts.serif, fontSize: 15, color: colors.parchment, marginTop: spacing.sm },
+  sectionTitle: { fontSize: 13, fontWeight: '600', color: colors.parchment, marginTop: spacing.sm },
   member: { paddingVertical: 4 },
   memberName: { color: colors.parchment, fontSize: 14 },
   memberMeta: { color: colors.parchmentMuted, fontSize: 13 },

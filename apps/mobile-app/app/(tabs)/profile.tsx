@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useAuth } from '../../lib/auth/auth-context'
-import { colors, fonts, radius, spacing } from '../../lib/theme'
+import { colors, radius, spacing } from '../../lib/theme'
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth()
@@ -18,7 +18,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink, padding: spacing.lg, gap: spacing.xs },
-  name: { fontFamily: fonts.serif, fontSize: 22, color: colors.parchment },
+  name: { fontSize: 20, fontWeight: '700', color: colors.parchment },
   email: { color: colors.parchmentMuted, fontSize: 14 },
   button: {
     marginTop: spacing.lg,

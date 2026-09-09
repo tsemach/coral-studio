@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
-import { colors, fonts, spacing } from '../../lib/theme'
+import { colors, spacing } from '../../lib/theme'
 
 export default function CommunityPlaceholderScreen() {
   return (
@@ -12,6 +12,6 @@ export default function CommunityPlaceholderScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center', padding: spacing.lg, gap: spacing.xs },
-  title: { fontFamily: fonts.serif, fontSize: 20, color: colors.parchment },
+  title: { fontSize: 18, fontWeight: '700', color: colors.parchment },
   text: { color: colors.parchmentMuted, fontSize: 15, textAlign: 'center' },
 })

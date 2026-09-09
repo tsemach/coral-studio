@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
 import { assignCharacterColorsRN } from '@coral-studio/types'
 import { apiClient } from '../lib/api'
-import { colors, fonts, radius, spacing } from '../lib/theme'
+import { colors, radius, spacing } from '../lib/theme'
 
 export function ScriptViewer({ slug }: { slug: string }) {
   const { data: script, isLoading, error } = useQuery({
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     borderColor: colors.hairline,
     padding: spacing.md,
   },
-  sectionTitle: { fontFamily: fonts.serif, fontSize: 16, color: colors.parchment },
+  sectionTitle: { fontSize: 15, fontWeight: '600', color: colors.parchment },
   scene: { color: colors.parchmentMuted, fontStyle: 'italic', marginTop: 2, marginBottom: spacing.sm, fontSize: 13 },
   scroll: { flex: 1 },
   action: { fontStyle: 'italic', color: colors.parchmentMuted, marginVertical: 6, lineHeight: 20 },
