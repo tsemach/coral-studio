@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
 import { assignCharacterColorsRN } from '@coral-studio/types'
 import { apiClient } from '../lib/api'
+import { colors, fonts, radius, spacing } from '../lib/theme'
 
 export function ScriptViewer({ slug }: { slug: string }) {
   const { data: script, isLoading, error } = useQuery({
@@ -15,7 +16,7 @@ export function ScriptViewer({ slug }: { slug: string }) {
   const characters = Array.from(
     new Set(script.script_flow.filter((entry) => entry.type === 'dialogue').map((entry) => entry.character))
   )
-  const colors = assignCharacterColorsRN(characters)
+  const characterColors = assignCharacterColorsRN(characters)
 
   return (
     <View style={styles.container}>
@@ -29,8 +30,8 @@ export function ScriptViewer({ slug }: { slug: string }) {
             </Text>
           ) : (
             <Text key={index} style={styles.dialogue}>
-              <Text style={{ color: colors[entry.character], fontWeight: '700' }}>{entry.character}: </Text>
-              {entry.line}
+              <Text style={{ color: characterColors[entry.character], fontWeight: '700' }}>{entry.character}</Text>
+              <Text style={styles.dialogueLine}>  {entry.line}</Text>
             </Text>
           )
         )}
@@ -40,11 +41,20 @@ export function ScriptViewer({ slug }: { slug: string }) {
 }
 
 const styles = StyleSheet.create({
-  message: { padding: 24, textAlign: 'center', color: '#666' },
-  container: { flex: 1, marginTop: 12 },
-  sectionTitle: { fontSize: 14, fontWeight: '600' },
-  scene: { color: '#666', marginBottom: 8 },
+  message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
+  container: {
+    flex: 1,
+    marginTop: spacing.md,
+    backgroundColor: colors.inkCard,
+    borderRadius: radius,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    padding: spacing.md,
+  },
+  sectionTitle: { fontFamily: fonts.serif, fontSize: 16, color: colors.parchment },
+  scene: { color: colors.parchmentMuted, fontStyle: 'italic', marginTop: 2, marginBottom: spacing.sm, fontSize: 13 },
   scroll: { flex: 1 },
-  action: { fontStyle: 'italic', color: '#444', marginVertical: 4 },
-  dialogue: { marginVertical: 4 },
+  action: { fontStyle: 'italic', color: colors.parchmentMuted, marginVertical: 6, lineHeight: 20 },
+  dialogue: { marginVertical: 6, lineHeight: 20 },
+  dialogueLine: { color: colors.parchment },
 })

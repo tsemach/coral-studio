@@ -1,14 +1,17 @@
 import { StyleSheet, Text, View } from 'react-native'
+import { colors, fonts, spacing } from '../../lib/theme'
 
 export default function CommunityPlaceholderScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Community is coming soon.</Text>
+      <Text style={styles.title}>Community</Text>
+      <Text style={styles.text}>The feed, casting board, and tape room are coming soon.</Text>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  text: { color: '#666', fontSize: 16, textAlign: 'center' },
+  container: { flex: 1, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center', padding: spacing.lg, gap: spacing.xs },
+  title: { fontFamily: fonts.serif, fontSize: 20, color: colors.parchment },
+  text: { color: colors.parchmentMuted, fontSize: 15, textAlign: 'center' },
 })

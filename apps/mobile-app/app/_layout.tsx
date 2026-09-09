@@ -2,8 +2,13 @@ import { useEffect, type ReactNode } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { QueryClientProvider } from '@tanstack/react-query'
+import { useFonts, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces'
+import * as SplashScreen from 'expo-splash-screen'
 import { AuthProvider, useAuth } from '../lib/auth/auth-context'
 import { queryClient } from '../lib/query-client'
+import { colors } from '../lib/theme'
+
+SplashScreen.preventAutoHideAsync()
 
 function AuthGate({ children }: { children: ReactNode }) {
   const { status } = useAuth()
@@ -23,8 +28,8 @@ function AuthGate({ children }: { children: ReactNode }) {
 
   if (status === 'loading') {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.ink }}>
+        <ActivityIndicator color={colors.accent} />
       </View>
     )
   }
@@ -33,6 +38,14 @@ function AuthGate({ children }: { children: ReactNode }) {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({ Fraunces_600SemiBold })
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync()
+  }, [fontsLoaded])
+
+  if (!fontsLoaded) return null
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

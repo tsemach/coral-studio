@@ -3,6 +3,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
 import { ScriptViewer } from '../../../components/script-viewer'
+import { colors, fonts, spacing } from '../../../lib/theme'
 
 const LIVE_POLL_INTERVAL_MS = 8000
 
@@ -22,15 +23,34 @@ export default function WorkshopDetailScreen() {
     refetchInterval: LIVE_POLL_INTERVAL_MS,
   })
 
-  if (detailQuery.isLoading) return <Text style={styles.message}>Loading…</Text>
-  if (detailQuery.error || !detailQuery.data) return <Text style={styles.message}>Could not load this workshop.</Text>
+  if (detailQuery.isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Loading…</Text>
+      </View>
+    )
+  }
+  if (detailQuery.error || !detailQuery.data) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Could not load this workshop.</Text>
+      </View>
+    )
+  }
 
   const workshop = detailQuery.data
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{workshop.title}</Text>
-      {liveQuery.data?.live ? <Text style={styles.liveBadge}>Live now</Text> : null}
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>{workshop.title}</Text>
+        {liveQuery.data?.live ? (
+          <View style={styles.liveBadge}>
+            <View style={styles.liveDot} />
+            <Text style={styles.liveText}>Live now</Text>
+          </View>
+        ) : null}
+      </View>
       <Text style={styles.meta}>
         {workshop.rehearsalAt ? new Date(workshop.rehearsalAt).toLocaleString() : 'No rehearsal scheduled'}
         {workshop.location ? ` · ${workshop.location}` : ''}
@@ -42,8 +62,11 @@ export default function WorkshopDetailScreen() {
         keyExtractor={(member) => member.id}
         renderItem={({ item }) => (
           <Text style={styles.member}>
-            {item.name ?? item.email} · {item.type}
-            {item.part ? ` · ${item.part}` : ''}
+            <Text style={styles.memberName}>{item.name ?? item.email}</Text>
+            <Text style={styles.memberMeta}>
+              {'  '}· {item.type}
+              {item.part ? ` · ${item.part}` : ''}
+            </Text>
           </Text>
         )}
         style={styles.memberList}
@@ -54,12 +77,17 @@ export default function WorkshopDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 8 },
-  message: { padding: 24, textAlign: 'center', color: '#666' },
-  title: { fontSize: 20, fontWeight: '600' },
-  liveBadge: { color: '#0a7d32', fontWeight: '600' },
-  meta: { color: '#666' },
-  sectionTitle: { fontSize: 14, fontWeight: '600', marginTop: 12 },
+  container: { flex: 1, backgroundColor: colors.ink, padding: spacing.md, gap: spacing.sm },
+  message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' },
+  title: { fontFamily: fonts.serif, fontSize: 22, color: colors.parchment },
+  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent },
+  liveText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
+  meta: { color: colors.parchmentMuted, fontSize: 14 },
+  sectionTitle: { fontFamily: fonts.serif, fontSize: 15, color: colors.parchment, marginTop: spacing.sm },
   member: { paddingVertical: 4 },
+  memberName: { color: colors.parchment, fontSize: 14 },
+  memberMeta: { color: colors.parchmentMuted, fontSize: 13 },
   memberList: { maxHeight: 160 },
 })

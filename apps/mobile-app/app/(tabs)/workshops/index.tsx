@@ -1,8 +1,9 @@
-import { FlatList, StyleSheet, Text } from 'react-native'
+import { FlatList, StyleSheet, Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
 import { WorkshopCard } from '../../../components/workshop-card'
+import { colors, spacing } from '../../../lib/theme'
 
 export default function WorkshopsListScreen() {
   const router = useRouter()
@@ -11,11 +12,25 @@ export default function WorkshopsListScreen() {
     queryFn: () => apiClient.getWorkshops(),
   })
 
-  if (isLoading) return <Text style={styles.message}>Loading…</Text>
-  if (error) return <Text style={styles.message}>Could not load workshops.</Text>
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Loading…</Text>
+      </View>
+    )
+  }
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Could not load workshops.</Text>
+      </View>
+    )
+  }
 
   return (
     <FlatList
+      style={styles.container}
+      contentContainerStyle={styles.content}
       data={data ?? []}
       keyExtractor={(item) => item.id}
       onRefresh={refetch}
@@ -29,5 +44,7 @@ export default function WorkshopsListScreen() {
 }
 
 const styles = StyleSheet.create({
-  message: { padding: 24, textAlign: 'center', color: '#666' },
+  container: { flex: 1, backgroundColor: colors.ink },
+  content: { paddingTop: spacing.md, paddingBottom: spacing.lg },
+  message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
 })
