@@ -106,6 +106,20 @@ test('getCommunityPosts omits the query string when called with no params', asyn
   assert.equal(capturedUrl, 'https://example.test/api/mobile/community/posts')
 })
 
+test('getCommunityPosts passes an opaque cursor string through untouched', async () => {
+  let capturedUrl: string | undefined
+  globalThis.fetch = (async (input) => {
+    capturedUrl = String(input)
+    return { ok: true, status: 200, json: async () => ({ items: [], nextCursor: null }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.getCommunityPosts({ cursor: 'some-encoded-cursor-string' })
+
+  assert.ok(capturedUrl?.includes('cursor=some-encoded-cursor-string'))
+})
+
 test('addComment POSTs the content as JSON', async () => {
   let capturedBody: string | undefined
   let capturedMethod: string | undefined

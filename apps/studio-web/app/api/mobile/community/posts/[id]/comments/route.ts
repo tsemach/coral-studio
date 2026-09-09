@@ -30,11 +30,12 @@ export const POST = withMobileCors(async (request: Request, { params }: { params
   if (!post) return Response.json({ error: 'Post not found.' }, { status: 404 })
 
   const [author] = await db
-    .select({ name: users.name, image: users.image, role: users.role })
+    .select({ name: users.name, image: users.image, role: users.role, status: users.status })
     .from(users)
     .where(eq(users.id, user.userId))
     .limit(1)
   if (!author) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (author.status !== 'active') return Response.json({ error: 'Forbidden' }, { status: 403 })
 
   const [comment] = await db
     .insert(communityComments)

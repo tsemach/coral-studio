@@ -80,9 +80,9 @@ export default function PostDetailScreen() {
                     <Text style={styles.meta}>
                       Offered to read: {offersQuery.data.offers.map((o) => o.userName ?? 'Someone').join(', ')}
                     </Text>
-                  ) : (
-                    <Text style={styles.meta}>{offersQuery.data.hasOffered ? "You've offered to read." : 'No offers yet.'}</Text>
-                  )
+                  ) : offersQuery.data.hasOffered ? (
+                    <Text style={styles.meta}>You've offered to read.</Text>
+                  ) : null
                 ) : null}
               </View>
             ) : null}

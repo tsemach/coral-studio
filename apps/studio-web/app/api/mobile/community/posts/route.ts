@@ -1,6 +1,6 @@
 import { getMobileUser } from '@/lib/mobile-auth'
 import { listCommunityPosts } from '@/lib/community/queries'
-import { decodeCursor } from '@/lib/community/pagination'
+import { decodeCursor, encodeCursor } from '@/lib/community/pagination'
 import { toPostItemDTO } from '@/lib/community/dto'
 import type { CommunityChannel, ReaderStatus } from '@/lib/community/types'
 import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
@@ -19,5 +19,5 @@ export const GET = withMobileCors(async (request: Request) => {
   const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 50) : 20
 
   const { items, nextCursor } = await listCommunityPosts({ channel, status, cursor, limit })
-  return Response.json({ items: items.map(toPostItemDTO), nextCursor })
+  return Response.json({ items: items.map(toPostItemDTO), nextCursor: nextCursor ? encodeCursor(nextCursor) : null })
 })

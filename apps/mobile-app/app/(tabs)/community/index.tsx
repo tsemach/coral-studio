@@ -64,7 +64,7 @@ export default function CommunityFeedScreen() {
           keyExtractor={(post) => post.id}
           renderItem={({ item }) => <PostCard post={item} onPress={() => router.push(`/community/${item.id}`)} />}
           onEndReached={() => {
-            if (postsQuery.hasNextPage) postsQuery.fetchNextPage()
+            if (postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) postsQuery.fetchNextPage()
           }}
           onEndReachedThreshold={0.4}
           ListEmptyComponent={<Text style={styles.message}>No posts yet.</Text>}
