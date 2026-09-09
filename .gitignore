@@ -1,17 +1,21 @@
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 
 # testing
 /coverage
+test-results
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
 /build
+
+# turborepo
+.turbo
 
 # misc
 .DS_Store
