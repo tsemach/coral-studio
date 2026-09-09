@@ -3,8 +3,11 @@ import { listCommunityPosts } from '@/lib/community/queries'
 import { decodeCursor } from '@/lib/community/pagination'
 import { toPostItemDTO } from '@/lib/community/dto'
 import type { CommunityChannel, ReaderStatus } from '@/lib/community/types'
+import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
-export async function GET(request: Request) {
+export const OPTIONS = mobileCorsPreflight
+
+export const GET = withMobileCors(async (request: Request) => {
   const user = await getMobileUser(request)
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -17,4 +20,4 @@ export async function GET(request: Request) {
 
   const { items, nextCursor } = await listCommunityPosts({ channel, status, cursor, limit })
   return Response.json({ items: items.map(toPostItemDTO), nextCursor })
-}
+})

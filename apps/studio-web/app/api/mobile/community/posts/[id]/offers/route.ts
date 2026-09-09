@@ -2,8 +2,11 @@ import { getMobileUser, isAdminUser } from '@/lib/mobile-auth'
 import { getCommunityPostById } from '@/lib/community/queries'
 import { listOffersForPost, hasUserOfferedToRead } from '@/lib/community/reader-queries'
 import { toOfferDTO } from '@/lib/community/dto'
+import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const OPTIONS = mobileCorsPreflight
+
+export const GET = withMobileCors(async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
   const user = await getMobileUser(request)
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -22,4 +25,4 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   ])
 
   return Response.json({ offers: offers.map(toOfferDTO), hasOffered })
-}
+})

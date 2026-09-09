@@ -1,8 +1,11 @@
 import { getMobileUser } from '@/lib/mobile-auth'
 import { getCommunityPostById } from '@/lib/community/queries'
 import { toPostDetailDTO } from '@/lib/community/dto'
+import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const OPTIONS = mobileCorsPreflight
+
+export const GET = withMobileCors(async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
   const user = await getMobileUser(request)
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -11,4 +14,4 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!post) return Response.json({ error: 'Not found' }, { status: 404 })
 
   return Response.json(toPostDetailDTO(post))
-}
+})
