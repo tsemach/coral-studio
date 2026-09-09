@@ -8,12 +8,40 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "GLUMACKI_DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_GOOGLE_ID",
+        "AUTH_GOOGLE_SECRET",
+        "RESEND_API_KEY",
+        "RESEND_SEND_ADDRESS",
+        "LIVEKIT_URL",
+        "LIVEKIT_API_KEY",
+        "LIVEKIT_API_SECRET",
+        "BLOB_READ_WRITE_TOKEN",
+        "BLOB_STORE_ID",
+        "BLOB_WEBHOOK_PUBLIC_KEY"
+      ]
     },
     "start": {
       "dependsOn": ["build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "GLUMACKI_DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_GOOGLE_ID",
+        "AUTH_GOOGLE_SECRET",
+        "RESEND_API_KEY",
+        "RESEND_SEND_ADDRESS",
+        "LIVEKIT_URL",
+        "LIVEKIT_API_KEY",
+        "LIVEKIT_API_SECRET",
+        "BLOB_READ_WRITE_TOKEN",
+        "BLOB_STORE_ID",
+        "BLOB_WEBHOOK_PUBLIC_KEY"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
