@@ -12,6 +12,7 @@
       "env": [
         "GLUMACKI_DATABASE_URL",
         "AUTH_SECRET",
+        "MOBILE_AUTH_SECRET",
         "AUTH_GOOGLE_ID",
         "AUTH_GOOGLE_SECRET",
         "RESEND_API_KEY",
@@ -31,6 +32,7 @@
       "env": [
         "GLUMACKI_DATABASE_URL",
         "AUTH_SECRET",
+        "MOBILE_AUTH_SECRET",
         "AUTH_GOOGLE_ID",
         "AUTH_GOOGLE_SECRET",
         "RESEND_API_KEY",
