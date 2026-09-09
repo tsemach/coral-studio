@@ -1,7 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { LoginResult } from '@coral-studio/api-client'
 import { apiClient, setUnauthorizedHandler } from '../api'
-import { clearStoredToken, getStoredToken, setStoredToken } from './token-storage'
+import {
+  clearStoredToken,
+  clearStoredUser,
+  getStoredToken,
+  getStoredUser,
+  setStoredToken,
+  setStoredUser,
+} from './token-storage'
 
 type AuthStatus = 'loading' | 'signedIn' | 'signedOut'
 
@@ -19,13 +26,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<LoginResult['user'] | null>(null)
 
   useEffect(() => {
-    getStoredToken().then((token) => setStatus(token ? 'signedIn' : 'signedOut'))
+    Promise.all([getStoredToken(), getStoredUser()])
+      .then(([token, storedUser]) => {
+        if (token) {
+          setUser(storedUser)
+          setStatus('signedIn')
+        } else {
+          setStatus('signedOut')
+        }
+      })
+      .catch(() => setStatus('signedOut'))
   }, [])
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setUser(null)
       setStatus('signedOut')
+      void clearStoredUser()
     })
   }, [])
 
@@ -35,12 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       async signIn(email: string, password: string) {
         const result = await apiClient.login(email, password)
-        await setStoredToken(result.token)
+        await Promise.all([setStoredToken(result.token), setStoredUser(result.user)])
         setUser(result.user)
         setStatus('signedIn')
       },
       async signOut() {
-        await clearStoredToken()
+        await Promise.all([clearStoredToken(), clearStoredUser()])
         setUser(null)
         setStatus('signedOut')
       },

@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
-import { assignCharacterColors } from '@coral-studio/types'
+import { assignCharacterColorsRN } from '@coral-studio/types'
 import { apiClient } from '../lib/api'
 
 export function ScriptViewer({ slug }: { slug: string }) {
@@ -15,7 +15,7 @@ export function ScriptViewer({ slug }: { slug: string }) {
   const characters = Array.from(
     new Set(script.script_flow.filter((entry) => entry.type === 'dialogue').map((entry) => entry.character))
   )
-  const colors = assignCharacterColors(characters)
+  const colors = assignCharacterColorsRN(characters)
 
   return (
     <View style={styles.container}>

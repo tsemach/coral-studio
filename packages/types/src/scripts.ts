@@ -48,6 +48,25 @@ export function assignCharacterColors(characters: string[]): Record<string, stri
   return colors
 }
 
+// React Native's color parser (@react-native/normalize-colors) has no oklch()
+// support -- only hex, named colors, rgb()/rgba(), hsl()/hsla(), hwb(). Same
+// hue rotation as assignCharacterColors(), but in a classic comma-separated
+// hsl() string the RN parser actually accepts, for use on the mobile app's
+// native runtime (not web, where react-native-web hands the string straight
+// to CSS and oklch() would have worked).
+export function assignCharacterColorsRN(characters: string[]): Record<string, string> {
+  const colors: Record<string, string> = {}
+  let index = 0
+
+  for (const character of characters) {
+    if (character in colors) continue
+    colors[character] = `hsl(${HUES[index % HUES.length]}, 60%, 72%)`
+    index += 1
+  }
+
+  return colors
+}
+
 // COR-14: split-by-character view only supports 2 or 3 speaking characters --
 // a monologue has nothing to split, and beyond 3 columns there's no defined
 // layout (not asked for).

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native'
-import type { WorkshopListItem } from '@coral-studio/types'
+import type { WorkshopListItemDTO } from '@coral-studio/types'
 
-export function WorkshopCard({ workshop, onPress }: { workshop: WorkshopListItem; onPress: () => void }) {
+export function WorkshopCard({ workshop, onPress }: { workshop: WorkshopListItemDTO; onPress: () => void }) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <Text style={styles.title}>{workshop.title}</Text>

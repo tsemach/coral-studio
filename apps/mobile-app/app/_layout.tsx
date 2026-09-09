@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { ActivityIndicator, View } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '../lib/auth/auth-context'
@@ -19,6 +20,14 @@ function AuthGate({ children }: { children: ReactNode }) {
       router.replace('/(tabs)/workshops')
     }
   }, [status, segments, router])
+
+  if (status === 'loading') {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator />
+      </View>
+    )
+  }
 
   return <>{children}</>
 }

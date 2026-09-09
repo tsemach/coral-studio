@@ -1,4 +1,4 @@
-import type { Script, WorkshopDetail, WorkshopListItem } from '@coral-studio/types'
+import type { Script, WorkshopDetailDTO, WorkshopListItemDTO } from '@coral-studio/types'
 import { ApiError } from './errors'
 
 export type ApiClientConfig = {
@@ -53,11 +53,11 @@ export function createApiClient(config: ApiClientConfig) {
     login(email: string, password: string): Promise<LoginResult> {
       return request<LoginResult>('/api/mobile/auth/login', { method: 'POST', body: { email, password }, auth: false })
     },
-    getWorkshops(): Promise<WorkshopListItem[]> {
-      return request<WorkshopListItem[]>('/api/mobile/workshops')
+    getWorkshops(): Promise<WorkshopListItemDTO[]> {
+      return request<WorkshopListItemDTO[]>('/api/mobile/workshops')
     },
-    getWorkshopDetail(id: string): Promise<WorkshopDetail> {
-      return request<WorkshopDetail>(`/api/mobile/workshops/${id}`)
+    getWorkshopDetail(id: string): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${id}`)
     },
     getWorkshopLiveStatus(id: string): Promise<WorkshopLiveStatus> {
       return request<WorkshopLiveStatus>(`/api/mobile/workshops/${id}/live-status`)
