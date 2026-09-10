@@ -1,18 +1,21 @@
 import { useState } from 'react'
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
 import { ScriptViewer } from '../../../components/script-viewer'
 import { AddMemberSheet } from '../../../components/add-member-sheet'
-import { colors, spacing } from '../../../lib/theme'
+import { ScheduleRehearsalSheet } from '../../../components/schedule-rehearsal-sheet'
+import { colors, radius, spacing } from '../../../lib/theme'
 
 const LIVE_POLL_INTERVAL_MS = 8000
 
 export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const [addMemberVisible, setAddMemberVisible] = useState(false)
+  const [scheduleVisible, setScheduleVisible] = useState(false)
 
   const detailQuery = useQuery({
     queryKey: ['workshop', id],
@@ -31,6 +34,23 @@ export default function WorkshopDetailScreen() {
     mutationFn: (memberId: string) => apiClient.removeWorkshopMember(id, memberId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workshop', id] }),
   })
+
+  const cancelRehearsalMutation = useMutation({
+    mutationFn: () => apiClient.cancelWorkshopRehearsal(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workshop', id] }),
+  })
+
+  const leaveMutation = useMutation({
+    mutationFn: () => apiClient.leaveWorkshop(id),
+    onSuccess: () => router.replace('/workshops'),
+  })
+
+  function confirmLeaveWorkshop() {
+    Alert.alert('Leave workshop?', 'You can be added back later by another member.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Leave', style: 'destructive', onPress: () => leaveMutation.mutate() },
+    ])
+  }
 
   if (detailQuery.isLoading) {
     return (
@@ -64,6 +84,16 @@ export default function WorkshopDetailScreen() {
         {workshop.rehearsalAt ? new Date(workshop.rehearsalAt).toLocaleString() : 'No rehearsal scheduled'}
         {workshop.location ? ` · ${workshop.location}` : ''}
       </Text>
+      <View style={styles.rehearsalActions}>
+        <Pressable onPress={() => setScheduleVisible(true)}>
+          <Text style={styles.actionLink}>{workshop.rehearsalAt ? 'Reschedule' : 'Schedule rehearsal'}</Text>
+        </Pressable>
+        {workshop.rehearsalAt ? (
+          <Pressable onPress={() => cancelRehearsalMutation.mutate()}>
+            <Text style={styles.actionLink}>Cancel rehearsal</Text>
+          </Pressable>
+        ) : null}
+      </View>
 
       <Text style={styles.sectionTitle}>Members</Text>
       <FlatList
@@ -94,6 +124,15 @@ export default function WorkshopDetailScreen() {
         onClose={() => setAddMemberVisible(false)}
         onAdded={() => queryClient.invalidateQueries({ queryKey: ['workshop', id] })}
       />
+      <Pressable onPress={confirmLeaveWorkshop} style={styles.leaveButton}>
+        <Text style={styles.leaveButtonText}>Leave workshop</Text>
+      </Pressable>
+      <ScheduleRehearsalSheet
+        workshopId={id}
+        visible={scheduleVisible}
+        onClose={() => setScheduleVisible(false)}
+        onScheduled={() => queryClient.invalidateQueries({ queryKey: ['workshop', id] })}
+      />
       {workshop.scriptSlug ? <ScriptViewer slug={workshop.scriptSlug} /> : null}
     </View>
   )
@@ -117,4 +156,8 @@ const styles = StyleSheet.create({
   removeLink: { color: colors.accent, fontSize: 12 },
   addMemberButton: { marginTop: spacing.sm, alignSelf: 'flex-start' },
   addMemberButtonText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
+  rehearsalActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs },
+  actionLink: { color: colors.accent, fontSize: 13, fontWeight: '600' },
+  leaveButton: { marginTop: spacing.md, borderWidth: 1, borderColor: colors.hairline, borderRadius: radius, paddingVertical: 12, alignItems: 'center' },
+  leaveButtonText: { color: colors.parchmentMuted, fontWeight: '600', fontSize: 14 },
 })
