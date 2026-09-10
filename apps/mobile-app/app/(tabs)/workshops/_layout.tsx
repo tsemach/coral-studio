@@ -12,6 +12,7 @@ export default function WorkshopsStackLayout() {
     >
       <Stack.Screen name="index" options={{ title: 'Workshops' }} />
       <Stack.Screen name="[id]" options={{ title: '' }} />
+      <Stack.Screen name="new" options={{ title: 'New workshop' }} />
     </Stack>
   )
 }
