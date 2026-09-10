@@ -4,6 +4,16 @@ import { useMutation } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 import { colors, radius, spacing } from '../lib/theme'
 
+// Builds a local-time "YYYY-MM-DDTHH:mm" string -- must stay in sync with
+// handleSave's `new Date(trimmed)`, which parses this shape as local time
+// (no offset suffix). Using toISOString() here would seed the field in UTC
+// while save parses local, silently shifting the rehearsal by the device's
+// UTC offset if the user saves without re-editing the field.
+function formatForLocalInput(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 export function ScheduleRehearsalSheet({
   workshopId,
   visible,
@@ -23,7 +33,7 @@ export function ScheduleRehearsalSheet({
 
   useEffect(() => {
     if (visible) {
-      setRehearsalAt(currentRehearsalAt ? new Date(currentRehearsalAt).toISOString().slice(0, 16) : '')
+      setRehearsalAt(currentRehearsalAt ? formatForLocalInput(new Date(currentRehearsalAt)) : '')
       setError(null)
     }
   }, [visible, currentRehearsalAt])
