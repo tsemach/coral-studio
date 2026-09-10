@@ -141,3 +141,57 @@ test('addComment POSTs the content as JSON', async () => {
   assert.equal(capturedBody, JSON.stringify({ content: 'hi' }))
   assert.equal(result.id, 'c1')
 })
+
+test('createWorkshop POSTs the input as JSON', async () => {
+  let capturedMethod: string | undefined
+  let capturedBody: string | undefined
+  globalThis.fetch = (async (_input, init) => {
+    capturedMethod = init?.method
+    capturedBody = init?.body as string
+    return { ok: true, status: 201, json: async () => ({ id: 'w1', title: 'New workshop', members: [] }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.createWorkshop({ title: 'New workshop' })
+
+  assert.equal(capturedMethod, 'POST')
+  assert.equal(capturedBody, JSON.stringify({ title: 'New workshop' }))
+})
+
+test('removeWorkshopMember sends a DELETE with no body', async () => {
+  let capturedMethod: string | undefined
+  let capturedBody: unknown
+  globalThis.fetch = (async (_input, init) => {
+    capturedMethod = init?.method
+    capturedBody = init?.body
+    return { ok: true, status: 200, json: async () => ({ id: 'w1', title: 'x', members: [] }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.removeWorkshopMember('w1', 'm1')
+
+  assert.equal(capturedMethod, 'DELETE')
+  assert.equal(capturedBody, undefined)
+})
+
+test('setWorkshopRehearsal PUTs the input as JSON', async () => {
+  let capturedMethod: string | undefined
+  let capturedBody: string | undefined
+  globalThis.fetch = (async (_input, init) => {
+    capturedMethod = init?.method
+    capturedBody = init?.body as string
+    return { ok: true, status: 200, json: async () => ({ id: 'w1', title: 'x', members: [] }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.setWorkshopRehearsal('w1', { rehearsalAt: '2026-10-01T18:00:00.000Z', location: 'online', syncCalendar: false })
+
+  assert.equal(capturedMethod, 'PUT')
+  assert.equal(
+    capturedBody,
+    JSON.stringify({ rehearsalAt: '2026-10-01T18:00:00.000Z', location: 'online', syncCalendar: false })
+  )
+})

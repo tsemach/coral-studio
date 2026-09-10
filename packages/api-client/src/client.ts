@@ -1,4 +1,5 @@
 import type {
+  AddableUser,
   CommunityChannel,
   CommunityPostDetailDTO,
   CommunityPostItemDTO,
@@ -6,6 +7,7 @@ import type {
   ReaderOfferItemDTO,
   ReaderStatus,
   Script,
+  ScriptSummary,
   TapeItemDTO,
   WorkshopDetailDTO,
   WorkshopListItemDTO,
@@ -107,6 +109,56 @@ export function createApiClient(config: ApiClientConfig) {
     },
     getTapeVideoUrl(tapeId: string): Promise<{ url: string }> {
       return request<{ url: string }>(`/api/mobile/community/tapes/${tapeId}/video`)
+    },
+    createWorkshop(input: {
+      title?: string
+      scriptSlug?: string | null
+      members?: { userId: string; type: 'actor' | 'viewer'; part: string }[]
+    }): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>('/api/mobile/workshops', { method: 'POST', body: input })
+    },
+    updateWorkshop(
+      id: string,
+      input: { title?: string; scriptSlug?: string | null; members?: { userId: string; type: 'actor' | 'viewer'; part: string }[] }
+    ): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${id}`, { method: 'PATCH', body: input })
+    },
+    addWorkshopMember(
+      workshopId: string,
+      input: { email: string; type?: 'actor' | 'viewer'; part?: string }
+    ): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${workshopId}/members`, { method: 'POST', body: input })
+    },
+    removeWorkshopMember(workshopId: string, memberId: string): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${workshopId}/members/${memberId}`, { method: 'DELETE' })
+    },
+    updateWorkshopMember(
+      workshopId: string,
+      memberId: string,
+      input: { type: 'actor' | 'viewer'; part?: string }
+    ): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${workshopId}/members/${memberId}`, {
+        method: 'PATCH',
+        body: input,
+      })
+    },
+    setWorkshopRehearsal(
+      workshopId: string,
+      input: { rehearsalAt: string | null; location?: 'studio' | 'online'; syncCalendar?: boolean }
+    ): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${workshopId}/rehearsal`, { method: 'PUT', body: input })
+    },
+    cancelWorkshopRehearsal(workshopId: string): Promise<WorkshopDetailDTO> {
+      return request<WorkshopDetailDTO>(`/api/mobile/workshops/${workshopId}/rehearsal`, { method: 'DELETE' })
+    },
+    leaveWorkshop(workshopId: string): Promise<{ success: boolean }> {
+      return request<{ success: boolean }>(`/api/mobile/workshops/${workshopId}/leave`, { method: 'POST' })
+    },
+    listScripts(): Promise<ScriptSummary[]> {
+      return request<ScriptSummary[]>('/api/mobile/scripts')
+    },
+    listActiveUsers(): Promise<AddableUser[]> {
+      return request<AddableUser[]>('/api/mobile/users/active')
     },
   }
 }
