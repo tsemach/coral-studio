@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useRouter } from 'expo-router'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
 import { colors, radius, spacing } from '../../../lib/theme'
 
 export default function NewWorkshopScreen() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [scriptSlug, setScriptSlug] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +16,10 @@ export default function NewWorkshopScreen() {
 
   const mutation = useMutation({
     mutationFn: () => apiClient.createWorkshop({ title: title.trim() || undefined, scriptSlug }),
-    onSuccess: (workshop) => router.replace(`/workshops/${workshop.id}`),
+    onSuccess: (workshop) => {
+      queryClient.invalidateQueries({ queryKey: ['workshops'] })
+      router.replace(`/workshops/${workshop.id}`)
+    },
     onError: (err) => setError(err instanceof Error ? err.message : 'Something went wrong.'),
   })
 
