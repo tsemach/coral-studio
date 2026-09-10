@@ -19,6 +19,7 @@ export default function TapeDetailScreen() {
   const queryClient = useQueryClient()
   const [draft, setDraft] = useState('')
   const [tag, setTag] = useState<TapeNoteTag | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const videoUrlQuery = useQuery({
     queryKey: ['tape-video-url', tapeId],
@@ -44,6 +45,7 @@ export default function TapeDetailScreen() {
         tag,
       }),
     onSuccess: () => {
+      setError(null)
       setDraft('')
       setTag(null)
       queryClient.invalidateQueries({ queryKey: ['tape-notes', tapeId] })
@@ -51,6 +53,7 @@ export default function TapeDetailScreen() {
       // TapeCard, which displays notesCount -- keep it fresh too.
       queryClient.invalidateQueries({ queryKey: ['tapes'] })
     },
+    onError: (err) => setError(err instanceof Error ? err.message : 'Something went wrong.'),
   })
 
   if (videoUrlQuery.isLoading) {
@@ -95,6 +98,7 @@ export default function TapeDetailScreen() {
           </Pressable>
         ))}
       </View>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
       <View style={styles.composer}>
         <TextInput
           style={styles.input}
@@ -138,6 +142,7 @@ const styles = StyleSheet.create({
   tagOption: { borderWidth: 1, borderColor: colors.hairline, borderRadius: radius, paddingHorizontal: spacing.sm, paddingVertical: 6 },
   tagOptionActive: { borderColor: colors.accent },
   tagOptionText: { color: colors.parchment, fontSize: 12 },
+  error: { color: colors.accent, fontSize: 14, paddingHorizontal: spacing.md, paddingTop: spacing.sm },
   composer: { flexDirection: 'row', gap: spacing.sm, padding: spacing.sm + spacing.xs, borderTopWidth: 1, borderColor: colors.hairline },
   input: {
     flex: 1,
