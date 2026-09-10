@@ -15,7 +15,7 @@ export const GET = withMobileCors(async (request: Request, { params }: { params:
   if (!isAdmin) {
     const mine = await listWorkshopsForUser(user.userId, false)
     if (!mine.some((workshop) => workshop.scriptSlug === slug)) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+      return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
   }
 
