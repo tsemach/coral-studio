@@ -25,7 +25,7 @@ export const POST = withMobileCors(async (request: Request) => {
   const token = await generateClientTokenFromReadWriteToken({
     pathname,
     allowedContentTypes: ['video/mp4', 'video/webm', 'video/quicktime'],
-    maximumSizeInBytes: 500 * 1024 * 1024, // 500MB -- matches the web upload route's limit
+    maximumSizeInBytes: 50 * 1024 * 1024, // 50MB -- capped to avoid OOM-crashing the mobile client's in-memory buffering upload path (see tapes/new.tsx's client-side size check)
     addRandomSuffix: true,
   })
 

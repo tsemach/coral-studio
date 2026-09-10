@@ -9,6 +9,11 @@ import { colors, radius, spacing } from '../../../../lib/theme'
 
 type PickedVideo = { uri: string; name: string; type: string; durationSeconds: number | null }
 
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50MB -- see the plan's Fix 2: the pick-and-upload
+// flow buffers the whole video in memory via fetch().blob() before handing it to
+// @vercel/blob/client's put(), which risks OOM-crashing on a realistic 100-500MB self-tape.
+// This cap turns that silent crash into a readable error until a streaming-upload rewrite lands.
+
 export default function NewTapeScreen() {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -64,6 +69,11 @@ export default function NewTapeScreen() {
     })
     if (result.canceled || result.assets.length === 0) return
     const asset = result.assets[0]
+    if (asset.fileSize && asset.fileSize > MAX_VIDEO_BYTES) {
+      setError('Video is too large (max 50MB) — trim it first or pick a shorter clip.')
+      return
+    }
+    setError(null)
     setVideo({
       uri: asset.uri,
       name: asset.fileName ?? 'tape.mp4',

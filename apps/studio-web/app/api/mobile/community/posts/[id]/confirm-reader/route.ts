@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '@/lib/database'
 import { communityPosts, readerOffers } from '@/lib/database/schema'
-import { getMobileUser, isAdminUser } from '@/lib/mobile-auth'
+import { getMobileUser } from '@/lib/mobile-auth'
 import { getActiveMobileUser } from '@/lib/community/mobile-write-helpers'
 import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
@@ -26,9 +26,8 @@ export const POST = withMobileCors(async (request: Request, { params }: { params
     .limit(1)
   if (!post) return Response.json({ error: 'Post not found.' }, { status: 404 })
 
-  const isAdmin = await isAdminUser(user.userId)
-  if (post.authorId !== user.userId && !isAdmin) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (post.authorId !== user.userId && activeUser.role !== 'admin') {
+    return Response.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   const [offer] = await db

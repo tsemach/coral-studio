@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { del } from '@vercel/blob'
 import { db } from '@/lib/database'
 import { tapePosts } from '@/lib/database/schema'
-import { getMobileUser, isAdminUser } from '@/lib/mobile-auth'
+import { getMobileUser } from '@/lib/mobile-auth'
 import { getActiveMobileUser } from '@/lib/community/mobile-write-helpers'
 import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 
@@ -23,9 +23,8 @@ export const DELETE = withMobileCors(async (request: Request, { params }: { para
     .limit(1)
   if (!tape) return Response.json({ error: 'Tape not found.' }, { status: 404 })
 
-  const isAdmin = await isAdminUser(user.userId)
-  if (tape.authorId !== user.userId && !isAdmin) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (tape.authorId !== user.userId && activeUser.role !== 'admin') {
+    return Response.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   await db.delete(tapePosts).where(eq(tapePosts.id, tapeId))

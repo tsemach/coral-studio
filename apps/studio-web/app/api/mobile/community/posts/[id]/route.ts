@@ -5,7 +5,6 @@ import { toPostDetailDTO } from '@/lib/community/dto'
 import { mobileCorsPreflight, withMobileCors } from '@/lib/mobile-cors'
 import { db } from '@/lib/database'
 import { communityPosts } from '@/lib/database/schema'
-import { isAdminUser } from '@/lib/mobile-auth'
 import { getActiveMobileUser } from '@/lib/community/mobile-write-helpers'
 
 export const OPTIONS = mobileCorsPreflight
@@ -32,9 +31,8 @@ export const DELETE = withMobileCors(async (request: Request, { params }: { para
   const post = await getCommunityPostById(postId)
   if (!post) return Response.json({ error: 'Post not found.' }, { status: 404 })
 
-  const isAdmin = await isAdminUser(user.userId)
-  if (post.authorId !== user.userId && !isAdmin) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (post.authorId !== user.userId && activeUser.role !== 'admin') {
+    return Response.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   await db.delete(communityPosts).where(eq(communityPosts.id, postId))
