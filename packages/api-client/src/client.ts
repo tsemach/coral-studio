@@ -1,14 +1,18 @@
 import type {
   AddableUser,
+  CastingType,
   CommunityChannel,
   CommunityPostDetailDTO,
   CommunityPostItemDTO,
   CommentWithAuthorDTO,
   ReaderOfferItemDTO,
   ReaderStatus,
+  RehearsalFormat,
   Script,
   ScriptSummary,
   TapeItemDTO,
+  TapeNoteItemDTO,
+  TapeNoteTag,
   WorkshopDetailDTO,
   WorkshopListItemDTO,
 } from '@coral-studio/types'
@@ -36,7 +40,8 @@ export function createApiClient(config: ApiClientConfig) {
     options: { method?: string; body?: unknown; auth?: boolean } = {}
   ): Promise<T> {
     const requiresAuth = options.auth ?? true
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
+    const headers: Record<string, string> = isFormData ? {} : { 'Content-Type': 'application/json' }
 
     if (requiresAuth) {
       const token = await config.getToken()
@@ -50,7 +55,7 @@ export function createApiClient(config: ApiClientConfig) {
     const response = await fetch(`${config.baseUrl}${path}`, {
       method: options.method ?? 'GET',
       headers,
-      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      body: isFormData ? (options.body as FormData) : options.body !== undefined ? JSON.stringify(options.body) : undefined,
     })
 
     const payload = await response.json().catch(() => null)
@@ -159,6 +164,75 @@ export function createApiClient(config: ApiClientConfig) {
     },
     listActiveUsers(): Promise<AddableUser[]> {
       return request<AddableUser[]>('/api/mobile/users/active')
+    },
+    createCommunityPost(input: {
+      channel: CommunityChannel
+      title: string
+      content: string
+      rehearsalAt?: string
+      rehearsalFormat?: RehearsalFormat
+      sceneDetails?: string
+      castingType?: CastingType
+      deadlineAt?: string
+      attachments?: { uri: string; name: string; type: string }[]
+    }): Promise<CommunityPostDetailDTO> {
+      const formData = new FormData()
+      formData.append('channel', input.channel)
+      formData.append('title', input.title)
+      formData.append('content', input.content)
+      if (input.rehearsalAt) formData.append('rehearsalAt', input.rehearsalAt)
+      if (input.rehearsalFormat) formData.append('rehearsalFormat', input.rehearsalFormat)
+      if (input.sceneDetails) formData.append('sceneDetails', input.sceneDetails)
+      if (input.castingType) formData.append('castingType', input.castingType)
+      if (input.deadlineAt) formData.append('deadlineAt', input.deadlineAt)
+      for (const attachment of input.attachments ?? []) {
+        formData.append('attachments', { uri: attachment.uri, name: attachment.name, type: attachment.type } as unknown as Blob)
+      }
+      return request<CommunityPostDetailDTO>('/api/mobile/community/posts', { method: 'POST', body: formData })
+    },
+    updateReaderStatus(postId: string, status: ReaderStatus): Promise<{ success: boolean }> {
+      return request<{ success: boolean }>(`/api/mobile/community/posts/${postId}/reader-status`, {
+        method: 'PATCH',
+        body: { status },
+      })
+    },
+    offerToRead(postId: string): Promise<{ success: boolean }> {
+      return request<{ success: boolean }>(`/api/mobile/community/posts/${postId}/offers`, { method: 'POST' })
+    },
+    confirmReader(postId: string, userId: string): Promise<{ success: boolean }> {
+      return request<{ success: boolean }>(`/api/mobile/community/posts/${postId}/confirm-reader`, {
+        method: 'POST',
+        body: { userId },
+      })
+    },
+    deleteCommunityPost(postId: string): Promise<{ success: boolean }> {
+      return request<{ success: boolean }>(`/api/mobile/community/posts/${postId}`, { method: 'DELETE' })
+    },
+    requestTapeUploadToken(filename: string): Promise<{ token: string; pathname: string }> {
+      return request<{ token: string; pathname: string }>('/api/mobile/community/tapes/upload-token', {
+        method: 'POST',
+        body: { filename },
+      })
+    },
+    createTape(input: {
+      title: string
+      description: string
+      videoPathname: string
+      durationSeconds: number | null
+    }): Promise<TapeItemDTO> {
+      return request<TapeItemDTO>('/api/mobile/community/tapes', { method: 'POST', body: input })
+    },
+    listTapeNotes(tapeId: string): Promise<TapeNoteItemDTO[]> {
+      return request<TapeNoteItemDTO[]>(`/api/mobile/community/tapes/${tapeId}/notes`)
+    },
+    addTapeNote(
+      tapeId: string,
+      input: { timestampSeconds: number; content: string; tag: TapeNoteTag | null }
+    ): Promise<TapeNoteItemDTO> {
+      return request<TapeNoteItemDTO>(`/api/mobile/community/tapes/${tapeId}/notes`, { method: 'POST', body: input })
+    },
+    deleteTape(tapeId: string): Promise<{ success: boolean }> {
+      return request<{ success: boolean }>(`/api/mobile/community/tapes/${tapeId}`, { method: 'DELETE' })
     },
   }
 }

@@ -195,3 +195,51 @@ test('setWorkshopRehearsal PUTs the input as JSON', async () => {
     JSON.stringify({ rehearsalAt: '2026-10-01T18:00:00.000Z', location: 'online', syncCalendar: false })
   )
 })
+
+test('createCommunityPost sends a multipart FormData body with no Content-Type override', async () => {
+  let capturedBody: unknown
+  let capturedHeaders: Record<string, string> | undefined
+  globalThis.fetch = (async (_input, init) => {
+    capturedBody = init?.body
+    capturedHeaders = init?.headers as Record<string, string>
+    return { ok: true, status: 201, json: async () => ({ id: 'p1', channel: 'general', attachments: [] }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.createCommunityPost({ channel: 'general', title: 'Hello', content: 'World' })
+
+  assert.ok(capturedBody instanceof FormData)
+  assert.equal(capturedHeaders?.['Content-Type'], undefined)
+})
+
+test('offerToRead POSTs with no body', async () => {
+  let capturedMethod: string | undefined
+  let capturedBody: unknown
+  globalThis.fetch = (async (_input, init) => {
+    capturedMethod = init?.method
+    capturedBody = init?.body
+    return { ok: true, status: 201, json: async () => ({ success: true }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.offerToRead('p1')
+
+  assert.equal(capturedMethod, 'POST')
+  assert.equal(capturedBody, undefined)
+})
+
+test('addTapeNote POSTs the input as JSON', async () => {
+  let capturedBody: string | undefined
+  globalThis.fetch = (async (_input, init) => {
+    capturedBody = init?.body as string
+    return { ok: true, status: 201, json: async () => ({ id: 'n1' }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.addTapeNote('t1', { timestampSeconds: 42, content: 'Nice beat here', tag: 'objective_action' })
+
+  assert.equal(capturedBody, JSON.stringify({ timestampSeconds: 42, content: 'Nice beat here', tag: 'objective_action' }))
+})
