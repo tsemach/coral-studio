@@ -15,7 +15,12 @@ export const POST = withMobileCors(async (request: Request) => {
   const body = await request.json().catch(() => null)
   const filename = typeof body?.filename === 'string' && body.filename ? body.filename : 'tape.mp4'
 
-  const pathname = `community/tapes/${user.userId}/${Date.now()}-${filename}`
+  // Matches the web upload flow's own pathname convention (tape-form-dialog.tsx's
+  // TAPE_ROOM_PREFIX / lib/workshops/scripts.ts's SCRIPTS_PREFIX) -- "prod" only in
+  // an actual Vercel Production deployment, "dev" everywhere else, so dev/preview
+  // and production don't share the same Blob store's key namespace.
+  const TAPE_ROOM_PREFIX = `coral-studio-blob/${process.env.VERCEL_ENV === 'production' ? 'prod' : 'dev'}/tape-room/`
+  const pathname = `${TAPE_ROOM_PREFIX}${user.userId}/${Date.now()}-${filename}`
 
   const token = await generateClientTokenFromReadWriteToken({
     pathname,
