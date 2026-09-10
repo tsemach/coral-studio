@@ -13,6 +13,7 @@ export default function CommunityStackLayout() {
       <Stack.Screen name="index" options={{ title: 'Community' }} />
       <Stack.Screen name="[id]" options={{ title: '' }} />
       <Stack.Screen name="tapes/[tapeId]" options={{ title: '' }} />
+      <Stack.Screen name="new" options={{ title: 'New post' }} />
     </Stack>
   )
 }

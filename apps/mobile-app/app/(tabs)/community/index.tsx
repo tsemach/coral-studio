@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FlatList, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import type { CommunityChannel } from '@coral-studio/types'
@@ -7,7 +7,7 @@ import { apiClient } from '../../../lib/api'
 import { ChannelTabs, type CommunityChannelId } from '../../../components/channel-tabs'
 import { PostCard } from '../../../components/post-card'
 import { TapeCard } from '../../../components/tape-card'
-import { colors, spacing } from '../../../lib/theme'
+import { colors, radius, spacing } from '../../../lib/theme'
 
 export default function CommunityFeedScreen() {
   const router = useRouter()
@@ -32,6 +32,9 @@ export default function CommunityFeedScreen() {
   if (isTapeRoom) {
     return (
       <View style={styles.container}>
+        <Pressable style={styles.newButton} onPress={() => router.push('/community/new')}>
+          <Text style={styles.newButtonText}>New post</Text>
+        </Pressable>
         <ChannelTabs active={activeChannel} onChange={setActiveChannel} />
         {tapesQuery.isLoading ? (
           <Text style={styles.message}>Loading…</Text>
@@ -53,6 +56,9 @@ export default function CommunityFeedScreen() {
 
   return (
     <View style={styles.container}>
+      <Pressable style={styles.newButton} onPress={() => router.push('/community/new')}>
+        <Text style={styles.newButtonText}>New post</Text>
+      </Pressable>
       <ChannelTabs active={activeChannel} onChange={setActiveChannel} />
       {postsQuery.isLoading ? (
         <Text style={styles.message}>Loading…</Text>
@@ -77,4 +83,14 @@ export default function CommunityFeedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
   message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
+  newButton: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radius,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  newButtonText: { color: colors.primaryForeground, fontWeight: '600', fontSize: 15 },
 })
