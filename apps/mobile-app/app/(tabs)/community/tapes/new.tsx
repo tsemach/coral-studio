@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useRouter } from 'expo-router'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as ImagePicker from 'expo-image-picker'
 import { put } from '@vercel/blob/client'
 import { apiClient } from '../../../../lib/api'
@@ -11,6 +11,7 @@ type PickedVideo = { uri: string; name: string; type: string; durationSeconds: n
 
 export default function NewTapeScreen() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [video, setVideo] = useState<PickedVideo | null>(null)
@@ -41,7 +42,10 @@ export default function NewTapeScreen() {
         durationSeconds: video.durationSeconds,
       })
     },
-    onSuccess: (tape) => router.replace(`/community/tapes/${tape.id}`),
+    onSuccess: (tape) => {
+      queryClient.invalidateQueries({ queryKey: ['tapes'] })
+      router.replace(`/community/tapes/${tape.id}`)
+    },
     onError: (err) => {
       setUploadProgress(null)
       setError(err instanceof Error ? err.message : 'Something went wrong.')
