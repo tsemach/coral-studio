@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useMutation } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
@@ -7,11 +7,13 @@ import { colors, radius, spacing } from '../lib/theme'
 export function ScheduleRehearsalSheet({
   workshopId,
   visible,
+  currentRehearsalAt,
   onClose,
   onScheduled,
 }: {
   workshopId: string
   visible: boolean
+  currentRehearsalAt: string | null
   onClose: () => void
   onScheduled: () => void
 }) {
@@ -19,10 +21,17 @@ export function ScheduleRehearsalSheet({
   const [location, setLocation] = useState<'studio' | 'online'>('studio')
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (visible) {
+      setRehearsalAt(currentRehearsalAt ? new Date(currentRehearsalAt).toISOString().slice(0, 16) : '')
+      setError(null)
+    }
+  }, [visible, currentRehearsalAt])
+
   const mutation = useMutation({
-    mutationFn: () =>
+    mutationFn: (parsedRehearsalAt: Date | null) =>
       apiClient.setWorkshopRehearsal(workshopId, {
-        rehearsalAt: rehearsalAt.trim() ? new Date(rehearsalAt.trim()).toISOString() : null,
+        rehearsalAt: parsedRehearsalAt ? parsedRehearsalAt.toISOString() : null,
         location,
         syncCalendar: false,
       }),
@@ -33,6 +42,20 @@ export function ScheduleRehearsalSheet({
     },
     onError: (err) => setError(err instanceof Error ? err.message : 'Something went wrong.'),
   })
+
+  function handleSave() {
+    const trimmed = rehearsalAt.trim()
+    if (!trimmed) {
+      mutation.mutate(null)
+      return
+    }
+    const parsedRehearsalAt = new Date(trimmed)
+    if (Number.isNaN(parsedRehearsalAt.getTime())) {
+      setError('Enter a date like 2026-10-01T18:00.')
+      return
+    }
+    mutation.mutate(parsedRehearsalAt)
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -66,7 +89,7 @@ export function ScheduleRehearsalSheet({
             <Pressable style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </Pressable>
-            <Pressable style={styles.saveButton} onPress={() => mutation.mutate()} disabled={mutation.isPending}>
+            <Pressable style={styles.saveButton} onPress={handleSave} disabled={mutation.isPending}>
               {mutation.isPending ? (
                 <ActivityIndicator color={colors.primaryForeground} />
               ) : (

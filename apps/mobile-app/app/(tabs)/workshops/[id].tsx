@@ -32,17 +32,26 @@ export default function WorkshopDetailScreen() {
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) => apiClient.removeWorkshopMember(id, memberId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workshop', id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workshop', id] })
+      queryClient.invalidateQueries({ queryKey: ['workshops'] })
+    },
   })
 
   const cancelRehearsalMutation = useMutation({
     mutationFn: () => apiClient.cancelWorkshopRehearsal(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workshop', id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workshop', id] })
+      queryClient.invalidateQueries({ queryKey: ['workshops'] })
+    },
   })
 
   const leaveMutation = useMutation({
     mutationFn: () => apiClient.leaveWorkshop(id),
-    onSuccess: () => router.replace('/workshops'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workshops'] })
+      router.replace('/workshops')
+    },
   })
 
   function confirmLeaveWorkshop() {
@@ -89,7 +98,7 @@ export default function WorkshopDetailScreen() {
           <Text style={styles.actionLink}>{workshop.rehearsalAt ? 'Reschedule' : 'Schedule rehearsal'}</Text>
         </Pressable>
         {workshop.rehearsalAt ? (
-          <Pressable onPress={() => cancelRehearsalMutation.mutate()}>
+          <Pressable onPress={() => cancelRehearsalMutation.mutate()} disabled={cancelRehearsalMutation.isPending}>
             <Text style={styles.actionLink}>Cancel rehearsal</Text>
           </Pressable>
         ) : null}
@@ -122,7 +131,10 @@ export default function WorkshopDetailScreen() {
         workshopId={id}
         visible={addMemberVisible}
         onClose={() => setAddMemberVisible(false)}
-        onAdded={() => queryClient.invalidateQueries({ queryKey: ['workshop', id] })}
+        onAdded={() => {
+          queryClient.invalidateQueries({ queryKey: ['workshop', id] })
+          queryClient.invalidateQueries({ queryKey: ['workshops'] })
+        }}
       />
       <Pressable onPress={confirmLeaveWorkshop} style={styles.leaveButton}>
         <Text style={styles.leaveButtonText}>Leave workshop</Text>
@@ -130,8 +142,12 @@ export default function WorkshopDetailScreen() {
       <ScheduleRehearsalSheet
         workshopId={id}
         visible={scheduleVisible}
+        currentRehearsalAt={workshop.rehearsalAt}
         onClose={() => setScheduleVisible(false)}
-        onScheduled={() => queryClient.invalidateQueries({ queryKey: ['workshop', id] })}
+        onScheduled={() => {
+          queryClient.invalidateQueries({ queryKey: ['workshop', id] })
+          queryClient.invalidateQueries({ queryKey: ['workshops'] })
+        }}
       />
       {workshop.scriptSlug ? <ScriptViewer slug={workshop.scriptSlug} /> : null}
     </View>

@@ -14,7 +14,7 @@ export const DELETE = withMobileCors(
 
     const { id: workshopId, memberId } = await params
     const isMember = await isWorkshopMember(workshopId, user.userId)
-    if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
     await db
       .delete(workshopMembers)
@@ -32,7 +32,7 @@ export const PATCH = withMobileCors(
 
     const { id: workshopId, memberId } = await params
     const isMember = await isWorkshopMember(workshopId, user.userId)
-    if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
     const body = await request.json().catch(() => null)
     const type = body?.type === 'viewer' ? 'viewer' : 'actor'

@@ -16,7 +16,7 @@ export const PUT = withMobileCors(async (request: Request, { params }: { params:
 
   const { id: workshopId } = await params
   const isMember = await isWorkshopMember(workshopId, user.userId)
-  if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
   const body = await request.json().catch(() => null)
   const raw = typeof body?.rehearsalAt === 'string' ? body.rehearsalAt : ''
@@ -81,7 +81,7 @@ export const DELETE = withMobileCors(async (request: Request, { params }: { para
 
   const { id: workshopId } = await params
   const isMember = await isWorkshopMember(workshopId, user.userId)
-  if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
   const [existing] = await db
     .select({ googleEventId: workshops.googleEventId })

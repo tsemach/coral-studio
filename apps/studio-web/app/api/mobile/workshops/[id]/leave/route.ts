@@ -13,7 +13,7 @@ export const POST = withMobileCors(async (request: Request, { params }: { params
 
   const { id: workshopId } = await params
   const isMember = await isWorkshopMember(workshopId, user.userId)
-  if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isMember) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
   const [row] = await db
     .select({ memberCount: count() })

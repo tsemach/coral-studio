@@ -14,7 +14,7 @@ export const POST = withMobileCors(async (request: Request, { params }: { params
 
   const { id: workshopId } = await params
   const [isMember, isAdmin] = await Promise.all([isWorkshopMember(workshopId, user.userId), isAdminUser(user.userId)])
-  if (!isMember && !isAdmin) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isMember && !isAdmin) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
   const body = await request.json().catch(() => null)
   const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''

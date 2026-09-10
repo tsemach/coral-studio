@@ -19,7 +19,7 @@ export const GET = withMobileCors(async (request: Request, { params }: { params:
 
   const { id } = await params
   const [member, isAdmin] = await Promise.all([isWorkshopMember(id, user.userId), isAdminUser(user.userId)])
-  if (!member && !isAdmin) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!member && !isAdmin) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
   const detail = await getWorkshopDetail(id)
   if (!detail) return Response.json({ error: 'Not found' }, { status: 404 })
@@ -33,7 +33,7 @@ export const PATCH = withMobileCors(async (request: Request, { params }: { param
 
   const { id: workshopId } = await params
   const [isMember, isAdmin] = await Promise.all([isWorkshopMember(workshopId, user.userId), isAdminUser(user.userId)])
-  if (!isMember && !isAdmin) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isMember && !isAdmin) return Response.json({ error: 'Unauthorized' }, { status: 403 })
 
   const body = await request.json().catch(() => null)
   const title = typeof body?.title === 'string' ? body.title.trim() : ''
