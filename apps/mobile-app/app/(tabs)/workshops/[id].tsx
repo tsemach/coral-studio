@@ -1,14 +1,18 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native'
+import { useState } from 'react'
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
 import { ScriptViewer } from '../../../components/script-viewer'
+import { AddMemberSheet } from '../../../components/add-member-sheet'
 import { colors, spacing } from '../../../lib/theme'
 
 const LIVE_POLL_INTERVAL_MS = 8000
 
 export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const queryClient = useQueryClient()
+  const [addMemberVisible, setAddMemberVisible] = useState(false)
 
   const detailQuery = useQuery({
     queryKey: ['workshop', id],
@@ -21,6 +25,11 @@ export default function WorkshopDetailScreen() {
     queryFn: () => apiClient.getWorkshopLiveStatus(id),
     enabled: !!id,
     refetchInterval: LIVE_POLL_INTERVAL_MS,
+  })
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (memberId: string) => apiClient.removeWorkshopMember(id, memberId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['workshop', id] }),
   })
 
   if (detailQuery.isLoading) {
@@ -61,15 +70,29 @@ export default function WorkshopDetailScreen() {
         data={workshop.members}
         keyExtractor={(member) => member.id}
         renderItem={({ item }) => (
-          <Text style={styles.member}>
-            <Text style={styles.memberName}>{item.name ?? item.email}</Text>
-            <Text style={styles.memberMeta}>
-              {'  '}· {item.type}
-              {item.part ? ` · ${item.part}` : ''}
+          <View style={styles.memberRow}>
+            <Text style={styles.member}>
+              <Text style={styles.memberName}>{item.name ?? item.email}</Text>
+              <Text style={styles.memberMeta}>
+                {'  '}· {item.type}
+                {item.part ? ` · ${item.part}` : ''}
+              </Text>
             </Text>
-          </Text>
+            <Pressable onPress={() => removeMemberMutation.mutate(item.id)}>
+              <Text style={styles.removeLink}>Remove</Text>
+            </Pressable>
+          </View>
         )}
         style={styles.memberList}
+      />
+      <Pressable style={styles.addMemberButton} onPress={() => setAddMemberVisible(true)}>
+        <Text style={styles.addMemberButtonText}>Add member</Text>
+      </Pressable>
+      <AddMemberSheet
+        workshopId={id}
+        visible={addMemberVisible}
+        onClose={() => setAddMemberVisible(false)}
+        onAdded={() => queryClient.invalidateQueries({ queryKey: ['workshop', id] })}
       />
       {workshop.scriptSlug ? <ScriptViewer slug={workshop.scriptSlug} /> : null}
     </View>
@@ -86,8 +109,12 @@ const styles = StyleSheet.create({
   liveText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
   meta: { color: colors.parchmentMuted, fontSize: 14 },
   sectionTitle: { fontSize: 13, fontWeight: '600', color: colors.parchment, marginTop: spacing.sm },
+  memberRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   member: { paddingVertical: 4 },
   memberName: { color: colors.parchment, fontSize: 14 },
   memberMeta: { color: colors.parchmentMuted, fontSize: 13 },
   memberList: { maxHeight: 160 },
+  removeLink: { color: colors.accent, fontSize: 12 },
+  addMemberButton: { marginTop: spacing.sm, alignSelf: 'flex-start' },
+  addMemberButtonText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
 })
