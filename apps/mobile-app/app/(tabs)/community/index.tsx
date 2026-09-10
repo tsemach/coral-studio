@@ -35,6 +35,9 @@ export default function CommunityFeedScreen() {
         <Pressable style={styles.newButton} onPress={() => router.push('/community/new')}>
           <Text style={styles.newButtonText}>New post</Text>
         </Pressable>
+        <Pressable style={styles.newButton} onPress={() => router.push('/community/tapes/new')}>
+          <Text style={styles.newButtonText}>New tape</Text>
+        </Pressable>
         <ChannelTabs active={activeChannel} onChange={setActiveChannel} />
         {tapesQuery.isLoading ? (
           <Text style={styles.message}>Loading…</Text>
