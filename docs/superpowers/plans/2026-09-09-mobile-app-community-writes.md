@@ -1465,6 +1465,8 @@ Read `apps/mobile-app/app/(tabs)/community/index.tsx` first (already modified in
 
 Recording via the device camera needs a native build (per this plan's Global Constraints, the web target has no camera) — this screen supports both recording (native only, gated behind `Platform.OS !== 'web'`) and picking an existing video from the library (works on both). Uploads directly to Blob storage from the device using the presigned client token from Task 5, then calls `createTape` once the upload finishes.
 
+`requestTapeUploadToken` mints a token scoped to a *requested* pathname, but `generateClientTokenFromReadWriteToken` (Task 5) is called with `addRandomSuffix: true`, so the blob's actual final key may differ once the real upload happens — mirroring the existing web tape-upload flow's own `blob.pathname` usage. The code below therefore saves `createTape`'s `videoPathname` from `put()`'s own return value (`uploaded.pathname`), never the pre-upload requested string — do not "simplify" this back to reusing `requestTapeUploadToken`'s `pathname` field, it would silently save a `videoPathname` that doesn't match the real blob location.
+
 Create `apps/mobile-app/app/(tabs)/community/tapes/new.tsx`:
 
 ```tsx
@@ -1492,12 +1494,12 @@ export default function NewTapeScreen() {
       if (!video) throw new Error('Choose a video first.')
 
       setUploadProgress(0)
-      const { token, pathname } = await apiClient.requestTapeUploadToken(video.name)
+      const { token, pathname: requestedPathname } = await apiClient.requestTapeUploadToken(video.name)
 
       const response = await fetch(video.uri)
       const blob = await response.blob()
 
-      await put(pathname, blob, {
+      const uploaded = await put(requestedPathname, blob, {
         access: 'private',
         token,
         contentType: video.type,
@@ -1507,7 +1509,7 @@ export default function NewTapeScreen() {
       return apiClient.createTape({
         title: title.trim(),
         description: description.trim(),
-        videoPathname: pathname,
+        videoPathname: uploaded.pathname,
         durationSeconds: video.durationSeconds,
       })
     },
