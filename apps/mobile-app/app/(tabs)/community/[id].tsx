@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
+import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Markdown from 'react-native-markdown-display'
 import { apiClient } from '../../../lib/api'
@@ -9,6 +9,7 @@ import { colors, radius, spacing } from '../../../lib/theme'
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const queryClient = useQueryClient()
+  const router = useRouter()
   const [draft, setDraft] = useState('')
 
   const postQuery = useQuery({
@@ -37,6 +38,39 @@ export default function PostDetailScreen() {
     },
   })
 
+  const offerMutation = useMutation({
+    mutationFn: () => apiClient.offerToRead(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['community-offers', id] }),
+  })
+
+  const confirmReaderMutation = useMutation({
+    mutationFn: (readerId: string) => apiClient.confirmReader(id, readerId),
+    onSuccess: () => {
+      // readerStatus is also shown on the feed's post cards (post-card.tsx), so the feed's
+      // cache needs invalidating too or it'll keep showing the stale status after navigating back.
+      queryClient.invalidateQueries({ queryKey: ['community-post', id] })
+      queryClient.invalidateQueries({ queryKey: ['community-offers', id] })
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => apiClient.deleteCommunityPost(id),
+    onSuccess: () => {
+      // The post no longer exists, so the feed's cache (which lists it) must be invalidated
+      // before navigating away or the deleted post lingers in the feed until a manual refresh.
+      queryClient.invalidateQueries({ queryKey: ['community-posts'] })
+      router.replace('/community')
+    },
+  })
+
+  function confirmDeletePost() {
+    Alert.alert('Delete this post?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteMutation.mutate() },
+    ])
+  }
+
   if (postQuery.isLoading) {
     return (
       <View style={styles.container}>
@@ -64,6 +98,9 @@ export default function PostDetailScreen() {
             <Text style={styles.channel}>#{post.channel.replace('_', '-')}</Text>
             <Text style={styles.title}>{post.title}</Text>
             <Text style={styles.author}>{post.authorName ?? 'Unknown'}</Text>
+            <Pressable onPress={confirmDeletePost}>
+              <Text style={styles.deleteLink}>Delete post</Text>
+            </Pressable>
             <View style={styles.body}>
               <Markdown style={markdownStyles}>{post.content}</Markdown>
             </View>
@@ -77,12 +114,21 @@ export default function PostDetailScreen() {
                 {post.sceneDetails ? <Text style={styles.meta}>{post.sceneDetails}</Text> : null}
                 {offersQuery.data ? (
                   offersQuery.data.offers.length > 0 ? (
-                    <Text style={styles.meta}>
-                      Offered to read: {offersQuery.data.offers.map((o) => o.userName ?? 'Someone').join(', ')}
-                    </Text>
+                    <View>
+                      <Text style={styles.meta}>Offered to read:</Text>
+                      {offersQuery.data.offers.map((offer) => (
+                        <Pressable key={offer.id} onPress={() => confirmReaderMutation.mutate(offer.userId)}>
+                          <Text style={styles.offerLink}>{offer.userName ?? 'Someone'} — confirm as reader</Text>
+                        </Pressable>
+                      ))}
+                    </View>
                   ) : offersQuery.data.hasOffered ? (
                     <Text style={styles.meta}>You've offered to read.</Text>
-                  ) : null
+                  ) : (
+                    <Pressable onPress={() => offerMutation.mutate()} disabled={offerMutation.isPending}>
+                      <Text style={styles.offerLink}>Offer to read this</Text>
+                    </Pressable>
+                  )
                 ) : null}
               </View>
             ) : null}
@@ -149,6 +195,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   meta: { color: colors.parchmentMuted, fontSize: 13 },
+  offerLink: { color: colors.accent, fontSize: 13, fontWeight: '600', marginTop: 2 },
+  deleteLink: { color: colors.accent, fontSize: 12, marginHorizontal: spacing.md, marginBottom: spacing.xs },
   comment: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderColor: colors.hairline },
   commentAuthor: { fontWeight: '600', color: colors.parchment, marginBottom: 2 },
   commentContent: { color: colors.parchment },
