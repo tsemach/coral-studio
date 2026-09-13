@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Alert, FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Markdown from 'react-native-markdown-display'
@@ -120,7 +120,11 @@ export default function PostDetailScreen() {
   const post = postQuery.data
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+    >
       <FlatList
         data={commentsQuery.data ?? []}
         keyExtractor={(comment) => comment.id}
@@ -153,6 +157,13 @@ export default function PostDetailScreen() {
                 {post.rehearsalAt ? <Text style={styles.meta}>{new Date(post.rehearsalAt).toLocaleString()}</Text> : null}
                 {post.rehearsalFormat ? <Text style={styles.meta}>{post.rehearsalFormat}</Text> : null}
                 {post.sceneDetails ? <Text style={styles.meta}>{post.sceneDetails}</Text> : null}
+                {post.readerStatus === 'matched' &&
+                currentUser &&
+                (post.authorId === currentUser.id || post.matchedUserId === currentUser.id) ? (
+                  <Pressable onPress={() => router.push(`/community/rehearsal/${id}`)}>
+                    <Text style={styles.offerLink}>Join rehearsal</Text>
+                  </Pressable>
+                ) : null}
                 {offersQuery.data ? (
                   offersQuery.data.offers.length > 0 ? (
                     <View>
@@ -211,7 +222,7 @@ export default function PostDetailScreen() {
           <Text style={styles.sendButtonText}>Send</Text>
         </Pressable>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 

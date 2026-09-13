@@ -33,6 +33,8 @@ export type WorkshopLiveStatus = { live: boolean }
 
 export type LiveTokenResult = { token: string; serverUrl: string; canPublish: boolean }
 
+export type RehearsalTokenResult = { token: string; serverUrl: string }
+
 export type CommunityPostsPage = { items: CommunityPostItemDTO[]; nextCursor: string | null }
 export type OffersResult = { offers: ReaderOfferItemDTO[]; hasOffered: boolean }
 
@@ -212,6 +214,9 @@ export function createApiClient(config: ApiClientConfig) {
         method: 'POST',
         body: { userId },
       })
+    },
+    getRehearsalToken(postId: string): Promise<RehearsalTokenResult> {
+      return request<RehearsalTokenResult>(`/api/mobile/community/posts/${postId}/rehearsal-token`)
     },
     deleteCommunityPost(postId: string): Promise<{ success: boolean }> {
       return request<{ success: boolean }>(`/api/mobile/community/posts/${postId}`, { method: 'DELETE' })

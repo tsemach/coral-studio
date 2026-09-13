@@ -272,3 +272,15 @@ test('addMeToLiveSession POSTs with no body', async () => {
   assert.equal(capturedMethod, 'POST')
   assert.equal(capturedBody, undefined)
 })
+
+test('getRehearsalToken GETs and returns the token/serverUrl', async () => {
+  globalThis.fetch = (async () => {
+    return { ok: true, status: 200, json: async () => ({ token: 't', serverUrl: 'wss://x' }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  const result = await client.getRehearsalToken('p1')
+
+  assert.deepEqual(result, { token: 't', serverUrl: 'wss://x' })
+})

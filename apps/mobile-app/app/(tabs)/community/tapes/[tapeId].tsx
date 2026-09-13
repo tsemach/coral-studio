@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -72,7 +72,11 @@ export default function TapeDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+    >
       <VideoView style={styles.video} player={player} nativeControls />
       <FlatList
         data={notesQuery.data ?? []}
@@ -116,7 +120,7 @@ export default function TapeDetailScreen() {
           <Text style={styles.sendButtonText}>Add</Text>
         </Pressable>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
