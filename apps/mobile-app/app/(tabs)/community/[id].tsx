@@ -3,6 +3,7 @@ import { Alert, FlatList, Image, KeyboardAvoidingView, Platform, Pressable, Styl
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Markdown from 'react-native-markdown-display'
+import type { ReaderStatus } from '@coral-studio/types'
 import { apiClient } from '../../../lib/api'
 import { useAuth } from '../../../lib/auth/auth-context'
 import { colors, radius, spacing } from '../../../lib/theme'
@@ -21,6 +22,25 @@ function getChannelLabel(channel: string): string {
     default:
       return '#general'
   }
+}
+
+// Matches studio-web's reader-status badge exactly (components/community/post-detail-modal.tsx):
+// amber while seeking, green once matched, muted gray once closed. Kept local to this
+// screen rather than in lib/theme -- these three colors have no other use in the app.
+const READER_STATUS_META: Record<ReaderStatus, { label: string; dot: string; background: string; border: string; text: string }> = {
+  seeking: { label: 'Seeking Reader', dot: '#fbbf24', background: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 0.4)', text: '#fde68a' },
+  matched: { label: 'Reader Matched', dot: '#34d399', background: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.4)', text: '#a7f3d0' },
+  closed: { label: 'Closed', dot: colors.parchmentMuted, background: colors.hairline, border: colors.hairline, text: colors.parchmentMuted },
+}
+
+function ReaderStatusBadge({ status }: { status: ReaderStatus | null }) {
+  const meta = READER_STATUS_META[status ?? 'seeking']
+  return (
+    <View style={[styles.statusPill, { backgroundColor: meta.background, borderColor: meta.border }]}>
+      <View style={[styles.statusDot, { backgroundColor: meta.dot }]} />
+      <Text style={[styles.statusPillText, { color: meta.text }]}>{meta.label}</Text>
+    </View>
+  )
 }
 
 export default function PostDetailScreen() {
@@ -118,6 +138,10 @@ export default function PostDetailScreen() {
   }
 
   const post = postQuery.data
+  const canJoinRehearsal =
+    post.readerStatus === 'matched' &&
+    !!currentUser &&
+    (post.authorId === currentUser.id || post.matchedUserId === currentUser.id)
 
   return (
     <KeyboardAvoidingView
@@ -130,15 +154,26 @@ export default function PostDetailScreen() {
         keyExtractor={(comment) => comment.id}
         ListHeaderComponent={
           <View>
-            <Text style={styles.channel}>{getChannelLabel(post.channel)}</Text>
-            <Text style={styles.title}>{post.title}</Text>
-            <Text style={styles.author}>{post.authorName ?? 'Unknown'}</Text>
-            {currentUser && post.authorId === currentUser.id ? (
-              <Pressable onPress={confirmDeletePost}>
-                <Text style={styles.deleteLink}>Delete post</Text>
-              </Pressable>
+            {post.channel === 'reader_sos' ? (
+              <View style={styles.statusPillWrap}>
+                <ReaderStatusBadge status={post.readerStatus} />
+              </View>
             ) : null}
-            <View style={styles.body}>
+
+            <View style={styles.headerRow}>
+              <View style={styles.titleRow}>
+                <Text style={styles.title}>{post.title}</Text>
+                <Text style={styles.channel}>{getChannelLabel(post.channel)}</Text>
+              </View>
+              {currentUser && post.authorId === currentUser.id ? (
+                <Pressable style={styles.deleteButton} onPress={confirmDeletePost}>
+                  <Text style={styles.deleteButtonIcon}>🗑️</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            <Text style={styles.author}>{post.authorName ?? 'Unknown'}</Text>
+
+            <View style={styles.contentCard}>
               <Markdown style={markdownStyles}>{post.content}</Markdown>
             </View>
 
@@ -154,24 +189,21 @@ export default function PostDetailScreen() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Reader request</Text>
                 <Text style={styles.meta}>Status: {post.readerStatus ?? 'seeking'}</Text>
+                {post.rehearsalFormat ? <Text style={styles.meta}>Where: {post.rehearsalFormat}</Text> : null}
+                {post.sceneDetails ? <Text style={styles.meta}>Scenes: {post.sceneDetails}</Text> : null}
                 {post.rehearsalAt ? <Text style={styles.meta}>{new Date(post.rehearsalAt).toLocaleString()}</Text> : null}
-                {post.rehearsalFormat ? <Text style={styles.meta}>{post.rehearsalFormat}</Text> : null}
-                {post.sceneDetails ? <Text style={styles.meta}>{post.sceneDetails}</Text> : null}
-                {post.readerStatus === 'matched' &&
-                currentUser &&
-                (post.authorId === currentUser.id || post.matchedUserId === currentUser.id) ? (
-                  <Pressable onPress={() => router.push(`/community/rehearsal/${id}`)}>
-                    <Text style={styles.offerLink}>Join rehearsal</Text>
-                  </Pressable>
-                ) : null}
+
                 {offersQuery.data ? (
                   offersQuery.data.offers.length > 0 ? (
-                    <View>
+                    <View style={styles.offersList}>
                       <Text style={styles.meta}>Offered to read:</Text>
                       {offersQuery.data.offers.map((offer) => (
-                        <Pressable key={offer.id} onPress={() => confirmReaderMutation.mutate(offer.userId)}>
-                          <Text style={styles.offerLink}>{offer.userName ?? 'Someone'} — confirm as reader</Text>
-                        </Pressable>
+                        <View key={offer.id} style={styles.offerRow}>
+                          <Text style={styles.offerName}>{offer.userName ?? 'Someone'}</Text>
+                          <Pressable style={styles.greenButton} onPress={() => confirmReaderMutation.mutate(offer.userId)}>
+                            <Text style={styles.greenButtonText}>Confirm as reader</Text>
+                          </Pressable>
+                        </View>
                       ))}
                     </View>
                   ) : offersQuery.data.hasOffered ? (
@@ -183,6 +215,12 @@ export default function PostDetailScreen() {
                   ) : null
                 ) : null}
                 {offerError ? <Text style={styles.error}>{offerError}</Text> : null}
+
+                {canJoinRehearsal ? (
+                  <Pressable style={[styles.greenButton, styles.openRoomButton]} onPress={() => router.push(`/community/rehearsal/${id}`)}>
+                    <Text style={styles.greenButtonText}>🎥 Open Rehearsal Room</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
 
@@ -234,10 +272,34 @@ const markdownStyles = {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
   message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
-  channel: { fontSize: 12, color: colors.communityBlueLight, fontWeight: '600', margin: spacing.md, marginBottom: 0 },
-  title: { fontSize: 20, fontWeight: '700', color: colors.parchment, marginHorizontal: spacing.md, marginTop: spacing.xs },
+  statusPillWrap: { marginHorizontal: spacing.md, marginTop: spacing.md },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusPillText: { fontSize: 12, fontWeight: '600' },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginHorizontal: spacing.md, marginTop: spacing.sm },
+  titleRow: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: spacing.sm },
+  title: { fontSize: 20, fontWeight: '700', color: colors.parchment },
+  channel: { fontSize: 12, color: colors.communityBlueLight, fontWeight: '600' },
+  deleteButton: { padding: spacing.xs },
+  deleteButtonIcon: { fontSize: 18 },
   author: { color: colors.parchmentMuted, marginHorizontal: spacing.md, marginTop: spacing.xs, marginBottom: spacing.sm },
-  body: { marginHorizontal: spacing.md },
+  contentCard: {
+    marginHorizontal: spacing.md,
+    backgroundColor: 'rgba(143, 36, 54, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(143, 36, 54, 0.3)',
+    borderRadius: radius,
+    padding: spacing.md,
+  },
   attachments: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -258,7 +320,12 @@ const styles = StyleSheet.create({
   },
   meta: { color: colors.parchmentMuted, fontSize: 13 },
   offerLink: { color: colors.accent, fontSize: 13, fontWeight: '600', marginTop: 2 },
-  deleteLink: { color: colors.accent, fontSize: 12, marginHorizontal: spacing.md, marginBottom: spacing.xs },
+  offersList: { gap: spacing.xs, marginTop: 2 },
+  offerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+  offerName: { color: colors.parchment, fontSize: 13, flex: 1 },
+  greenButton: { backgroundColor: colors.success, borderRadius: radius, paddingHorizontal: spacing.sm, paddingVertical: 6, alignSelf: 'flex-start' },
+  greenButtonText: { color: colors.successForeground, fontSize: 12, fontWeight: '600' },
+  openRoomButton: { marginTop: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: 10 },
   comment: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderColor: colors.hairline },
   commentAuthor: { fontWeight: '600', color: colors.parchment, marginBottom: 2 },
   commentContent: { color: colors.parchment },

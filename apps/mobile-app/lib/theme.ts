@@ -26,6 +26,12 @@ export const colors = {
   // "Leave workgroup" item so the two apps agree on what "destructive" looks
   // like.
   danger: '#f0a8b4',
+  // Matches Tailwind's emerald-600/500, which studio-web's Community post
+  // detail already uses for both "Confirm as reader" and "Open Rehearsal
+  // Room" (components/community/post-detail-modal.tsx) -- mobile reuses the
+  // same green for the same two actions instead of inventing a new one.
+  success: '#059669',
+  successForeground: '#ffffff',
 } as const
 
 // Fraunces is reserved for the wordmark/auth moment only, mirroring
