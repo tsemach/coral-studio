@@ -5,6 +5,14 @@ import { removeMember, updateMember } from '@/app/workshops/actions'
 import { useTranslation } from '@/components/i18n/language-provider'
 import type { WorkshopMember } from '@/lib/workshops/queries'
 
+// "Coral Mizrachi" -> "CM"; a single-word name or an email fallback has no
+// second word to take an initial from, so it stays one letter.
+function getInitials(nameOrEmail: string): string {
+  const words = nameOrEmail.trim().split(/\s+/)
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
+  return nameOrEmail.charAt(0).toUpperCase()
+}
+
 export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; member: WorkshopMember }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
@@ -20,7 +28,7 @@ export function WorkshopMemberRow({ workshopId, member }: { workshopId: string; 
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-[#3a2f27] text-[13px] font-semibold">
-            {(member.name || member.email).charAt(0).toUpperCase()}
+            {getInitials(member.name || member.email)}
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{member.name || member.email}</p>
