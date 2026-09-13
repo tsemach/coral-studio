@@ -88,31 +88,15 @@ function MediaErrorBanner() {
 }
 
 function RoomControls({ onLeave }: { onLeave: () => void }) {
-  const { localParticipant } = useLocalParticipant()
-  const [micOn, setMicOn] = useState(localParticipant.isMicrophoneEnabled)
-  const [cameraOn, setCameraOn] = useState(localParticipant.isCameraEnabled)
+  const { localParticipant, isMicrophoneEnabled, isCameraEnabled } = useLocalParticipant()
 
   return (
     <View style={styles.controls}>
-      <Pressable
-        style={styles.controlButton}
-        onPress={() => {
-          const next = !micOn
-          localParticipant.setMicrophoneEnabled(next)
-          setMicOn(next)
-        }}
-      >
-        <Text style={styles.controlButtonText}>{micOn ? 'Mute' : 'Unmute'}</Text>
+      <Pressable style={styles.controlButton} onPress={() => localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)}>
+        <Text style={styles.controlButtonText}>{isMicrophoneEnabled ? 'Mute' : 'Unmute'}</Text>
       </Pressable>
-      <Pressable
-        style={styles.controlButton}
-        onPress={() => {
-          const next = !cameraOn
-          localParticipant.setCameraEnabled(next)
-          setCameraOn(next)
-        }}
-      >
-        <Text style={styles.controlButtonText}>{cameraOn ? 'Stop video' : 'Start video'}</Text>
+      <Pressable style={styles.controlButton} onPress={() => localParticipant.setCameraEnabled(!isCameraEnabled)}>
+        <Text style={styles.controlButtonText}>{isCameraEnabled ? 'Stop video' : 'Start video'}</Text>
       </Pressable>
       <Pressable style={styles.leaveButton} onPress={onLeave}>
         <Text style={styles.leaveButtonText}>Leave</Text>
@@ -122,7 +106,7 @@ function RoomControls({ onLeave }: { onLeave: () => void }) {
 }
 
 function RoomView({ workshopId, onLeave }: { workshopId: string; onLeave: () => void }) {
-  const tracks = useTracks([Track.Source.Camera])
+  const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }])
   const renderTile: ListRenderItem<TrackReferenceOrPlaceholder> = ({ item }) => <ParticipantTile item={item} />
 
   return (
