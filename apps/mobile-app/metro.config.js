@@ -31,29 +31,31 @@ config.resolver.nodeModulesPaths = [
 const vercelBlobDistDir = path.dirname(require.resolve('@vercel/blob/client'))
 const vercelBlobNodeShims = new Set(['undici', 'crypto', 'stream'])
 
-// @vercel/blob/client also transitively pulls in @vercel/oidc (for a Vercel
-// OIDC token-verification path this app never exercises -- it's only ever
-// reachable from Vercel's own server-side auth flows, not from put()), and
-// @vercel/oidc's verify-vercel-oidc-token.js does a bare `require("jose")`.
-// jose's package.json resolves "require" to its Node CJS build, which in
-// turn imports "node:buffer" -- unavailable on-device and previously only
-// caught on the (Node-buffer-free) web target, not native. jose ships its
-// own browser-safe ESM build (dist/browser/index.js, verified dependency-
-// free of any node: import) behind its "browser" export condition; redirect
-// to it explicitly, scoped to requests from inside @vercel/oidc's own dist
-// folder so nothing else in the app (mobile-app never imports jose itself)
-// is affected.
-// @vercel/oidc and jose are transitive dependencies (of @vercel/blob, not
-// of this app directly), so pnpm's isolated node_modules layout doesn't
-// hoist them where a plain require.resolve('@vercel/oidc') would find them
-// -- resolve each relative to its own known importer instead. jose's own
-// package.json `exports` map doesn't expose './dist/browser/index.js' as a
-// public subpath, so resolve its package root and join the path manually,
-// the same way the block above reaches into @vercel/blob's dist folder.
-const vercelOidcEntry = require.resolve('@vercel/oidc', { paths: [vercelBlobDistDir] })
-const vercelOidcDistDir = path.dirname(vercelOidcEntry)
-const joseRoot = path.dirname(require.resolve('jose/package.json', { paths: [vercelOidcEntry] }))
-const joseBrowserEntry = path.join(joseRoot, 'dist/browser/index.js')
+// @vercel/blob/client also transitively pulls in @vercel/oidc -- a Vercel
+// OIDC token-verification path this app never exercises (only reachable
+// from Vercel's own server-side auth flows, never from put()). Its
+// react-native/browser entry (index-browser.js) still eagerly requires
+// verify-vercel-oidc-token.js, whose top-level code calls jose's
+// createRemoteJWKSet(...) at *import* time -- not lazily, not only when
+// verifyVercelOidcToken() is actually called. That call touches the global
+// Web Crypto API (`crypto.subtle`/`crypto.getRandomValues`), which doesn't
+// exist in Hermes, so simply importing @vercel/oidc throws
+// "ReferenceError: Property 'crypto' doesn't exist" at app startup on
+// native -- previously only caught on the web target (agent-browser/
+// Chrome DOES have a real `crypto` global, so this never surfaced there).
+// Rather than polyfill Web Crypto for one unused dependency, resolve
+// @vercel/oidc to Metro's built-in `{ type: 'empty' }` (the same technique
+// Expo's own resolver chain uses to shim out real Node builtins) so its
+// file is never evaluated at all, scoped to requests from inside
+// @vercel/blob's own dist folder.
+//
+// Sanity-check the package actually resolves from @vercel/blob's own
+// resolution context (pnpm's isolated node_modules layout means a plain
+// require.resolve('@vercel/oidc') from this file wouldn't find it, since
+// it's a dependency of @vercel/blob, not of this app directly) -- this
+// throws loudly at Metro-config-load time if @vercel/blob ever stops
+// depending on it, rather than silently leaving a stale, ineffective rule.
+require.resolve('@vercel/oidc', { paths: [vercelBlobDistDir] })
 
 const defaultResolveRequest = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
@@ -63,11 +65,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       filePath: path.join(vercelBlobDistDir, `${moduleName}-browser.js`),
     }
   }
-  if (moduleName === 'jose' && context.originModulePath.includes(vercelOidcDistDir)) {
-    return {
-      type: 'sourceFile',
-      filePath: joseBrowserEntry,
-    }
+  if (moduleName === '@vercel/oidc' && context.originModulePath.includes(vercelBlobDistDir)) {
+    return { type: 'empty' }
   }
   return defaultResolveRequest
     ? defaultResolveRequest(context, moduleName, platform)
