@@ -3,6 +3,7 @@ import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
+import { useAuth } from '../../../lib/auth/auth-context'
 import { ScriptViewer } from '../../../components/script-viewer'
 import { AddMemberSheet } from '../../../components/add-member-sheet'
 import { ScheduleRehearsalSheet } from '../../../components/schedule-rehearsal-sheet'
@@ -17,6 +18,7 @@ export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { user: currentUser } = useAuth()
   const [addMemberVisible, setAddMemberVisible] = useState(false)
   const [scheduleVisible, setScheduleVisible] = useState(false)
   // Script is the default tab on entering a workshop's details, matching
@@ -90,17 +92,21 @@ export default function WorkshopDetailScreen() {
   }
 
   const workshop = detailQuery.data
+  const isMember = workshop.members.some((member) => member.userId === currentUser?.id)
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.headerTitleRow}>
           <Text style={styles.title}>{workshop.title}</Text>
-          {liveQuery.data?.live ? (
-            <View style={styles.liveBadge}>
-              <View style={styles.liveDot} />
-              <Text style={styles.liveText}>Live now</Text>
-            </View>
+          {isMember ? (
+            <Pressable
+              style={[styles.goLiveButton, liveQuery.data?.live && styles.goLiveButtonActive]}
+              onPress={() => router.push(`/workshops/live/${id}`)}
+            >
+              {liveQuery.data?.live ? <View style={styles.liveDot} /> : null}
+              <Text style={styles.goLiveButtonText}>{liveQuery.data?.live ? 'Live · Join' : 'Go live'}</Text>
+            </Pressable>
           ) : null}
         </View>
         <WorkshopMenu
@@ -212,9 +218,19 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
   headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap', flexShrink: 1 },
   title: { fontSize: 20, fontWeight: '700', color: colors.parchment },
-  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent },
-  liveText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
+  goLiveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: pillRadius,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+  },
+  goLiveButtonActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.primaryForeground },
+  goLiveButtonText: { color: colors.parchment, fontWeight: '600', fontSize: 13 },
   meta: { color: colors.parchmentMuted, fontSize: 14 },
   tabRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
   tab: {

@@ -149,6 +149,7 @@ export interface WorkshopsDictionary {
       couldNotJoin: string
       backToWorkshop: string
       connecting: string
+      viewers: string
     }
     errors: {
       unknownScript: string
@@ -316,6 +317,7 @@ export const workshops: WorkshopsDictionary = {
       couldNotJoin: 'Could not join the live session',
       backToWorkshop: 'Back to workshop',
       connecting: 'Connecting…',
+      viewers: 'Viewers',
     },
     errors: {
       unknownScript: 'Unknown script',

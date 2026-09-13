@@ -37,7 +37,7 @@ export function WorkshopShell({
     // min-height:auto refuses to shrink below its content size, which
     // silently defeats overflow at whichever level omits it).
     <div className="flex h-screen flex-col overflow-hidden bg-ink text-ink-foreground">
-      <WorkshopTopbar />
+      <WorkshopTopbar title={selected?.title} />
 
       {/* COR-18: the only client boundary here -- swaps WorkshopMain out for
           the live video view (and keeps this the only server component in

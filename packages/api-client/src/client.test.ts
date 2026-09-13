@@ -243,3 +243,32 @@ test('addTapeNote POSTs the input as JSON', async () => {
 
   assert.equal(capturedBody, JSON.stringify({ timestampSeconds: 42, content: 'Nice beat here', tag: 'objective_action' }))
 })
+
+test('getLiveToken GETs and returns the token/serverUrl/canPublish', async () => {
+  globalThis.fetch = (async () => {
+    return { ok: true, status: 200, json: async () => ({ token: 't', serverUrl: 'wss://x', canPublish: true }) } as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  const result = await client.getLiveToken('w1')
+
+  assert.deepEqual(result, { token: 't', serverUrl: 'wss://x', canPublish: true })
+})
+
+test('addMeToLiveSession POSTs with no body', async () => {
+  let capturedMethod: string | undefined
+  let capturedBody: unknown
+  globalThis.fetch = (async (_input, init) => {
+    capturedMethod = init?.method
+    capturedBody = init?.body
+    return { ok: true, status: 204, json: async () => { throw new Error('no body') } } as unknown as Response
+  }) as typeof fetch
+
+  const client = createApiClient({ baseUrl: 'https://example.test', getToken: async () => 'tok', onUnauthorized: () => {} })
+
+  await client.addMeToLiveSession('w1')
+
+  assert.equal(capturedMethod, 'POST')
+  assert.equal(capturedBody, undefined)
+})

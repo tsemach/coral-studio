@@ -160,6 +160,7 @@ export const workshops: WorkshopsDictionary = {
       couldNotJoin: 'Nije moguće pridružiti se sesiji uživo',
       backToWorkshop: 'Nazad na radionicu',
       connecting: 'Povezivanje…',
+      viewers: 'Gledaoci',
     },
     errors: {
       unknownScript: 'Nepoznata skripta',

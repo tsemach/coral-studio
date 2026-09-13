@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { UserMenu } from '@/components/user-menu'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
 
-export async function WorkshopTopbar() {
+export async function WorkshopTopbar({ title }: { title?: string }) {
   const { workshops: t } = await getDictionary()
 
   return (
@@ -19,7 +19,10 @@ export async function WorkshopTopbar() {
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-foreground/55">
             {t.topbar.sectionLabel}
           </p>
-          <p className="mt-0.5 text-[21px] font-semibold tracking-tight">{t.topbar.title}</p>
+          <p className="mt-0.5 text-[21px] font-semibold tracking-tight">
+            {t.topbar.title}
+            {title ? <span className="text-ink-foreground/55"> · {title}</span> : null}
+          </p>
         </div>
       </div>
 
