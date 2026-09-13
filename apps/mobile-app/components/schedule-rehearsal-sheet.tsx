@@ -69,7 +69,7 @@ export function ScheduleRehearsalSheet({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.sheet}>
           <Text style={styles.title}>Schedule rehearsal</Text>
           <Text style={styles.hint}>Date and time (e.g. 2026-10-01T18:00)</Text>

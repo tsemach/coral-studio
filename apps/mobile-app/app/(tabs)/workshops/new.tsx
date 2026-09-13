@@ -26,7 +26,7 @@ export default function NewWorkshopScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
     >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -78,7 +78,7 @@ export default function NewWorkshopScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
-  content: { padding: spacing.md, gap: spacing.sm },
+  content: { padding: spacing.md, gap: spacing.sm, paddingBottom: 280 },
   label: { color: colors.parchmentMuted, fontSize: 13, marginTop: spacing.sm },
   input: {
     backgroundColor: colors.inkCard,

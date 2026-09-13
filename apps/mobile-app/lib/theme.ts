@@ -26,6 +26,11 @@ export const colors = {
   // "Leave workgroup" item so the two apps agree on what "destructive" looks
   // like.
   danger: '#f0a8b4',
+  // A muted forest green for the "Open Rehearsal Room" button -- sits
+  // better against this app's warm ink/brass palette than studio-web's flat
+  // Tailwind emerald-600, which read as too cold/saturated here.
+  success: '#3f7d59',
+  successForeground: '#fbf3ec',
 } as const
 
 // Fraunces is reserved for the wordmark/auth moment only, mirroring
