@@ -2,18 +2,27 @@
 
 import '@livekit/components-styles'
 import { useEffect, useState } from 'react'
-import { LiveKitRoom, VideoConference, useLocalParticipant, useLocalParticipantPermissions } from '@livekit/components-react'
+import {
+  ControlBar,
+  GridLayout,
+  LiveKitRoom,
+  ParticipantTile,
+  RoomAudioRenderer,
+  useLocalParticipant,
+  useLocalParticipantPermissions,
+  useRemoteParticipants,
+  useTracks,
+} from '@livekit/components-react'
+import { Track } from 'livekit-client'
 import { addMeToLiveSession, getLiveToken } from '@/app/workshops/actions'
 import { useTranslation } from '@/components/i18n/language-provider'
 
-// Floating over VideoConference rather than part of its own control bar --
-// VideoConference is LiveKit's stock component (chat, screen share, its own
-// Leave button already wired to disconnect), not ours to edit. Only rendered
-// while the caller can't publish yet; once promoteParticipant() (the
-// addMeToLiveSession action) flips their grant, LiveKit pushes the
-// permission change down and useLocalParticipantPermissions() picks it up on
-// its own -- the effect below is what actually turns their camera/mic on in
-// response, since a permission grant alone doesn't start publishing.
+// Floating over the grid/control bar rather than part of either -- only
+// rendered while the caller can't publish yet; once promoteParticipant()
+// (the addMeToLiveSession action) flips their grant, LiveKit pushes the
+// permission change down and useLocalParticipantPermissions() picks it up
+// on its own -- the effect below is what actually turns their camera/mic
+// on in response, since a permission grant alone doesn't start publishing.
 function AddMeButton({ workshopId }: { workshopId: string }) {
   const { t } = useTranslation()
   const permissions = useLocalParticipantPermissions()
@@ -44,6 +53,50 @@ function AddMeButton({ workshopId }: { workshopId: string }) {
     >
       {pending ? t.workshops.videoRoom.joining : t.workshops.videoRoom.addMe}
     </button>
+  )
+}
+
+// A viewer never publishes anything (canPublish stays false until
+// promoted), so listing them by name here -- rather than as an empty
+// placeholder tile in the main grid -- is how anyone still knows who's
+// watching. useRemoteParticipants() already excludes the local
+// participant, so this never lists yourself.
+function ViewerList() {
+  const { t } = useTranslation()
+  const remoteParticipants = useRemoteParticipants()
+  const viewers = remoteParticipants.filter((participant) => !participant.permissions?.canPublish)
+
+  if (viewers.length === 0) return null
+
+  return (
+    <div className="flex w-40 shrink-0 flex-col gap-2 overflow-y-auto border-r border-ink-foreground/16 bg-ink p-3">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-ink-foreground/55">
+        {t.workshops.videoRoom.viewers} ({viewers.length})
+      </p>
+      {viewers.map((viewer) => (
+        <p key={viewer.identity} className="truncate text-sm text-ink-foreground/80">
+          {viewer.name || viewer.identity}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+// Main grid shows only participants who can actually publish (actors, or
+// a viewer once promoted) -- a non-promoted viewer would only ever render
+// an empty placeholder here, so they're excluded and listed in
+// ViewerList instead. withPlaceholder: true still covers an actor whose
+// camera happens to be off, matching this component's prior behavior for
+// anyone who can actually appear on camera.
+function ActorGrid() {
+  const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]).filter(
+    (track) => track.participant.permissions?.canPublish
+  )
+
+  return (
+    <GridLayout tracks={tracks} className="min-h-0 flex-1">
+      <ParticipantTile />
+    </GridLayout>
   )
 }
 
@@ -103,7 +156,17 @@ export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string;
       className="relative flex min-h-0 flex-1 flex-col"
       onDisconnected={onLeave}
     >
-      <VideoConference />
+      <div className="flex min-h-0 flex-1">
+        <ViewerList />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <ActorGrid />
+          <ControlBar
+            variation="minimal"
+            controls={{ microphone: true, camera: true, chat: false, screenShare: false, leave: true }}
+          />
+        </div>
+      </div>
+      <RoomAudioRenderer />
       <AddMeButton workshopId={workshopId} />
     </LiveKitRoom>
   )
