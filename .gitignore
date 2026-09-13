@@ -39,3 +39,11 @@ pnpm-debug.log*
 next-env.d.ts
 scratch
 .env*
+
+# local scratch files at the repo root -- never meant to be committed
+/coral-scripts.zip
+/glumacki-client_secre-apps.googleusercontent.com
+/mobile.md
+/mobile_app_guide.md
+/new-env.txt
+/workshops/

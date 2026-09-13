@@ -146,7 +146,7 @@ export default function PostDetailScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
     >
       <FlatList
@@ -195,15 +195,12 @@ export default function PostDetailScreen() {
 
                 {offersQuery.data ? (
                   offersQuery.data.offers.length > 0 ? (
-                    <View style={styles.offersList}>
+                    <View>
                       <Text style={styles.meta}>Offered to read:</Text>
                       {offersQuery.data.offers.map((offer) => (
-                        <View key={offer.id} style={styles.offerRow}>
-                          <Text style={styles.offerName}>{offer.userName ?? 'Someone'}</Text>
-                          <Pressable style={styles.greenButton} onPress={() => confirmReaderMutation.mutate(offer.userId)}>
-                            <Text style={styles.greenButtonText}>Confirm as reader</Text>
-                          </Pressable>
-                        </View>
+                        <Pressable key={offer.id} onPress={() => confirmReaderMutation.mutate(offer.userId)}>
+                          <Text style={styles.offerLink}>{offer.userName ?? 'Someone'} — confirm as reader</Text>
+                        </Pressable>
                       ))}
                     </View>
                   ) : offersQuery.data.hasOffered ? (
@@ -217,7 +214,7 @@ export default function PostDetailScreen() {
                 {offerError ? <Text style={styles.error}>{offerError}</Text> : null}
 
                 {canJoinRehearsal ? (
-                  <Pressable style={[styles.greenButton, styles.openRoomButton]} onPress={() => router.push(`/community/rehearsal/${id}`)}>
+                  <Pressable style={styles.greenButton} onPress={() => router.push(`/community/rehearsal/${id}`)}>
                     <Text style={styles.greenButtonText}>🎥 Open Rehearsal Room</Text>
                   </Pressable>
                 ) : null}
@@ -320,12 +317,15 @@ const styles = StyleSheet.create({
   },
   meta: { color: colors.parchmentMuted, fontSize: 13 },
   offerLink: { color: colors.accent, fontSize: 13, fontWeight: '600', marginTop: 2 },
-  offersList: { gap: spacing.xs, marginTop: 2 },
-  offerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-  offerName: { color: colors.parchment, fontSize: 13, flex: 1 },
-  greenButton: { backgroundColor: colors.success, borderRadius: radius, paddingHorizontal: spacing.sm, paddingVertical: 6, alignSelf: 'flex-start' },
+  greenButton: {
+    backgroundColor: colors.success,
+    borderRadius: radius,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    marginTop: spacing.sm,
+  },
   greenButtonText: { color: colors.successForeground, fontSize: 12, fontWeight: '600' },
-  openRoomButton: { marginTop: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: 10 },
   comment: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderColor: colors.hairline },
   commentAuthor: { fontWeight: '600', color: colors.parchment, marginBottom: 2 },
   commentContent: { color: colors.parchment },
