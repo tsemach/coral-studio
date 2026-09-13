@@ -153,6 +153,13 @@ export default function PostDetailScreen() {
                 {post.rehearsalAt ? <Text style={styles.meta}>{new Date(post.rehearsalAt).toLocaleString()}</Text> : null}
                 {post.rehearsalFormat ? <Text style={styles.meta}>{post.rehearsalFormat}</Text> : null}
                 {post.sceneDetails ? <Text style={styles.meta}>{post.sceneDetails}</Text> : null}
+                {post.readerStatus === 'matched' &&
+                currentUser &&
+                (post.authorId === currentUser.id || post.matchedUserId === currentUser.id) ? (
+                  <Pressable onPress={() => router.push(`/community/rehearsal/${id}`)}>
+                    <Text style={styles.offerLink}>Join rehearsal</Text>
+                  </Pressable>
+                ) : null}
                 {offersQuery.data ? (
                   offersQuery.data.offers.length > 0 ? (
                     <View>
