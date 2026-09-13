@@ -110,8 +110,21 @@ function RoomControls({ onLeave }: { onLeave: () => void }) {
 // height -- one tile fills the whole area, two split it in half, three in
 // thirds, and so on -- rather than a fixed tile height that leaves empty
 // space below with few participants and requires scrolling with many.
+//
+// A viewer who hasn't been promoted (via "Add me") never publishes
+// anything, so their own entry here is always an empty placeholder --
+// showing it would give them equal screen space as an actual actor's
+// video for a tile of nothing. Filtered out here rather than at the
+// useTracks() source, since a promoted viewer/actor should still see
+// their own tile once they can publish (matches web's own self-preview
+// convention for anyone actually broadcasting).
 function RoomView({ workshopId, onLeave }: { workshopId: string; onLeave: () => void }) {
-  const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }])
+  const allTracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }])
+  const { localParticipant } = useLocalParticipant()
+  const permissions = useLocalParticipantPermissions()
+  const tracks = !permissions?.canPublish
+    ? allTracks.filter((track) => track.participant.identity !== localParticipant.identity)
+    : allTracks
   const [gridHeight, setGridHeight] = useState(0)
   const tileHeight = tracks.length > 0 ? gridHeight / tracks.length : gridHeight
   const renderTile: ListRenderItem<TrackReferenceOrPlaceholder> = ({ item }) => (
