@@ -16,8 +16,13 @@ import { apiClient } from '../lib/api'
 import { colors, radius, spacing } from '../lib/theme'
 
 function ParticipantTile({ item }: { item: TrackReferenceOrPlaceholder }) {
-  if (!isTrackReference(item)) return <View style={styles.tile} />
-  return <VideoTrack trackRef={item} style={styles.tile} />
+  const name = item.participant.name || item.participant.identity
+  return (
+    <View style={styles.tile}>
+      {isTrackReference(item) ? <VideoTrack trackRef={item} style={StyleSheet.absoluteFill} /> : null}
+      <Text style={styles.tileName}>{name}</Text>
+    </View>
+  )
 }
 
 // Overlays the grid until this participant's server-side permission grant
@@ -63,21 +68,17 @@ function AddMeButton({ workshopId }: { workshopId: string }) {
   )
 }
 
-// Surfaces a camera/mic permission denial as a visible notice rather than a
-// silently blank tile. lastCameraError/lastMicrophoneError are plain getters
-// on LocalParticipant, not reactive on their own, so this polls -- simplest
-// correct option for a v1 given how rarely this actually fires.
+// Camera/mic permission denials surface here as a visible notice rather
+// than a silently blank tile. useLocalParticipant() already exposes these
+// reactively -- same hook RoomControls/AddMeButton use below -- no polling
+// needed.
 function MediaErrorBanner() {
-  const { localParticipant } = useLocalParticipant()
-  const [message, setMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (localParticipant.lastCameraError) setMessage('Camera could not start — check your device permissions.')
-      else if (localParticipant.lastMicrophoneError) setMessage('Microphone could not start — check your device permissions.')
-    }, 2000)
-    return () => clearInterval(interval)
-  }, [localParticipant])
+  const { lastCameraError, lastMicrophoneError } = useLocalParticipant()
+  const message = lastCameraError
+    ? 'Camera could not start — check your device permissions.'
+    : lastMicrophoneError
+      ? 'Microphone could not start — check your device permissions.'
+      : null
 
   if (!message) return null
   return (
@@ -112,7 +113,7 @@ function RoomView({ workshopId, onLeave }: { workshopId: string; onLeave: () => 
   return (
     <View style={styles.container}>
       <MediaErrorBanner />
-      <FlatList data={tracks} renderItem={renderTile} keyExtractor={(item, index) => `${item.participant.identity}-${index}`} />
+      <FlatList data={tracks} renderItem={renderTile} keyExtractor={(item) => item.participant.identity} />
       <AddMeButton workshopId={workshopId} />
       <RoomControls onLeave={onLeave} />
     </View>
@@ -130,6 +131,7 @@ export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string;
     queryFn: () => apiClient.getLiveToken(workshopId),
     staleTime: Infinity,
   })
+  const [connectionError, setConnectionError] = useState<string | null>(null)
 
   useEffect(() => {
     AudioSession.startAudioSession()
@@ -155,12 +157,30 @@ export function WorkshopVideoRoom({ workshopId, onLeave }: { workshopId: string;
       </View>
     )
   }
+  if (connectionError) {
+    return (
+      <View style={styles.message}>
+        <Text style={styles.messageText}>{connectionError}</Text>
+        <Pressable style={styles.backButton} onPress={onLeave}>
+          <Text style={styles.backButtonText}>Back to workshop</Text>
+        </Pressable>
+      </View>
+    )
+  }
 
   const { token, serverUrl, canPublish } = sessionQuery.data
 
   return (
     <View style={styles.container}>
-      <LiveKitRoom token={token} serverUrl={serverUrl} audio={canPublish} video={canPublish} connect onDisconnected={onLeave}>
+      <LiveKitRoom
+        token={token}
+        serverUrl={serverUrl}
+        audio={canPublish}
+        video={canPublish}
+        connect
+        onDisconnected={onLeave}
+        onError={(err) => setConnectionError(err.message || 'Could not join the live session.')}
+      >
         <RoomView workshopId={workshopId} onLeave={onLeave} />
       </LiveKitRoom>
     </View>
@@ -173,7 +193,19 @@ const styles = StyleSheet.create({
   messageText: { color: colors.parchmentMuted, fontSize: 14, textAlign: 'center' },
   backButton: { borderWidth: 1, borderColor: colors.hairline, borderRadius: radius, paddingHorizontal: spacing.md, paddingVertical: 10 },
   backButtonText: { color: colors.parchmentMuted, fontWeight: '600' },
-  tile: { height: 220, backgroundColor: colors.inkCard, margin: spacing.xs, borderRadius: radius },
+  tile: { height: 220, backgroundColor: colors.inkCard, margin: spacing.xs, borderRadius: radius, overflow: 'hidden' },
+  tileName: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
+    color: colors.parchment,
+    fontSize: 12,
+    fontWeight: '600',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   addMeWrap: { position: 'absolute', bottom: 90, alignSelf: 'center', alignItems: 'center', gap: spacing.xs },
   addMeButton: { backgroundColor: colors.primary, borderRadius: radius, paddingHorizontal: spacing.md, paddingVertical: 12 },
   addMeButtonText: { color: colors.primaryForeground, fontWeight: '600' },

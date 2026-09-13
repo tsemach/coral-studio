@@ -1,6 +1,14 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    // Lets tsc resolve Metro's platform-extension files (e.g.
+    // livekit-setup.native.ts / .web.ts) for extension-less imports --
+    // without this, tsc can't tell which platform variant an
+    // extension-less import should resolve to (TS2882). Order picks the
+    // native variant first, matching this app's primary target (Android;
+    // see apps/mobile-app/CLAUDE.md) and falling back to the
+    // no-suffix file when a native-specific variant doesn't exist.
+    "moduleSuffixes": [".ios", ".android", ".native", ""]
   }
 }

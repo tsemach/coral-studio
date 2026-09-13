@@ -3,6 +3,7 @@ import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
+import { useAuth } from '../../../lib/auth/auth-context'
 import { ScriptViewer } from '../../../components/script-viewer'
 import { AddMemberSheet } from '../../../components/add-member-sheet'
 import { ScheduleRehearsalSheet } from '../../../components/schedule-rehearsal-sheet'
@@ -17,6 +18,7 @@ export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { user: currentUser } = useAuth()
   const [addMemberVisible, setAddMemberVisible] = useState(false)
   const [scheduleVisible, setScheduleVisible] = useState(false)
   // Script is the default tab on entering a workshop's details, matching
@@ -90,19 +92,22 @@ export default function WorkshopDetailScreen() {
   }
 
   const workshop = detailQuery.data
+  const isMember = workshop.members.some((member) => member.userId === currentUser?.id)
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View style={styles.headerTitleRow}>
           <Text style={styles.title}>{workshop.title}</Text>
-          <Pressable
-            style={[styles.goLiveButton, liveQuery.data?.live && styles.goLiveButtonActive]}
-            onPress={() => router.push(`/workshops/live/${id}`)}
-          >
-            {liveQuery.data?.live ? <View style={styles.liveDot} /> : null}
-            <Text style={styles.goLiveButtonText}>{liveQuery.data?.live ? 'Live · Join' : 'Go live'}</Text>
-          </Pressable>
+          {isMember ? (
+            <Pressable
+              style={[styles.goLiveButton, liveQuery.data?.live && styles.goLiveButtonActive]}
+              onPress={() => router.push(`/workshops/live/${id}`)}
+            >
+              {liveQuery.data?.live ? <View style={styles.liveDot} /> : null}
+              <Text style={styles.goLiveButtonText}>{liveQuery.data?.live ? 'Live · Join' : 'Go live'}</Text>
+            </Pressable>
+          ) : null}
         </View>
         <WorkshopMenu
           hasRehearsal={!!workshop.rehearsalAt}
