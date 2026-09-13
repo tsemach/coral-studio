@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   error: { color: colors.accent, fontSize: 14 },
   button: {
     marginTop: spacing.md,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.communityBlue,
     borderRadius: radius,
     paddingVertical: 14,
     alignItems: 'center',

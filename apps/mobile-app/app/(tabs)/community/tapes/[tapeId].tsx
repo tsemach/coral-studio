@@ -154,6 +154,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inkCard,
     color: colors.parchment,
   },
-  sendButton: { backgroundColor: colors.primary, borderRadius: radius, paddingHorizontal: spacing.md, justifyContent: 'center' },
+  sendButton: { backgroundColor: colors.communityBlue, borderRadius: radius, paddingHorizontal: spacing.md, justifyContent: 'center' },
   sendButtonText: { color: colors.primaryForeground, fontWeight: '600' },
 })

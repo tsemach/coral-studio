@@ -7,6 +7,22 @@ import { apiClient } from '../../../lib/api'
 import { useAuth } from '../../../lib/auth/auth-context'
 import { colors, radius, spacing } from '../../../lib/theme'
 
+// Matches studio-web's getChannelLabel() in components/community/post-card.tsx
+// exactly -- "callboard" has its own #the-callboard label, everything else
+// maps directly to its own #channel-name.
+function getChannelLabel(channel: string): string {
+  switch (channel) {
+    case 'reader_sos':
+      return '#reader-sos'
+    case 'callboard':
+      return '#the-callboard'
+    case 'craft_chat':
+      return '#craft-chat'
+    default:
+      return '#general'
+  }
+}
+
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const queryClient = useQueryClient()
@@ -110,7 +126,7 @@ export default function PostDetailScreen() {
         keyExtractor={(comment) => comment.id}
         ListHeaderComponent={
           <View>
-            <Text style={styles.channel}>#{post.channel.replace('_', '-')}</Text>
+            <Text style={styles.channel}>{getChannelLabel(post.channel)}</Text>
             <Text style={styles.title}>{post.title}</Text>
             <Text style={styles.author}>{post.authorName ?? 'Unknown'}</Text>
             {currentUser && post.authorId === currentUser.id ? (
@@ -207,7 +223,7 @@ const markdownStyles = {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
   message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
-  channel: { fontSize: 11, color: colors.parchmentMuted, textTransform: 'uppercase', margin: spacing.md, marginBottom: 0 },
+  channel: { fontSize: 12, color: colors.communityBlueLight, fontWeight: '600', margin: spacing.md, marginBottom: 0 },
   title: { fontSize: 20, fontWeight: '700', color: colors.parchment, marginHorizontal: spacing.md, marginTop: spacing.xs },
   author: { color: colors.parchmentMuted, marginHorizontal: spacing.md, marginTop: spacing.xs, marginBottom: spacing.sm },
   body: { marginHorizontal: spacing.md },
@@ -246,6 +262,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.inkCard,
     color: colors.parchment,
   },
-  sendButton: { backgroundColor: colors.primary, borderRadius: radius, paddingHorizontal: spacing.md, justifyContent: 'center' },
+  sendButton: { backgroundColor: colors.communityBlue, borderRadius: radius, paddingHorizontal: spacing.md, justifyContent: 'center' },
   sendButtonText: { color: colors.primaryForeground, fontWeight: '600' },
 })

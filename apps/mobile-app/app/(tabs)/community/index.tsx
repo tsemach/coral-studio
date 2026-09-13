@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.communityBlue,
     borderRadius: radius,
     paddingVertical: 12,
     alignItems: 'center',

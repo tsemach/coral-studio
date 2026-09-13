@@ -11,6 +11,16 @@ export const colors = {
   primary: '#8f2436',
   primaryForeground: '#fbf3ec',
   accent: '#c08a2d',
+  // Community-only accent: the studio-web Community section (channel tabs,
+  // channel tags, primary post/comment/tape actions) uses a distinct blue
+  // rather than the site-wide maroon `primary` -- Workshops keeps `primary`
+  // unchanged. Matches Tailwind's blue-500/400/300 as used in
+  // components/community/*.tsx (bg-blue-500/50, border-blue-400/50,
+  // text-blue-300, border-blue-500/40 + bg-blue-500/15 for the active tab).
+  communityBlue: '#3080ff',
+  communityBlueLight: '#90c5ff',
+  communityBlueBorder: 'rgba(48, 128, 255, 0.4)',
+  communityBlueTint: 'rgba(48, 128, 255, 0.15)',
 } as const
 
 // Fraunces is reserved for the wordmark/auth moment only, mirroring
