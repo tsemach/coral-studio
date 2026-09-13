@@ -133,7 +133,7 @@ export default function NewTapeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
-  content: { padding: spacing.md, gap: spacing.sm },
+  content: { padding: spacing.md, gap: spacing.sm, paddingBottom: 280 },
   label: { color: colors.parchmentMuted, fontSize: 13, marginTop: spacing.sm },
   input: {
     backgroundColor: colors.inkCard,
