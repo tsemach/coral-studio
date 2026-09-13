@@ -101,6 +101,10 @@ export interface WorkshopsDictionary {
       remove: string
       save: string
       partPlaceholder: string
+      confirmTitle: string
+      confirmBodyPrefix: string
+      confirmBodySuffix: string
+      keepThem: string
     }
     main: {
       sectionLabel: string
@@ -263,6 +267,10 @@ export const workshops: WorkshopsDictionary = {
       remove: 'Remove',
       save: 'Save',
       partPlaceholder: 'Part (optional)',
+      confirmTitle: 'Remove member?',
+      confirmBodyPrefix: 'Remove ',
+      confirmBodySuffix: ' from this workshop? They can be added back later.',
+      keepThem: 'Keep them',
     },
     main: {
       sectionLabel: 'Workshops',

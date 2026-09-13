@@ -67,6 +67,13 @@ export default function WorkshopDetailScreen() {
     ])
   }
 
+  function confirmRemoveMember(memberId: string, memberName: string) {
+    Alert.alert(`Remove ${memberName}?`, 'They can be added back later.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => removeMemberMutation.mutate(memberId) },
+    ])
+  }
+
   if (detailQuery.isLoading) {
     return (
       <View style={styles.container}>
@@ -145,7 +152,7 @@ export default function WorkshopDetailScreen() {
                     {item.part ? ` · ${item.part}` : ''}
                   </Text>
                 </Text>
-                <Pressable onPress={() => removeMemberMutation.mutate(item.id)}>
+                <Pressable onPress={() => confirmRemoveMember(item.id, item.name ?? item.email)}>
                   <Text style={styles.removeLink}>Remove</Text>
                 </Pressable>
               </View>
