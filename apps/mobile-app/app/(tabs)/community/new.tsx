@@ -22,7 +22,7 @@ type PickedImage = { uri: string; name: string; type: string }
 export default function NewPostScreen() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [channel, setChannel] = useState<CommunityChannel>('general')
+  const [channel, setChannel] = useState<CommunityChannel>('reader_sos')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [rehearsalAt, setRehearsalAt] = useState('')
