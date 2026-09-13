@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../../../lib/api'
@@ -24,49 +24,55 @@ export default function NewWorkshopScreen() {
   })
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.label}>Title</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Untitled workshop"
-        placeholderTextColor={colors.parchmentMuted}
-        value={title}
-        onChangeText={setTitle}
-      />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.label}>Title</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Untitled workshop"
+          placeholderTextColor={colors.parchmentMuted}
+          value={title}
+          onChangeText={setTitle}
+        />
 
-      <Text style={styles.label}>Script (optional)</Text>
-      {scriptsQuery.isLoading ? (
-        <Text style={styles.meta}>Loading scripts…</Text>
-      ) : (
-        <View style={styles.scriptList}>
-          <Pressable
-            style={[styles.scriptOption, scriptSlug === null && styles.scriptOptionActive]}
-            onPress={() => setScriptSlug(null)}
-          >
-            <Text style={styles.scriptOptionText}>No script</Text>
-          </Pressable>
-          {(scriptsQuery.data ?? []).map((script) => (
-            <Pressable
-              key={script.slug}
-              style={[styles.scriptOption, scriptSlug === script.slug && styles.scriptOptionActive]}
-              onPress={() => setScriptSlug(script.slug)}
-            >
-              <Text style={styles.scriptOptionText}>{script.title}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      <Pressable style={styles.button} onPress={() => mutation.mutate()} disabled={mutation.isPending}>
-        {mutation.isPending ? (
-          <ActivityIndicator color={colors.primaryForeground} />
+        <Text style={styles.label}>Script (optional)</Text>
+        {scriptsQuery.isLoading ? (
+          <Text style={styles.meta}>Loading scripts…</Text>
         ) : (
-          <Text style={styles.buttonText}>Create workshop</Text>
+          <View style={styles.scriptList}>
+            <Pressable
+              style={[styles.scriptOption, scriptSlug === null && styles.scriptOptionActive]}
+              onPress={() => setScriptSlug(null)}
+            >
+              <Text style={styles.scriptOptionText}>No script</Text>
+            </Pressable>
+            {(scriptsQuery.data ?? []).map((script) => (
+              <Pressable
+                key={script.slug}
+                style={[styles.scriptOption, scriptSlug === script.slug && styles.scriptOptionActive]}
+                onPress={() => setScriptSlug(script.slug)}
+              >
+                <Text style={styles.scriptOptionText}>{script.title}</Text>
+              </Pressable>
+            ))}
+          </View>
         )}
-      </Pressable>
-    </ScrollView>
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <Pressable style={styles.button} onPress={() => mutation.mutate()} disabled={mutation.isPending}>
+          {mutation.isPending ? (
+            <ActivityIndicator color={colors.primaryForeground} />
+          ) : (
+            <Text style={styles.buttonText}>Create workshop</Text>
+          )}
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 

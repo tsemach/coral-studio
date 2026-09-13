@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { ApiError } from '@coral-studio/api-client'
 import { useAuth } from '../lib/auth/auth-context'
 import { colors, fonts, radius, spacing } from '../lib/theme'
@@ -25,54 +25,57 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Glumački Studio</Text>
-        <Text style={styles.subtitle}>Sign in to see your workshops</Text>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="you@example.com"
-            placeholderTextColor={colors.parchmentMuted}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <Text style={styles.title}>Glumački Studio</Text>
+          <Text style={styles.subtitle}>Sign in to see your workshops</Text>
         </View>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="••••••••"
-            placeholderTextColor={colors.parchmentMuted}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+        <View style={styles.form}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="you@example.com"
+              placeholderTextColor={colors.parchmentMuted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="••••••••"
+              placeholderTextColor={colors.parchmentMuted}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
+            {submitting ? (
+              <ActivityIndicator color={colors.primaryForeground} />
+            ) : (
+              <Text style={styles.buttonText}>Sign in</Text>
+            )}
+          </Pressable>
         </View>
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
-        <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
-          {submitting ? (
-            <ActivityIndicator color={colors.primaryForeground} />
-          ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
-          )}
-        </Pressable>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.ink, justifyContent: 'center', padding: spacing.lg },
+  flex: { flex: 1, backgroundColor: colors.ink },
+  container: { flexGrow: 1, backgroundColor: colors.ink, justifyContent: 'center', padding: spacing.lg },
   header: { marginBottom: spacing.xl, alignItems: 'center' },
   title: { fontFamily: fonts.wordmark, fontSize: 30, color: colors.parchment, textAlign: 'center' },
   subtitle: { marginTop: spacing.xs, fontSize: 15, color: colors.parchmentMuted, textAlign: 'center' },
