@@ -11,6 +11,21 @@ export const colors = {
   primary: '#8f2436',
   primaryForeground: '#fbf3ec',
   accent: '#c08a2d',
+  // Community-only accent: the studio-web Community section (channel tabs,
+  // channel tags, primary post/comment/tape actions) uses a distinct blue
+  // rather than the site-wide maroon `primary` -- Workshops keeps `primary`
+  // unchanged. Matches Tailwind's blue-500/400/300 as used in
+  // components/community/*.tsx (bg-blue-500/50, border-blue-400/50,
+  // text-blue-300, border-blue-500/40 + bg-blue-500/15 for the active tab).
+  communityBlue: '#3080ff',
+  communityBlueLight: '#90c5ff',
+  communityBlueBorder: 'rgba(48, 128, 255, 0.4)',
+  communityBlueTint: 'rgba(48, 128, 255, 0.15)',
+  // Matches studio-web's WorkshopCardMenu destructive item color
+  // (text-[#f0a8b4]) -- reused here for the mobile workshop kebab menu's
+  // "Leave workgroup" item so the two apps agree on what "destructive" looks
+  // like.
+  danger: '#f0a8b4',
 } as const
 
 // Fraunces is reserved for the wordmark/auth moment only, mirroring
@@ -32,3 +47,8 @@ export const spacing = {
 } as const
 
 export const radius = 6
+
+// A more pronounced rounding for pill-style controls (workshop kebab menu,
+// Script/Group tabs) -- everything else in the app stays on the flatter
+// `radius` above.
+export const pillRadius = 14

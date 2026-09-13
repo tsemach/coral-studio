@@ -31,3 +31,9 @@ export type TapeItemDTO = Omit<TapeItem, 'createdAt'> & { createdAt: string }
 export function toTapeItemDTO(tape: TapeItem): TapeItemDTO {
   return { ...tape, createdAt: tape.createdAt.toISOString() }
 }
+
+export type TapeNoteItemDTO = Omit<TapeNoteItem, 'createdAt'> & { createdAt: string }
+
+export function toTapeNoteDTO(note: TapeNoteItem): TapeNoteItemDTO {
+  return { ...note, createdAt: note.createdAt.toISOString() }
+}

@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  tabActive: { backgroundColor: colors.inkCard, borderColor: colors.accent },
+  tabActive: { backgroundColor: colors.communityBlueTint, borderColor: colors.communityBlueBorder },
   label: { fontSize: 13, color: colors.parchmentMuted },
-  labelActive: { color: colors.accent, fontWeight: '600' },
+  labelActive: { color: colors.communityBlueLight, fontWeight: '600' },
 })

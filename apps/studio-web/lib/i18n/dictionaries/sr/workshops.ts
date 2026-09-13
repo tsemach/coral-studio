@@ -111,6 +111,10 @@ export const workshops: WorkshopsDictionary = {
       remove: 'Ukloni',
       save: 'Sačuvaj',
       partPlaceholder: 'Uloga (opciono)',
+      confirmTitle: 'Ukloniti člana?',
+      confirmBodyPrefix: 'Ukloniti ',
+      confirmBodySuffix: ' iz ove radionice? Kasnije mogu ponovo biti dodati.',
+      keepThem: 'Zadrži',
     },
     main: {
       sectionLabel: 'Radionice',
