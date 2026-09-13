@@ -6,9 +6,12 @@ import { apiClient } from '../../../lib/api'
 import { ScriptViewer } from '../../../components/script-viewer'
 import { AddMemberSheet } from '../../../components/add-member-sheet'
 import { ScheduleRehearsalSheet } from '../../../components/schedule-rehearsal-sheet'
-import { colors, radius, spacing } from '../../../lib/theme'
+import { WorkshopMenu } from '../../../components/workshop-menu'
+import { colors, pillRadius, radius, spacing } from '../../../lib/theme'
 
 const LIVE_POLL_INTERVAL_MS = 8000
+
+type DetailTab = 'script' | 'group'
 
 export default function WorkshopDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -16,6 +19,9 @@ export default function WorkshopDetailScreen() {
   const queryClient = useQueryClient()
   const [addMemberVisible, setAddMemberVisible] = useState(false)
   const [scheduleVisible, setScheduleVisible] = useState(false)
+  // Script is the default tab on entering a workshop's details, matching
+  // studio-web's centered single-column ScriptFlow as the primary view.
+  const [activeTab, setActiveTab] = useState<DetailTab>('script')
 
   const detailQuery = useQuery({
     queryKey: ['workshop', id],
@@ -81,52 +87,95 @@ export default function WorkshopDetailScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{workshop.title}</Text>
-        {liveQuery.data?.live ? (
-          <View style={styles.liveBadge}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>Live now</Text>
-          </View>
-        ) : null}
+        <View style={styles.headerTitleRow}>
+          <Text style={styles.title}>{workshop.title}</Text>
+          {liveQuery.data?.live ? (
+            <View style={styles.liveBadge}>
+              <View style={styles.liveDot} />
+              <Text style={styles.liveText}>Live now</Text>
+            </View>
+          ) : null}
+        </View>
+        <WorkshopMenu
+          hasRehearsal={!!workshop.rehearsalAt}
+          onReschedule={() => setScheduleVisible(true)}
+          onAddMember={() => setAddMemberVisible(true)}
+          onCancelRehearsal={() => cancelRehearsalMutation.mutate()}
+          onLeave={confirmLeaveWorkshop}
+        />
       </View>
       <Text style={styles.meta}>
         {workshop.rehearsalAt ? new Date(workshop.rehearsalAt).toLocaleString() : 'No rehearsal scheduled'}
         {workshop.location ? ` · ${workshop.location}` : ''}
       </Text>
-      <View style={styles.rehearsalActions}>
-        <Pressable onPress={() => setScheduleVisible(true)}>
-          <Text style={styles.actionLink}>{workshop.rehearsalAt ? 'Reschedule' : 'Schedule rehearsal'}</Text>
+
+      <View style={styles.tabRow}>
+        <Pressable
+          style={[styles.tab, activeTab === 'script' && styles.tabActive]}
+          onPress={() => setActiveTab('script')}
+        >
+          <Text style={styles.tabText}>Script</Text>
         </Pressable>
-        {workshop.rehearsalAt ? (
-          <Pressable onPress={() => cancelRehearsalMutation.mutate()} disabled={cancelRehearsalMutation.isPending}>
-            <Text style={styles.actionLink}>Cancel rehearsal</Text>
-          </Pressable>
-        ) : null}
+        <Pressable
+          style={[styles.tab, activeTab === 'group' && styles.tabActive]}
+          onPress={() => setActiveTab('group')}
+        >
+          <Text style={styles.tabText}>Group</Text>
+        </Pressable>
       </View>
 
-      <Text style={styles.sectionTitle}>Members</Text>
-      <FlatList
-        data={workshop.members}
-        keyExtractor={(member) => member.id}
-        renderItem={({ item }) => (
-          <View style={styles.memberRow}>
-            <Text style={styles.member}>
-              <Text style={styles.memberName}>{item.name ?? item.email}</Text>
-              <Text style={styles.memberMeta}>
-                {'  '}· {item.type}
-                {item.part ? ` · ${item.part}` : ''}
-              </Text>
+      {activeTab === 'script' ? (
+        workshop.scriptSlug ? (
+          <ScriptViewer slug={workshop.scriptSlug} />
+        ) : (
+          <Text style={styles.message}>No script attached.</Text>
+        )
+      ) : (
+        <View style={styles.groupContent}>
+          <Text style={styles.sectionTitle}>Members</Text>
+          <FlatList
+            data={workshop.members}
+            keyExtractor={(member) => member.id}
+            renderItem={({ item }) => (
+              <View style={styles.memberRow}>
+                <Text style={styles.member}>
+                  <Text style={styles.memberName}>{item.name ?? item.email}</Text>
+                  <Text style={styles.memberMeta}>
+                    {'  '}· {item.type}
+                    {item.part ? ` · ${item.part}` : ''}
+                  </Text>
+                </Text>
+                <Pressable onPress={() => removeMemberMutation.mutate(item.id)}>
+                  <Text style={styles.removeLink}>Remove</Text>
+                </Pressable>
+              </View>
+            )}
+            style={styles.memberList}
+          />
+
+          <Text style={styles.sectionTitle}>Rehearsal</Text>
+          <View style={styles.rehearsalCard}>
+            {workshop.rehearsalAt ? (
+              <Pressable
+                style={styles.rehearsalCancel}
+                onPress={() => cancelRehearsalMutation.mutate()}
+                disabled={cancelRehearsalMutation.isPending}
+                hitSlop={6}
+              >
+                <Text style={styles.rehearsalCancelText}>×</Text>
+              </Pressable>
+            ) : null}
+            <Text style={styles.rehearsalDate}>
+              {workshop.rehearsalAt ? new Date(workshop.rehearsalAt).toLocaleString() : 'No rehearsal scheduled'}
             </Text>
-            <Pressable onPress={() => removeMemberMutation.mutate(item.id)}>
-              <Text style={styles.removeLink}>Remove</Text>
-            </Pressable>
+            {workshop.rehearsalAt && workshop.location ? (
+              <Text style={styles.rehearsalLocation}>{workshop.location}</Text>
+            ) : null}
           </View>
-        )}
-        style={styles.memberList}
-      />
-      <Pressable style={styles.addMemberButton} onPress={() => setAddMemberVisible(true)}>
-        <Text style={styles.addMemberButtonText}>Add member</Text>
-      </Pressable>
+          <Text style={styles.rehearsalHint}>Set from "Schedule rehearsal" in the workshop's menu.</Text>
+        </View>
+      )}
+
       <AddMemberSheet
         workshopId={id}
         visible={addMemberVisible}
@@ -136,9 +185,6 @@ export default function WorkshopDetailScreen() {
           queryClient.invalidateQueries({ queryKey: ['workshops'] })
         }}
       />
-      <Pressable onPress={confirmLeaveWorkshop} style={styles.leaveButton}>
-        <Text style={styles.leaveButtonText}>Leave workshop</Text>
-      </Pressable>
       <ScheduleRehearsalSheet
         workshopId={id}
         visible={scheduleVisible}
@@ -149,7 +195,6 @@ export default function WorkshopDetailScreen() {
           queryClient.invalidateQueries({ queryKey: ['workshops'] })
         }}
       />
-      {workshop.scriptSlug ? <ScriptViewer slug={workshop.scriptSlug} /> : null}
     </View>
   )
 }
@@ -157,12 +202,26 @@ export default function WorkshopDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink, padding: spacing.md, gap: spacing.sm },
   message: { padding: spacing.lg, textAlign: 'center', color: colors.parchmentMuted },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+  headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap', flexShrink: 1 },
   title: { fontSize: 20, fontWeight: '700', color: colors.parchment },
   liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent },
   liveText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
   meta: { color: colors.parchmentMuted, fontSize: 14 },
+  tabRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
+  tab: {
+    flex: 1,
+    backgroundColor: colors.inkCard,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: pillRadius,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  tabActive: { borderColor: colors.accent },
+  tabText: { color: colors.accent, fontWeight: '600', fontSize: 14 },
+  groupContent: { flex: 1, gap: spacing.xs },
   sectionTitle: { fontSize: 13, fontWeight: '600', color: colors.parchment, marginTop: spacing.sm },
   memberRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   member: { paddingVertical: 4 },
@@ -170,10 +229,18 @@ const styles = StyleSheet.create({
   memberMeta: { color: colors.parchmentMuted, fontSize: 13 },
   memberList: { maxHeight: 160 },
   removeLink: { color: colors.accent, fontSize: 12 },
-  addMemberButton: { marginTop: spacing.sm, alignSelf: 'flex-start' },
-  addMemberButtonText: { color: colors.accent, fontWeight: '600', fontSize: 13 },
-  rehearsalActions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.xs },
-  actionLink: { color: colors.accent, fontSize: 13, fontWeight: '600' },
-  leaveButton: { marginTop: spacing.md, borderWidth: 1, borderColor: colors.hairline, borderRadius: radius, paddingVertical: 12, alignItems: 'center' },
-  leaveButtonText: { color: colors.parchmentMuted, fontWeight: '600', fontSize: 14 },
+  rehearsalCard: {
+    position: 'relative',
+    backgroundColor: colors.inkCard,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius,
+    padding: spacing.md,
+    paddingRight: spacing.lg,
+  },
+  rehearsalCancel: { position: 'absolute', top: spacing.xs, right: spacing.xs, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
+  rehearsalCancelText: { color: colors.parchmentMuted, fontSize: 15, lineHeight: 15 },
+  rehearsalDate: { color: colors.parchment, fontSize: 14 },
+  rehearsalLocation: { color: colors.parchmentMuted, fontSize: 13, marginTop: 2 },
+  rehearsalHint: { color: colors.parchmentMuted, fontSize: 12, marginTop: spacing.xs },
 })

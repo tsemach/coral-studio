@@ -21,6 +21,11 @@ export const colors = {
   communityBlueLight: '#90c5ff',
   communityBlueBorder: 'rgba(48, 128, 255, 0.4)',
   communityBlueTint: 'rgba(48, 128, 255, 0.15)',
+  // Matches studio-web's WorkshopCardMenu destructive item color
+  // (text-[#f0a8b4]) -- reused here for the mobile workshop kebab menu's
+  // "Leave workgroup" item so the two apps agree on what "destructive" looks
+  // like.
+  danger: '#f0a8b4',
 } as const
 
 // Fraunces is reserved for the wordmark/auth moment only, mirroring
@@ -42,3 +47,8 @@ export const spacing = {
 } as const
 
 export const radius = 6
+
+// A more pronounced rounding for pill-style controls (workshop kebab menu,
+// Script/Group tabs) -- everything else in the app stays on the flatter
+// `radius` above.
+export const pillRadius = 14
