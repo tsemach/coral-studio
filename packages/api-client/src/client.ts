@@ -31,6 +31,8 @@ export type LoginResult = {
 
 export type WorkshopLiveStatus = { live: boolean }
 
+export type LiveTokenResult = { token: string; serverUrl: string; canPublish: boolean }
+
 export type CommunityPostsPage = { items: CommunityPostItemDTO[]; nextCursor: string | null }
 export type OffersResult = { offers: ReaderOfferItemDTO[]; hasOffered: boolean }
 
@@ -82,6 +84,12 @@ export function createApiClient(config: ApiClientConfig) {
     },
     getWorkshopLiveStatus(id: string): Promise<WorkshopLiveStatus> {
       return request<WorkshopLiveStatus>(`/api/mobile/workshops/${id}/live-status`)
+    },
+    getLiveToken(workshopId: string): Promise<LiveTokenResult> {
+      return request<LiveTokenResult>(`/api/mobile/workshops/${workshopId}/live-token`)
+    },
+    addMeToLiveSession(workshopId: string): Promise<void> {
+      return request<void>(`/api/mobile/workshops/${workshopId}/add-me`, { method: 'POST' })
     },
     getScript(slug: string): Promise<Script> {
       return request<Script>(`/api/mobile/scripts/${slug}`)
