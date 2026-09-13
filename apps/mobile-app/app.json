@@ -27,7 +27,9 @@
       "expo-secure-store",
       "expo-font",
       "expo-splash-screen",
-      "expo-video"
+      "expo-video",
+      "@livekit/react-native-expo-plugin",
+      "@config-plugins/react-native-webrtc"
     ]
   }
 }

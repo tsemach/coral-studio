@@ -4,9 +4,14 @@ import { Slot, useRouter, useSegments } from 'expo-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useFonts, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces'
 import * as SplashScreen from 'expo-splash-screen'
+import { registerGlobals } from '@livekit/react-native'
 import { AuthProvider, useAuth } from '../lib/auth/auth-context'
 import { queryClient } from '../lib/query-client'
 import { colors } from '../lib/theme'
+
+// Must run once, before any LiveKit component/hook is used anywhere in the
+// app -- sets up the WebRTC globals the JS layer needs.
+registerGlobals()
 
 SplashScreen.preventAutoHideAsync()
 
