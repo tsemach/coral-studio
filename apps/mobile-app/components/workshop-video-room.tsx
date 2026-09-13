@@ -15,10 +15,10 @@ import { Track } from 'livekit-client'
 import { apiClient } from '../lib/api'
 import { colors, radius, spacing } from '../lib/theme'
 
-function ParticipantTile({ item }: { item: TrackReferenceOrPlaceholder }) {
+function ParticipantTile({ item, height }: { item: TrackReferenceOrPlaceholder; height: number }) {
   const name = item.participant.name || item.participant.identity
   return (
-    <View style={styles.tile}>
+    <View style={[styles.tile, { height }]}>
       {isTrackReference(item) ? <VideoTrack trackRef={item} style={StyleSheet.absoluteFill} /> : null}
       <Text style={styles.tileName}>{name}</Text>
     </View>
@@ -106,14 +106,29 @@ function RoomControls({ onLeave }: { onLeave: () => void }) {
   )
 }
 
+// Each participant's tile takes an equal share of the grid's measured
+// height -- one tile fills the whole area, two split it in half, three in
+// thirds, and so on -- rather than a fixed tile height that leaves empty
+// space below with few participants and requires scrolling with many.
 function RoomView({ workshopId, onLeave }: { workshopId: string; onLeave: () => void }) {
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }])
-  const renderTile: ListRenderItem<TrackReferenceOrPlaceholder> = ({ item }) => <ParticipantTile item={item} />
+  const [gridHeight, setGridHeight] = useState(0)
+  const tileHeight = tracks.length > 0 ? gridHeight / tracks.length : gridHeight
+  const renderTile: ListRenderItem<TrackReferenceOrPlaceholder> = ({ item }) => (
+    <ParticipantTile item={item} height={tileHeight} />
+  )
 
   return (
     <View style={styles.container}>
       <MediaErrorBanner />
-      <FlatList data={tracks} renderItem={renderTile} keyExtractor={(item) => item.participant.identity} />
+      <View style={styles.grid} onLayout={(e) => setGridHeight(e.nativeEvent.layout.height)}>
+        <FlatList
+          data={tracks}
+          renderItem={renderTile}
+          keyExtractor={(item) => item.participant.identity}
+          scrollEnabled={false}
+        />
+      </View>
       <AddMeButton workshopId={workshopId} />
       <RoomControls onLeave={onLeave} />
     </View>
@@ -193,7 +208,8 @@ const styles = StyleSheet.create({
   messageText: { color: colors.parchmentMuted, fontSize: 14, textAlign: 'center' },
   backButton: { borderWidth: 1, borderColor: colors.hairline, borderRadius: radius, paddingHorizontal: spacing.md, paddingVertical: 10 },
   backButtonText: { color: colors.parchmentMuted, fontWeight: '600' },
-  tile: { height: 220, backgroundColor: colors.inkCard, margin: spacing.xs, borderRadius: radius, overflow: 'hidden' },
+  grid: { flex: 1 },
+  tile: { backgroundColor: colors.inkCard, overflow: 'hidden' },
   tileName: {
     position: 'absolute',
     left: 6,
