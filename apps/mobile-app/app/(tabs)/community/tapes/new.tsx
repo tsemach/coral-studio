@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as ImagePicker from 'expo-image-picker'
@@ -83,50 +83,57 @@ export default function NewTapeScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Title</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Scene title"
-        placeholderTextColor={colors.parchmentMuted}
-        value={title}
-        onChangeText={setTitle}
-      />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.label}>Title</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Scene title"
+          placeholderTextColor={colors.parchmentMuted}
+          value={title}
+          onChangeText={setTitle}
+        />
 
-      <Text style={styles.label}>Description</Text>
-      <TextInput
-        style={[styles.input, styles.multiline]}
-        placeholder="What's the scene, who's in it..."
-        placeholderTextColor={colors.parchmentMuted}
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          placeholder="What's the scene, who's in it..."
+          placeholderTextColor={colors.parchmentMuted}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
 
-      <Text style={styles.label}>Video</Text>
-      <Pressable style={styles.pickButton} onPress={pickVideo}>
-        <Text style={styles.pickButtonText}>{video ? video.name : 'Choose a video from your library'}</Text>
-      </Pressable>
-      {Platform.OS === 'web' ? (
-        <Text style={styles.hint}>Recording directly is only available in the installed app, not this web preview.</Text>
-      ) : null}
+        <Text style={styles.label}>Video</Text>
+        <Pressable style={styles.pickButton} onPress={pickVideo}>
+          <Text style={styles.pickButtonText}>{video ? video.name : 'Choose a video from your library'}</Text>
+        </Pressable>
+        {Platform.OS === 'web' ? (
+          <Text style={styles.hint}>Recording directly is only available in the installed app, not this web preview.</Text>
+        ) : null}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {uploadProgress !== null ? <Text style={styles.hint}>Uploading… {Math.round(uploadProgress)}%</Text> : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {uploadProgress !== null ? <Text style={styles.hint}>Uploading… {Math.round(uploadProgress)}%</Text> : null}
 
-      <Pressable
-        style={styles.button}
-        onPress={() => mutation.mutate()}
-        disabled={!title.trim() || !description.trim() || !video || mutation.isPending}
-      >
-        {mutation.isPending ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={styles.buttonText}>Upload tape</Text>}
-      </Pressable>
-    </View>
+        <Pressable
+          style={styles.button}
+          onPress={() => mutation.mutate()}
+          disabled={!title.trim() || !description.trim() || !video || mutation.isPending}
+        >
+          {mutation.isPending ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={styles.buttonText}>Upload tape</Text>}
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.ink, padding: spacing.md, gap: spacing.sm },
+  container: { flex: 1, backgroundColor: colors.ink },
+  content: { padding: spacing.md, gap: spacing.sm },
   label: { color: colors.parchmentMuted, fontSize: 13, marginTop: spacing.sm },
   input: {
     backgroundColor: colors.inkCard,

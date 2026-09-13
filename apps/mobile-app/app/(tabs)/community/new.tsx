@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as ImagePicker from 'expo-image-picker'
@@ -79,119 +79,125 @@ export default function NewPostScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.label}>Channel</Text>
-      <View style={styles.channelRow}>
-        {CHANNELS.map((c) => (
-          <Pressable
-            key={c.id}
-            style={[styles.channelOption, channel === c.id && styles.channelOptionActive]}
-            onPress={() => setChannel(c.id)}
-          >
-            <Text style={styles.channelOptionText}>{c.label}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text style={styles.label}>Title</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Title"
-        placeholderTextColor={colors.parchmentMuted}
-        value={title}
-        onChangeText={setTitle}
-      />
-
-      <Text style={styles.label}>Content</Text>
-      <TextInput
-        style={[styles.input, styles.multiline]}
-        placeholder="What's on your mind?"
-        placeholderTextColor={colors.parchmentMuted}
-        value={content}
-        onChangeText={setContent}
-        multiline
-      />
-
-      {channel === 'reader_sos' ? (
-        <View style={styles.section}>
-          <Text style={styles.label}>Rehearsal date/time (optional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="2026-10-01T18:00"
-            placeholderTextColor={colors.parchmentMuted}
-            value={rehearsalAt}
-            onChangeText={setRehearsalAt}
-          />
-          <Text style={styles.label}>Format</Text>
-          <View style={styles.channelRow}>
-            {REHEARSAL_FORMATS.map((format) => (
-              <Pressable
-                key={format}
-                style={[styles.channelOption, rehearsalFormat === format && styles.channelOptionActive]}
-                onPress={() => setRehearsalFormat(format)}
-              >
-                <Text style={styles.channelOptionText}>{format}</Text>
-              </Pressable>
-            ))}
-          </View>
-          <Text style={styles.label}>Scene details (optional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Which scene, characters, etc."
-            placeholderTextColor={colors.parchmentMuted}
-            value={sceneDetails}
-            onChangeText={setSceneDetails}
-          />
-        </View>
-      ) : null}
-
-      {channel === 'callboard' ? (
-        <View style={styles.section}>
-          <Text style={styles.label}>Casting type</Text>
-          <View style={styles.channelRow}>
-            {CASTING_TYPES.map((type) => (
-              <Pressable
-                key={type}
-                style={[styles.channelOption, castingType === type && styles.channelOptionActive]}
-                onPress={() => setCastingType(type)}
-              >
-                <Text style={styles.channelOptionText}>{type.replace('_', ' ')}</Text>
-              </Pressable>
-            ))}
-          </View>
-          <Text style={styles.label}>Deadline (optional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="2026-10-15"
-            placeholderTextColor={colors.parchmentMuted}
-            value={deadlineAt}
-            onChangeText={setDeadlineAt}
-          />
-        </View>
-      ) : null}
-
-      <Text style={styles.label}>Images (optional, up to 4)</Text>
-      <Pressable style={styles.pickButton} onPress={pickImages}>
-        <Text style={styles.pickButtonText}>Choose photos</Text>
-      </Pressable>
-      {images.length > 0 ? (
-        <View style={styles.previewRow}>
-          {images.map((image) => (
-            <Image key={image.uri} source={{ uri: image.uri }} style={styles.previewImage} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.label}>Channel</Text>
+        <View style={styles.channelRow}>
+          {CHANNELS.map((c) => (
+            <Pressable
+              key={c.id}
+              style={[styles.channelOption, channel === c.id && styles.channelOptionActive]}
+              onPress={() => setChannel(c.id)}
+            >
+              <Text style={styles.channelOptionText}>{c.label}</Text>
+            </Pressable>
           ))}
         </View>
-      ) : null}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        <Text style={styles.label}>Title</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Title"
+          placeholderTextColor={colors.parchmentMuted}
+          value={title}
+          onChangeText={setTitle}
+        />
 
-      <Pressable
-        style={styles.button}
-        onPress={() => mutation.mutate()}
-        disabled={!title.trim() || !content.trim() || mutation.isPending}
-      >
-        {mutation.isPending ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={styles.buttonText}>Post</Text>}
-      </Pressable>
-    </ScrollView>
+        <Text style={styles.label}>Content</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          placeholder="What's on your mind?"
+          placeholderTextColor={colors.parchmentMuted}
+          value={content}
+          onChangeText={setContent}
+          multiline
+        />
+
+        {channel === 'reader_sos' ? (
+          <View style={styles.section}>
+            <Text style={styles.label}>Rehearsal date/time (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="2026-10-01T18:00"
+              placeholderTextColor={colors.parchmentMuted}
+              value={rehearsalAt}
+              onChangeText={setRehearsalAt}
+            />
+            <Text style={styles.label}>Format</Text>
+            <View style={styles.channelRow}>
+              {REHEARSAL_FORMATS.map((format) => (
+                <Pressable
+                  key={format}
+                  style={[styles.channelOption, rehearsalFormat === format && styles.channelOptionActive]}
+                  onPress={() => setRehearsalFormat(format)}
+                >
+                  <Text style={styles.channelOptionText}>{format}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.label}>Scene details (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Which scene, characters, etc."
+              placeholderTextColor={colors.parchmentMuted}
+              value={sceneDetails}
+              onChangeText={setSceneDetails}
+            />
+          </View>
+        ) : null}
+
+        {channel === 'callboard' ? (
+          <View style={styles.section}>
+            <Text style={styles.label}>Casting type</Text>
+            <View style={styles.channelRow}>
+              {CASTING_TYPES.map((type) => (
+                <Pressable
+                  key={type}
+                  style={[styles.channelOption, castingType === type && styles.channelOptionActive]}
+                  onPress={() => setCastingType(type)}
+                >
+                  <Text style={styles.channelOptionText}>{type.replace('_', ' ')}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.label}>Deadline (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="2026-10-15"
+              placeholderTextColor={colors.parchmentMuted}
+              value={deadlineAt}
+              onChangeText={setDeadlineAt}
+            />
+          </View>
+        ) : null}
+
+        <Text style={styles.label}>Images (optional, up to 4)</Text>
+        <Pressable style={styles.pickButton} onPress={pickImages}>
+          <Text style={styles.pickButtonText}>Choose photos</Text>
+        </Pressable>
+        {images.length > 0 ? (
+          <View style={styles.previewRow}>
+            {images.map((image) => (
+              <Image key={image.uri} source={{ uri: image.uri }} style={styles.previewImage} />
+            ))}
+          </View>
+        ) : null}
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <Pressable
+          style={styles.button}
+          onPress={() => mutation.mutate()}
+          disabled={!title.trim() || !content.trim() || mutation.isPending}
+        >
+          {mutation.isPending ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={styles.buttonText}>Post</Text>}
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
