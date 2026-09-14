@@ -21,24 +21,25 @@ export default function NewTapeScreen() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [video, setVideo] = useState<PickedVideo | null>(null)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!video) throw new Error('Choose a video first.')
 
-      setUploadProgress(0)
       const { token, pathname: requestedPathname } = await apiClient.requestTapeUploadToken(video.name)
 
       const response = await fetch(video.uri)
       const blob = await response.blob()
 
+      // No onUploadProgress here: @vercel/blob/client only tracks progress by
+      // streaming the body (Blob.prototype.stream()), which React Native's Blob
+      // polyfill doesn't implement -- passing that option throws
+      // "undefined is not a function" the moment upload starts.
       const uploaded = await put(requestedPathname, blob, {
         access: 'private',
         token,
         contentType: video.type,
-        onUploadProgress: (event) => setUploadProgress(event.percentage),
       })
 
       return apiClient.createTape({
@@ -53,7 +54,6 @@ export default function NewTapeScreen() {
       router.replace(`/community/tapes/${tape.id}`)
     },
     onError: (err) => {
-      setUploadProgress(null)
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     },
   })
@@ -148,7 +148,7 @@ export default function NewTapeScreen() {
         )}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {uploadProgress !== null ? <Text style={styles.hint}>Uploading… {Math.round(uploadProgress)}%</Text> : null}
+        {mutation.isPending ? <Text style={styles.hint}>Uploading…</Text> : null}
 
         <Pressable
           style={styles.button}
