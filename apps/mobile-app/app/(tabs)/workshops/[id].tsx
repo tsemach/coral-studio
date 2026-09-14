@@ -167,7 +167,7 @@ export default function WorkshopDetailScreen() {
           />
 
           <Text style={styles.sectionTitle}>Rehearsal</Text>
-          <View style={styles.rehearsalCard}>
+          <Pressable style={styles.rehearsalCard} onPress={() => setScheduleVisible(true)}>
             {workshop.rehearsalAt ? (
               <Pressable
                 style={styles.rehearsalCancel}
@@ -184,8 +184,7 @@ export default function WorkshopDetailScreen() {
             {workshop.rehearsalAt && workshop.location ? (
               <Text style={styles.rehearsalLocation}>{workshop.location}</Text>
             ) : null}
-          </View>
-          <Text style={styles.rehearsalHint}>Set from "Schedule rehearsal" in the workshop's menu.</Text>
+          </Pressable>
         </View>
       )}
 
@@ -276,5 +275,4 @@ const styles = StyleSheet.create({
   rehearsalCancelText: { color: colors.parchmentMuted, fontSize: 15, lineHeight: 15 },
   rehearsalDate: { color: colors.parchment, fontSize: 14 },
   rehearsalLocation: { color: colors.parchmentMuted, fontSize: 13, marginTop: 2 },
-  rehearsalHint: { color: colors.parchmentMuted, fontSize: 12, marginTop: spacing.xs },
 })
