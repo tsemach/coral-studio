@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { ApiError } from '@coral-studio/api-client'
 import { useAuth } from '../lib/auth/auth-context'
 import { colors, fonts, radius, spacing } from '../lib/theme'
@@ -25,7 +26,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>Glumački Studio</Text>

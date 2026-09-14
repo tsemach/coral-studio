@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useMutation } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 import { colors, radius, spacing } from '../lib/theme'
@@ -69,7 +70,7 @@ export function ScheduleRehearsalSheet({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.overlay} behavior="padding">
         <View style={styles.sheet}>
           <Text style={styles.title}>Schedule rehearsal</Text>
           <Text style={styles.hint}>Date and time (e.g. 2026-10-01T18:00)</Text>

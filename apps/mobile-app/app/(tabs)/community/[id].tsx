@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Alert, FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Alert, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Markdown from 'react-native-markdown-display'
@@ -146,8 +147,8 @@ export default function PostDetailScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={88}
     >
       <FlatList
         data={commentsQuery.data ?? []}
