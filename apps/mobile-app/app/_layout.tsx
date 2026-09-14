@@ -5,6 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { useFonts, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces'
 import * as SplashScreen from 'expo-splash-screen'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import '../lib/livekit-setup'
 import { AuthProvider, useAuth } from '../lib/auth/auth-context'
 import { queryClient } from '../lib/query-client'
@@ -58,14 +59,16 @@ export default function RootLayout() {
   if (!fontsLoaded) return null
 
   return (
-    <KeyboardProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <AuthGate>
-            <Slot />
-          </AuthGate>
-        </AuthProvider>
-      </QueryClientProvider>
-    </KeyboardProvider>
+    <SafeAreaProvider>
+      <KeyboardProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <AuthGate>
+              <Slot />
+            </AuthGate>
+          </AuthProvider>
+        </QueryClientProvider>
+      </KeyboardProvider>
+    </SafeAreaProvider>
   )
 }
