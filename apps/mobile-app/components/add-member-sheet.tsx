@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
@@ -42,36 +42,33 @@ export function AddMemberSheet({
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView style={styles.overlay} behavior="padding">
         <View style={styles.sheet}>
-          <Text style={styles.title}>Add member</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="member@example.com"
-            placeholderTextColor={colors.parchmentMuted}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Part (optional)"
-            placeholderTextColor={colors.parchmentMuted}
-            value={part}
-            onChangeText={setPart}
-          />
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <Text style={styles.title}>Add member</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="member@example.com"
+              placeholderTextColor={colors.parchmentMuted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Part (optional)"
+              placeholderTextColor={colors.parchmentMuted}
+              value={part}
+              onChangeText={setPart}
+            />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Text style={styles.hint}>Active studio members:</Text>
-          <FlatList
-            data={activeUsersQuery.data ?? []}
-            keyExtractor={(item) => item.id}
-            style={styles.list}
-            renderItem={({ item }) => (
-              <Pressable style={styles.userRow} onPress={() => setEmail(item.email)}>
+            <Text style={styles.hint}>Active studio members:</Text>
+            {(activeUsersQuery.data ?? []).map((item) => (
+              <Pressable key={item.id} style={styles.userRow} onPress={() => setEmail(item.email)}>
                 <Text style={styles.userText}>{item.name ?? item.email}</Text>
               </Pressable>
-            )}
-          />
+            ))}
+          </ScrollView>
 
           <View style={styles.actions}>
             <Pressable style={styles.cancelButton} onPress={onClose}>
@@ -93,7 +90,9 @@ export function AddMemberSheet({
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: colors.ink, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: spacing.lg, gap: spacing.sm, maxHeight: '80%' },
+  sheet: { backgroundColor: colors.ink, borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '80%' },
+  scroll: { flexShrink: 1 },
+  scrollContent: { padding: spacing.lg, gap: spacing.sm },
   title: { color: colors.parchment, fontSize: 18, fontWeight: '700' },
   input: {
     backgroundColor: colors.inkCard,
@@ -107,10 +106,16 @@ const styles = StyleSheet.create({
   },
   error: { color: colors.accent, fontSize: 13 },
   hint: { color: colors.parchmentMuted, fontSize: 12, marginTop: spacing.xs },
-  list: { maxHeight: 140 },
   userRow: { paddingVertical: 8, borderBottomWidth: 1, borderColor: colors.hairline },
   userText: { color: colors.parchment, fontSize: 14 },
-  actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    padding: spacing.lg,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderColor: colors.hairline,
+  },
   cancelButton: { flex: 1, borderWidth: 1, borderColor: colors.hairline, borderRadius: radius, paddingVertical: 12, alignItems: 'center' },
   cancelButtonText: { color: colors.parchmentMuted, fontWeight: '600' },
   addButton: { flex: 1, backgroundColor: colors.primary, borderRadius: radius, paddingVertical: 12, alignItems: 'center' },
