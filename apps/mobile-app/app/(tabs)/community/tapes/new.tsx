@@ -58,6 +58,20 @@ export default function NewTapeScreen() {
     },
   })
 
+  function applyPickedAsset(asset: ImagePicker.ImagePickerAsset, tooLargeMessage: string) {
+    if (asset.fileSize && asset.fileSize > MAX_VIDEO_BYTES) {
+      setError(tooLargeMessage)
+      return
+    }
+    setError(null)
+    setVideo({
+      uri: asset.uri,
+      name: asset.fileName ?? 'tape.mp4',
+      type: asset.mimeType ?? 'video/mp4',
+      durationSeconds: asset.duration ? Math.round(asset.duration / 1000) : null,
+    })
+  }
+
   async function pickVideo() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!permission.granted) {
@@ -69,18 +83,21 @@ export default function NewTapeScreen() {
       quality: 1,
     })
     if (result.canceled || result.assets.length === 0) return
-    const asset = result.assets[0]
-    if (asset.fileSize && asset.fileSize > MAX_VIDEO_BYTES) {
-      setError('Video is too large (max 50MB) — trim it first or pick a shorter clip.')
+    applyPickedAsset(result.assets[0], 'Video is too large (max 50MB) — trim it first or pick a shorter clip.')
+  }
+
+  async function recordVideo() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync()
+    if (!permission.granted) {
+      setError('Camera permission is required to record a video.')
       return
     }
-    setError(null)
-    setVideo({
-      uri: asset.uri,
-      name: asset.fileName ?? 'tape.mp4',
-      type: asset.mimeType ?? 'video/mp4',
-      durationSeconds: asset.duration ? Math.round(asset.duration / 1000) : null,
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 1,
     })
+    if (result.canceled || result.assets.length === 0) return
+    applyPickedAsset(result.assets[0], 'Recording is too large (max 50MB) — keep it shorter and try again.')
   }
 
   return (
@@ -110,12 +127,25 @@ export default function NewTapeScreen() {
         />
 
         <Text style={styles.label}>Video</Text>
-        <Pressable style={styles.pickButton} onPress={pickVideo}>
-          <Text style={styles.pickButtonText}>{video ? video.name : 'Choose a video from your library'}</Text>
-        </Pressable>
-        {Platform.OS === 'web' ? (
-          <Text style={styles.hint}>Recording directly is only available in the installed app, not this web preview.</Text>
-        ) : null}
+        {video ? (
+          <Pressable style={styles.pickButton} onPress={pickVideo}>
+            <Text style={styles.pickButtonText}>{video.name}</Text>
+          </Pressable>
+        ) : (
+          <>
+            {Platform.OS !== 'web' ? (
+              <Pressable style={styles.pickButton} onPress={recordVideo}>
+                <Text style={styles.pickButtonText}>Record a video</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={styles.pickButton} onPress={pickVideo}>
+              <Text style={styles.pickButtonText}>Choose a video from your library</Text>
+            </Pressable>
+            {Platform.OS === 'web' ? (
+              <Text style={styles.hint}>Recording directly is only available in the installed app, not this web preview.</Text>
+            ) : null}
+          </>
+        )}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {uploadProgress !== null ? <Text style={styles.hint}>Uploading… {Math.round(uploadProgress)}%</Text> : null}
