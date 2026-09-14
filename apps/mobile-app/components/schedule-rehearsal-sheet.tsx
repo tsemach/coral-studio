@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 import { useMutation } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
@@ -23,6 +24,7 @@ export function ScheduleRehearsalSheet({
   const [location, setLocation] = useState<'studio' | 'online'>('studio')
   const [showIosPicker, setShowIosPicker] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     if (visible) {
@@ -113,7 +115,7 @@ export function ScheduleRehearsalSheet({
             {error ? <Text style={styles.error}>{error}</Text> : null}
           </ScrollView>
 
-          <View style={styles.actions}>
+          <View style={[styles.actions, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
             <Pressable style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </Pressable>

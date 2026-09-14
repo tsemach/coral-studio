@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 import { colors, radius, spacing } from '../lib/theme'
@@ -19,6 +20,7 @@ export function AddMemberSheet({
   const [email, setEmail] = useState('')
   const [part, setPart] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const insets = useSafeAreaInsets()
 
   const activeUsersQuery = useQuery({
     queryKey: ['active-users'],
@@ -70,7 +72,7 @@ export function AddMemberSheet({
             ))}
           </ScrollView>
 
-          <View style={styles.actions}>
+          <View style={[styles.actions, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
             <Pressable style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </Pressable>
