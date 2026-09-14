@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useLocalSearchParams } from 'expo-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVideoPlayer, VideoView } from 'expo-video'
@@ -74,8 +75,8 @@ export default function TapeDetailScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={88}
     >
       <VideoView style={styles.video} player={player} nativeControls />
       <FlatList
@@ -133,7 +134,7 @@ function formatTimestamp(totalSeconds: number): string {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.ink },
   message: { padding: 24, textAlign: 'center', color: colors.parchmentMuted },
-  video: { width: '100%', height: 240, backgroundColor: '#000' },
+  video: { width: '100%', height: 240, minHeight: 0, flexShrink: 1, backgroundColor: '#000' },
   notesList: { flex: 1 },
   sectionTitle: { fontSize: 14, fontWeight: '600', color: colors.parchment, margin: spacing.md, marginBottom: spacing.xs },
   noteRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderTopWidth: 1, borderColor: colors.hairline },

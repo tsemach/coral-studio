@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiClient } from '../lib/api'
 import { colors, radius, spacing } from '../lib/theme'
@@ -39,7 +40,7 @@ export function AddMemberSheet({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.overlay} behavior="padding">
         <View style={styles.sheet}>
           <Text style={styles.title}>Add member</Text>
           <TextInput
