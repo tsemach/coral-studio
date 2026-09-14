@@ -72,7 +72,7 @@ export function ScheduleRehearsalSheet({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView style={styles.overlay} behavior="padding">
+      <KeyboardAvoidingView style={styles.overlay} behavior="padding" automaticOffset>
         <View style={styles.sheet}>
           <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
             <Text style={styles.title}>Schedule rehearsal</Text>
