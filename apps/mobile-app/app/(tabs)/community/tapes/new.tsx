@@ -21,24 +21,25 @@ export default function NewTapeScreen() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [video, setVideo] = useState<PickedVideo | null>(null)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!video) throw new Error('Choose a video first.')
 
-      setUploadProgress(0)
       const { token, pathname: requestedPathname } = await apiClient.requestTapeUploadToken(video.name)
 
       const response = await fetch(video.uri)
       const blob = await response.blob()
 
+      // No onUploadProgress here: @vercel/blob/client only tracks progress by
+      // streaming the body (Blob.prototype.stream()), which React Native's Blob
+      // polyfill doesn't implement -- passing that option throws
+      // "undefined is not a function" the moment upload starts.
       const uploaded = await put(requestedPathname, blob, {
         access: 'private',
         token,
         contentType: video.type,
-        onUploadProgress: (event) => setUploadProgress(event.percentage),
       })
 
       return apiClient.createTape({
@@ -53,10 +54,23 @@ export default function NewTapeScreen() {
       router.replace(`/community/tapes/${tape.id}`)
     },
     onError: (err) => {
-      setUploadProgress(null)
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     },
   })
+
+  function applyPickedAsset(asset: ImagePicker.ImagePickerAsset, tooLargeMessage: string) {
+    if (asset.fileSize && asset.fileSize > MAX_VIDEO_BYTES) {
+      setError(tooLargeMessage)
+      return
+    }
+    setError(null)
+    setVideo({
+      uri: asset.uri,
+      name: asset.fileName ?? 'tape.mp4',
+      type: asset.mimeType ?? 'video/mp4',
+      durationSeconds: asset.duration ? Math.round(asset.duration / 1000) : null,
+    })
+  }
 
   async function pickVideo() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -69,18 +83,21 @@ export default function NewTapeScreen() {
       quality: 1,
     })
     if (result.canceled || result.assets.length === 0) return
-    const asset = result.assets[0]
-    if (asset.fileSize && asset.fileSize > MAX_VIDEO_BYTES) {
-      setError('Video is too large (max 50MB) — trim it first or pick a shorter clip.')
+    applyPickedAsset(result.assets[0], 'Video is too large (max 50MB) — trim it first or pick a shorter clip.')
+  }
+
+  async function recordVideo() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync()
+    if (!permission.granted) {
+      setError('Camera permission is required to record a video.')
       return
     }
-    setError(null)
-    setVideo({
-      uri: asset.uri,
-      name: asset.fileName ?? 'tape.mp4',
-      type: asset.mimeType ?? 'video/mp4',
-      durationSeconds: asset.duration ? Math.round(asset.duration / 1000) : null,
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 1,
     })
+    if (result.canceled || result.assets.length === 0) return
+    applyPickedAsset(result.assets[0], 'Recording is too large (max 50MB) — keep it shorter and try again.')
   }
 
   return (
@@ -110,15 +127,28 @@ export default function NewTapeScreen() {
         />
 
         <Text style={styles.label}>Video</Text>
-        <Pressable style={styles.pickButton} onPress={pickVideo}>
-          <Text style={styles.pickButtonText}>{video ? video.name : 'Choose a video from your library'}</Text>
-        </Pressable>
-        {Platform.OS === 'web' ? (
-          <Text style={styles.hint}>Recording directly is only available in the installed app, not this web preview.</Text>
-        ) : null}
+        {video ? (
+          <Pressable style={styles.pickButton} onPress={pickVideo}>
+            <Text style={styles.pickButtonText}>{video.name}</Text>
+          </Pressable>
+        ) : (
+          <>
+            {Platform.OS !== 'web' ? (
+              <Pressable style={styles.pickButton} onPress={recordVideo}>
+                <Text style={styles.pickButtonText}>Record a video</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={styles.pickButton} onPress={pickVideo}>
+              <Text style={styles.pickButtonText}>Choose a video from your library</Text>
+            </Pressable>
+            {Platform.OS === 'web' ? (
+              <Text style={styles.hint}>Recording directly is only available in the installed app, not this web preview.</Text>
+            ) : null}
+          </>
+        )}
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {uploadProgress !== null ? <Text style={styles.hint}>Uploading… {Math.round(uploadProgress)}%</Text> : null}
+        {mutation.isPending ? <Text style={styles.hint}>Uploading…</Text> : null}
 
         <Pressable
           style={styles.button}

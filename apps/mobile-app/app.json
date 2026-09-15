@@ -40,6 +40,14 @@
       "expo-font",
       "expo-splash-screen",
       "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allows $(PRODUCT_NAME) to access your photo library to attach images and choose self-tape videos.",
+          "cameraPermission": "Allows $(PRODUCT_NAME) to use your camera to record self-tape videos.",
+          "microphonePermission": "Allows $(PRODUCT_NAME) to use your microphone to record audio with self-tape videos."
+        }
+      ],
       "@livekit/react-native-expo-plugin",
       "@config-plugins/react-native-webrtc",
       "@react-native-community/datetimepicker"
